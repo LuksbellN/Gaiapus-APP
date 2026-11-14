@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { simulations } from '../adapters';
 import { useActiveContext } from '../App';
@@ -21,6 +21,8 @@ export function PlanPage() {
   const place = ctx.property?.municipalityCode === mun ? `${ctx.property.municipalityName}, ${ctx.property.uf}` : PLACE[mun] ?? `município IBGE ${mun}`;
   const f = useDraftForm('plano', { cultura_id: '', data: '0', area: '', irrigacao: 'Sequeiro', solo: 'Não sei', prioridade: 'conservacao', rendimento: '', precoUnidade: 'saca', saca: '', forma: 'Beneficiado', preco: '', precoData: '', precoFonte: '', custo: '' });
   const v = f.v;
+  const loadedPlan = useRef<string | null>(null);
+  useEffect(() => { const p = fromPlan ? plans.find((x) => x.id === fromPlan) : null; if (p && loadedPlan.current !== p.id) { loadedPlan.current = p.id; f.load(p.data); } }, [fromPlan]); // eslint-disable-line
   // Rascunhos e planos antigos guardavam só o nome ("Soja", "Milho safrinha", "Café"). "Café" não diz a espécie: pedimos o complemento.
   const crop: CropId | null = isCropId(v.cultura_id) ? v.cultura_id : v.cultura ? cropIdFromName(v.cultura) : 'soy'; const pendingCrop = crop == null;
   const fsd = useAsync((s) => (crop === 'soy' && mun === SORRISO ? simulations.fieldShift(SORRISO, s) : Promise.resolve(null)), [crop, mun]);
@@ -29,8 +31,8 @@ export function PlanPage() {
   const shifts = fsd.data ? [...fsd.data.data.sensitivity.filter((s) => s.parameter === 'soy_shift_days'), { value: 0, reference_storage_at_next_sowing_mm: fsd.data.data.scenarios.reference_fallow.mean.storage_at_next_sowing_mm, difference_next_soy_establishment_deficit_mm: fsd.data.data.difference_brachiaria_minus_reference.next_soy_establishment_deficit_mm } as (typeof fsd.data.data.sensitivity)[number]].sort((a, b) => Number(a.value) - Number(b.value)) : [];
   const save = (open: boolean) => {
     if (!crop) { setMsg('Escolha a cultura antes de salvar.'); return; }
-    setState((s) => ({ plans: [{ id: uid('plano'), createdAt: now(), data: { ...v, cultura_id: crop, cultura: CROPS[crop].name, municipio: mun, municipio_nome: place } }, ...s.plans] })); setMsg('Planejamento salvo neste aparelho.');
-    if (open) nav(`/simulador?cultura=${crop}&mun=${mun}`);
+    const id = uid('plano'); setState((s) => ({ plans: [{ id, createdAt: now(), data: { ...v, cultura_id: crop, cultura: CROPS[crop].name, municipio: mun, municipio_nome: place } }, ...s.plans] })); setMsg('Planejamento salvo neste aparelho.');
+    if (open) nav(`/simulador?cultura=${crop}&mun=${mun}&plano=${id}`);
   };
   return (
     <div className="page">
@@ -46,6 +48,7 @@ export function PlanPage() {
               <Field label="Solo">{(a) => <select className="input" {...a} {...f.bind('solo')}>{['Não sei', 'Arenoso', 'Médio', 'Argiloso'].map((o) => <option key={o}>{o}</option>)}</select>}</Field>
             </div>
             <Seg legend="O que pesa mais na decisão" name="prioridade" value={v.prioridade} onChange={(x) => f.set('prioridade', x)} options={[{ value: 'margem', label: 'Margem' }, { value: 'producao', label: 'Produção' }, { value: 'conservacao', label: 'Conservar solo e água' }]} />
+            <p className="meta-13">A prioridade fica registrada no plano; ela não altera as comparações nem os cálculos abaixo.</p>
             {v.irrigacao === 'Irrigado' && <Notice tone="warn">Ainda não há método validado para o efeito da irrigação; as comparações valem para sequeiro.</Notice>}
             {coffee && <Notice title="Café é cultura perene.">Três meses após o plantio não são um ciclo até a primeira colheita. Registre em <a href="#/registros?novo=plantio">Registros</a> a espécie, a idade do cafezal e a última poda; o planejamento abaixo vale para a safra do cafezal em produção.</Notice>}
           </form>

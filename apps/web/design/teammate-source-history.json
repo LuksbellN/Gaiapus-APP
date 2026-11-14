@@ -72,6 +72,18 @@
       "date": "2026-11-14",
       "reason": "O3 (D-15): navegação em cinco grupos por tarefa; Propriedades e Ajuda no menu",
       "sha256": "5b41415422398c4788577ef4b7dd29515381985e58c137dfd518a706be616dc0"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "O4/O5 (D-14, D-27): simulador declara o que veio do plano; dia selecionado no link",
+      "sha256": "d1608a5f7139f34643c7aacda46e0e4754637baa0635d45ec46cc38d6569430c"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "O4/O5 (D-14, D-27): simulador declara o que veio do plano; dia selecionado no link",
+      "sha256": "028dae4efe85176943befaf040b14f76be06ae8003915a3c334bc7492ed72f82"
     }
   ]
 }

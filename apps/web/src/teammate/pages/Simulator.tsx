@@ -11,6 +11,7 @@ import { CapabilityTable } from '../ui/Crops';
 import { useSearchParams } from 'react-router-dom';
 import { Field2D, webglAvailable, type FieldState } from '../sim/field-state';
 import { useLazy } from '../lazyPage';
+import { useStore } from '../store';
 import { useActiveContext } from '../App';
 import { plotElsewhere } from '../context';
 const loadField3D = () => import('../sim/Field3D');
@@ -36,6 +37,7 @@ export function Simulator() {
   const place = PLACE[mun] ?? `município IBGE ${mun}`; const coffee = isCoffee(crop); const stage = params.get('cafezal') === 'implantacao' ? 'implantacao' : 'producao';
   return (
     <div className="page" data-testid="sim-unavailable" data-crop={crop} data-mun={mun}>
+      <FromPlan />
       <div className="page-head"><div className="stack-2"><h1>Simulador — {CROPS[crop].name.toLowerCase()} em {place}</h1><p>Não há série diária de água, fases ou crescimento para esta combinação. Nada é simulado: nenhuma curva de soja é mostrada com outro nome.</p></div><Pill>Sem série compatível</Pill></div>
       <div className="cols">
         <div className="stack">
@@ -67,7 +69,7 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
   const [params, setParams] = useSearchParams(); const put = (kv: Record<string, string | null>) => setParams((prev) => { const p = new URLSearchParams(prev); for (const [k, v] of Object.entries(kv)) { if (v == null) p.delete(k); else p.set(k, v); } return p; });
   const mode: Mode = (Object.keys(MODE) as Mode[]).find((m) => m === params.get('modo')) ?? 'historico'; const setMode = (m: Mode) => put({ modo: m === 'historico' ? null : m });
   const year = YEARS.find((y) => y.replace('/', '-') === params.get('ano')) ?? '2020/2021'; const setYear = (y: string) => put({ ano: y === '2020/2021' ? null : y.replace('/', '-') });
-  const compare = params.get('ab') === '1'; const setCompare = (v: boolean) => put({ ab: v ? '1' : null }); const [cursor, setCursor] = useState(0); const [playing, setPlaying] = useState(false); const [speed, setSpeed] = useState(14);
+  const compare = params.get('ab') === '1'; const setCompare = (v: boolean) => put({ ab: v ? '1' : null }); const [cursor, setCursor] = useState(() => Math.max(0, (Number(params.get('dia')) || 1) - 1)); const [playing, setPlaying] = useState(false); const [speed, setSpeed] = useState(14);
   const [collapsed, setCollapsed] = useState(false); const tab = (['campo', 'indicadores', 'configurar'] as const).find((t) => t === params.get('secao')) ?? 'campo'; const setTab = (t: 'campo' | 'indicadores' | 'configurar') => put({ secao: t === 'campo' ? null : t }); const mobile = useMedia('(max-width: 760px)'); const [gl] = useState(webglAvailable); const field3d = useLazy(loadField3D, gl);
   const seed = useMemo(() => Number(new URLSearchParams(location.hash.split('?')[1] ?? '').get('seed') ?? 7), []);
 
@@ -83,7 +85,9 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
     return { series: { dates: A.dates, rain: A.rain, storage: A.storage, stage: A.stage, land: A.land, deficit: A.deficit, capacity: p.soil.capacity_mm, ...(compare ? { storageB: B.storage } : {}) } as TimelineSeries, A, B: compare ? B : null, names: mode === 'previsao' ? ['A · Previsão', 'B · Climatologia'] : ['A · Climatologia', 'B · Previsão'] };
   }, [daily.data, proj.data, mode, year, compare]);
   const n = model?.series.dates.length ?? 1; const c = Math.min(cursor, n - 1);
-  useEffect(() => { setCursor((v) => Math.min(v, n - 1)); setPlaying(false); }, [n, mode, year]);
+  useEffect(() => { if (!model) return; setCursor((v) => Math.min(v, n - 1)); setPlaying(false); }, [n, mode, year, !!model]); // eslint-disable-line
+  // The selected day goes into the link (1-based ?dia=), replacing history instead of stacking one entry per step (D-27).
+  useEffect(() => { if (!model || playing) return; const want = c > 0 ? String(c + 1) : null; if (params.get('dia') !== want) setParams((prev) => { const p = new URLSearchParams(prev); if (want) p.set('dia', want); else p.delete('dia'); return p; }, { replace: true }); }, [c, playing, !!model]); // eslint-disable-line
   // Um único cursor temporal dirige gráfico, fase, cena e números.
   const last = useRef(0);
   useEffect(() => { if (!playing) return; let raf = 0; let acc = 0; last.current = performance.now(); const tick = (t: number) => { acc += ((t - last.current) / 1000) * speed; last.current = t; if (acc >= 1) { const step = Math.floor(acc); acc -= step; setCursor((v) => { if (v + step >= n - 1) { setPlaying(false); return n - 1; } return v + step; }); } raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); return () => cancelAnimationFrame(raf); }, [playing, speed, n]);
@@ -104,6 +108,7 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
       <aside className="sim__config" id="panel-configurar" data-collapsed={collapsed && !mobile} aria-label="Configuração da simulação">
         {!mobile && <button className={collapsed ? 'icon-btn' : 'btn btn--sm'} aria-expanded={!collapsed} aria-label={collapsed ? 'Abrir configuração' : undefined} onClick={() => setCollapsed(!collapsed)}>{collapsed ? <SlidersHorizontal size={20} aria-hidden /> : <><ChevronsLeft size={16} aria-hidden />Recolher configuração</>}</button>}
         {(!collapsed || mobile) && <>
+          <FromPlan />
           {elsewhere && <div data-testid="scope-strip"><Notice tone="warn" title="Demonstração em Sorriso, MT.">Seu talhão em uso ({elsewhere.plot}) fica em {elsewhere.place}; esta simulação não é dele.</Notice></div>}
           <Field label="Cultura" hint="Só a rotação de soja em Sorriso tem série diária. Outras culturas abrem uma tela que explica o que existe e o que falta.">{(p) => <select className="input" {...p} name="cultura" value="soy" onChange={(e) => onCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
           <Field label="Local">{(p) => <select className="input" {...p} defaultValue="5107925"><option value="5107925">Sorriso, MT (IBGE 5107925)</option><option disabled>Outros municípios: sem série diária nesta edição</option></select>}</Field>
@@ -150,4 +155,11 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
       </aside>
     </div>
   );
+}
+
+/** When opened from "Salvar e abrir no simulador": say what came from the plan and what did not (D-14). */
+function FromPlan() {
+  const [params] = useSearchParams(); const id = params.get('plano'); const plan = useStore((s) => (id ? s.plans.find((p) => p.id === id) : undefined));
+  if (!plan) return null;
+  return <div data-testid="from-plan"><Notice title={`Aberto a partir do plano de ${dFull(plan.createdAt.slice(0, 10))}.`}>Foram usados a cultura e o local. Área, solo, irrigação, data de semeadura e prioridade ficam registrados no plano e não alteram esta simulação. <a href={`#/planejar?plano=${plan.id}${plan.data.municipio ? `&mun=${plan.data.municipio}` : ''}`}>Voltar ao plano</a></Notice></div>;
 }

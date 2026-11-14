@@ -11,7 +11,10 @@ test.describe('RT-09 planos', () => {
     await expect(page.getByText('Planejamento salvo neste aparelho.')).toBeVisible();
     expect((await localState(page)).plans).toHaveLength(1);
     await page.getByRole('button', { name: 'Salvar e abrir no simulador' }).click();
-    await expect(page).toHaveURL(/simulador\?cultura=soy&mun=5107925/);
+    await expect(page).toHaveURL(/simulador\?cultura=soy&mun=5107925&plano=/);
+    await expect(page.getByTestId('from-plan')).toContainText('não alteram esta simulação');
+    await page.getByTestId('from-plan').getByRole('link', { name: 'Voltar ao plano' }).click();
+    await expect(page.getByLabel('Área (ha)', { exact: true })).toHaveValue('40');
   });
 
   test('D-05: todos os planos acessíveis e o plano reaberto mantém o município', async ({ page }) => {
@@ -46,9 +49,16 @@ test.describe('RT-10 simulador', () => {
     await expect(page.getByRole('checkbox', { name: /Comparar A\/B/ })).toBeChecked();
   });
 
-  test.fixme('D-27: o dia escolhido entra na URL e o link reabre no mesmo dia', async ({ page }) => {
+  test('D-27: o dia escolhido entra na URL e o link reabre no mesmo dia', async ({ page }) => {
     await page.goto('/#/simulador?dia=120');
-    await expect(page.getByRole('slider')).toHaveAttribute('aria-valuenow', '120', { timeout: 20000 });
+    const slider = page.getByRole('slider');
+    await expect(slider).toHaveAttribute('aria-valuenow', '119', { timeout: 20000 });
+    await slider.focus(); await page.keyboard.press('PageUp');
+    await expect(page).toHaveURL(/dia=127/);
+    const before = await page.evaluate(() => history.length);
+    await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight');
+    await expect(page).toHaveURL(/dia=129/);
+    expect(await page.evaluate(() => history.length)).toBe(before);
   });
 });
 
