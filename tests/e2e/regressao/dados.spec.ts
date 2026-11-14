@@ -8,14 +8,14 @@ test.describe('RT-06 contexto do talhão', () => {
     await expect(page.getByText(/demonstração de Sorriso/)).toBeVisible();
   });
 
-  test.fixme('D-02: talhão em Uberlândia não vê Sorriso como se fosse seu', async ({ page }) => {
+  test('D-02: talhão em Uberlândia não vê Sorriso como se fosse seu', async ({ page }) => {
     await seedFarm(page);
     await page.goto('/#/visao-geral');
     await expect(page.getByTestId('scope-strip')).toContainText('Uberlândia');
     await expect(page.getByRole('button', { name: /Ver a demonstração de Sorriso/ }).or(page.getByRole('link', { name: /Ver a demonstração de Sorriso/ }))).toBeVisible();
   });
 
-  test.fixme('D-04: próxima atividade é do talhão em uso', async ({ page }) => {
+  test('D-04: próxima atividade é do talhão em uso', async ({ page }) => {
     await seedFarm(page);
     await page.goto('/#/registros?novo=evento');
     await page.getByLabel('Data', { exact: true }).fill('2027-01-10');

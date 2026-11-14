@@ -11,6 +11,8 @@ import { CapabilityTable } from '../ui/Crops';
 import { useSearchParams } from 'react-router-dom';
 import { Field2D, webglAvailable, type FieldState } from '../sim/field-state';
 import { useLazy } from '../lazyPage';
+import { useActiveContext } from '../App';
+import { plotElsewhere } from '../context';
 const loadField3D = () => import('../sim/Field3D');
 
 type Mode = 'historico' | 'cenario' | 'previsao' | 'climatologia';
@@ -59,6 +61,7 @@ export function Simulator() {
   );
 }
 function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
+  const ctx = useActiveContext(); const elsewhere = plotElsewhere({ code: SORRISO, name: 'Sorriso, MT', origin: 'demo' }, ctx);
   const daily = useAsync((s) => weather.dailySeries('5107925', s), []); const proj = useAsync((s) => weather.waterProjection('5107925', s), []); const yld = useAsync((s) => crops.yieldEstimate({ crop: 'soy', municipalityCode: '5107925' }, s), []);
   // Configuração na URL (?modo=&ano=&ab=&secao=): o link reabre o mesmo cenário e voltar/avançar percorre as trocas.
   const [params, setParams] = useSearchParams(); const put = (kv: Record<string, string | null>) => setParams((prev) => { const p = new URLSearchParams(prev); for (const [k, v] of Object.entries(kv)) { if (v == null) p.delete(k); else p.set(k, v); } return p; });
@@ -101,6 +104,7 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
       <aside className="sim__config" id="panel-configurar" data-collapsed={collapsed && !mobile} aria-label="Configuração da simulação">
         {!mobile && <button className={collapsed ? 'icon-btn' : 'btn btn--sm'} aria-expanded={!collapsed} aria-label={collapsed ? 'Abrir configuração' : undefined} onClick={() => setCollapsed(!collapsed)}>{collapsed ? <SlidersHorizontal size={20} aria-hidden /> : <><ChevronsLeft size={16} aria-hidden />Recolher configuração</>}</button>}
         {(!collapsed || mobile) && <>
+          {elsewhere && <div data-testid="scope-strip"><Notice tone="warn" title="Demonstração em Sorriso, MT.">Seu talhão em uso ({elsewhere.plot}) fica em {elsewhere.place}; esta simulação não é dele.</Notice></div>}
           <Field label="Cultura" hint="Só a rotação de soja em Sorriso tem série diária. Outras culturas abrem uma tela que explica o que existe e o que falta.">{(p) => <select className="input" {...p} name="cultura" value="soy" onChange={(e) => onCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
           <Field label="Local">{(p) => <select className="input" {...p} defaultValue="5107925"><option value="5107925">Sorriso, MT (IBGE 5107925)</option><option disabled>Outros municípios: sem série diária nesta edição</option></select>}</Field>
           <Seg legend="Tipo de dado" name="modo" value={mode} onChange={(m) => { setMode(m); setCursor(0); }} options={(Object.keys(MODE) as Mode[]).map((m) => ({ value: m, label: MODE[m].label }))} />

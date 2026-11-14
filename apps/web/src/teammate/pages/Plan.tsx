@@ -34,7 +34,7 @@ export function PlanPage() {
   };
   return (
     <div className="page">
-      <div className="page-head"><div className="stack-2"><h1>Planejar plantio</h1><p>Cadastre o plano de qualquer cultura. As análises aparecem só onde há dados e suporte científico; onde faltar, dizemos o que falta.</p></div><Pill>{place}{demo ? ' · demonstração' : ''}</Pill></div>
+      <div className="page-head"><div className="stack-2"><h1>Planejar plantio</h1><p>Cadastre o plano de qualquer cultura. As análises aparecem só onde há dados e suporte científico; onde faltar, dizemos o que falta.</p></div><Pill>{place}{demo ? ' · demonstração' : urlMun ? '' : ' · do talhão em uso'}</Pill></div>
       <div className="cols">
         <div className="stack">
           <form className="card" onSubmit={(e) => { e.preventDefault(); save(false); }} aria-labelledby="h-plano"><h2 id="h-plano">Seu plano</h2>

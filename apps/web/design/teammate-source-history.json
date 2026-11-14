@@ -12,6 +12,30 @@
       "date": "2026-11-14",
       "reason": "B1 (D-01): busca mantém lugares locais com a API fora; ver todos os resultados",
       "sha256": "294bf7d5116f18cdafa7cb85874424cac57959da4e3be4e8fef0a780f6fefdae"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "3b566a6651d9449c909680e9b9de03a3b1da8a7d6e0fde21e8b678b0866cf1f6"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "564a93ca7b94672d08cea58fda2e127f1361772fb7d69726c37b8b76181716f0"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "dbf1c59db335e25f8b28d48f65b1aee1e69e57c29c35b9b16329b7655e942e7b"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "58d36ac8553e03994164597155389d2f275bed7ea4ee0ae57a1dfdf244abafaf"
     }
   ]
 }

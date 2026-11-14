@@ -1,32 +1,40 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CalendarDays, CloudRain, Droplets, Sprout, Tractor } from 'lucide-react';
+import { CalendarDays, CloudRain, Droplets, Globe, Sprout, Tractor } from 'lucide-react';
 import { crops, modelLabel, modelScope, weather } from '../adapters';
 import { useActiveContext } from '../App';
 import { dFull, dShort, dTime, dWeek, n0, n1, pct, STAGE } from '../format';
-import { useStore } from '../store';
+import { useStore, type FieldRecord } from '../store';
+import { plotElsewhere, resolvePlace, SORRISO, upcomingActivity } from '../context';
+import { ScopeStrip } from '../ui/ScopeStrip';
 import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, Stat, useAsync } from '../ui';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
 import { ModelTest } from '../ui/SealedTest';
 
 export function Overview() {
-  const [params] = useSearchParams(); const code = params.get('mun') ?? '5107925';
-  const w = useAsync((s) => weather.waterProjection(code, s), [code]); const daily = useAsync((s) => weather.dailySeries(code, s), [code]); const y = useAsync((s) => crops.yieldEstimate({ crop: 'soy', municipalityCode: code }, s), [code]);
-  const ctx = useActiveContext(); const records = useStore((s) => s.records);
+  // Place: link → plot in use → Sorriso demonstration (context.ts). The water projection is published only for Sorriso.
+  const [params] = useSearchParams(); const ctx = useActiveContext(); const place = resolvePlace(params, ctx); const code = place.code; const elsewhere = plotElsewhere(place, ctx); const covered = code === SORRISO;
+  const w = useAsync((s) => (covered ? weather.waterProjection(code, s) : Promise.resolve(null)), [code]); const daily = useAsync((s) => (covered ? weather.dailySeries(code, s) : Promise.resolve(null)), [code]); const y = useAsync((s) => (covered ? crops.yieldEstimate({ crop: 'soy', municipalityCode: code }, s) : Promise.resolve(null)), [code]);
+  const records = useStore((s) => s.records); const upcoming = upcomingActivity(records, ctx.plot?.id ?? null);
   const phaseDeficit = useMemo(() => { const d = daily.data?.data.scenarios.reference_fallow; if (!d) return null; const out: Record<string, { mm: number; days: number; stress: number }> = {}; d.date.forEach((_, i) => { if (d.agricultural_year[i] !== '2020/2021' || d.land_cover[i] !== 'soy') return; const o = (out[d.stage[i]] ??= { mm: 0, days: 0, stress: 0 }); o.mm += d.et_deficit_mm[i]; o.days++; if (d.ks[i] < 1) o.stress++; }); return out; }, [daily.data]);
+  if (!covered) return <div className="page"><div className="page-head"><div className="stack-2"><h1>Visão geral — {place.name}</h1><p>Água, clima e safra do lugar que você está acompanhando.</p></div></div>
+    <ScopeStrip place={place} elsewhere={elsewhere} />
+    <div className="cols"><section className="card" aria-labelledby="h-sem" data-testid="no-analysis"><h2 id="h-sem">Ainda sem projeção de água para {place.name}</h2>
+      <p>Você selecionou {place.name}. Ainda não há projeção de reserva de água publicada para esse município nesta versão. Nenhum número de outro lugar é mostrado aqui.</p>
+      <div className="row"><LinkBtn primary to={`/explorar?mun=${code}`}>Ver o que existe para {place.name}</LinkBtn><LinkBtn to="/visao-geral?mun=5107925">Ver a demonstração de Sorriso</LinkBtn><LinkBtn to="/explorar?pais=BR">Ver regiões com dados</LinkBtn></div></section>
+      <aside className="stack" aria-label="Ações e contexto"><Actions /><Upcoming upcoming={upcoming} plot={ctx.plot?.name} /></aside></div></div>;
   if (w.status === 'error') return <div className="page"><h1>Visão geral</h1><ErrorState error={w.error} onRetry={w.retry} /><p><LinkBtn to="/explorar?pais=BR">Escolher outro local</LinkBtn></p></div>;
-  if (!w.data) return <div className="page"><h1>Visão geral</h1><Loading rows={6} /></div>;
+  if (!w.data?.data) return <div className="page"><h1>Visão geral</h1><Loading rows={6} /></div>;
   const p = w.data.data; const d0 = p.days[0]; const last = p.days[p.days.length - 1]; const rainTotal = p.days.reduce((a, d) => a + d.rain_mm, 0); const stressDays = p.days.filter((d) => d.stress);
   const series = { dates: p.days.map((d) => d.date), rain: p.days.map((d) => d.rain_mm), storage: p.days.map((d) => d.storage_end_mm), storageB: p.reference_days.map((d) => d.storage_end_mm), stage: p.days.map((d) => d.phase), land: p.days.map(() => p.crop), deficit: p.days.map((d) => d.et_deficit_mm), capacity: p.soil.capacity_mm };
-  const upcoming = records.filter((r) => r.event_at >= new Date().toISOString().slice(0, 10)).sort((a, b) => a.event_at.localeCompare(b.event_at))[0];
   const lead1 = p.evaluation.by_lead[0];
   return (
     <div className="page">
       <div className="page-head">
-        <div className="stack-2"><h1>Hoje em Sorriso, MT</h1><p>Soja · dia {p.crop_day_at_decision} do ciclo · estágio {STAGE[d0.phase].toLowerCase()} · semeadura em {dFull(p.sowing_date)} (calendário fixo hipotético do estado)</p></div>
+        <div className="stack-2"><h1>Hoje em {place.name}</h1><p>Soja · dia {p.crop_day_at_decision} do ciclo · estágio {STAGE[d0.phase].toLowerCase()} · semeadura em {dFull(p.sowing_date)} (calendário fixo hipotético do estado)</p></div>
         <div className="row"><Pill tone="water">Previsão</Pill><Pill>Escala municipal</Pill></div>
       </div>
-      {!ctx.plot && <Notice>Você está vendo a demonstração de Sorriso. <a href="#/propriedades">Cadastre sua propriedade e talhão</a> para acompanhar a sua safra.</Notice>}
+      <ScopeStrip place={place} elsewhere={elsewhere} period={`previsão de ${dShort(d0.date)} a ${dFull(last.date)}`} />
       <div className="cols">
         <div className="stack">
           <section className="card" aria-labelledby="h-alerta" style={{ borderColor: stressDays.length ? 'var(--warn)' : undefined }}>
@@ -63,16 +71,8 @@ export function Overview() {
             <div className="meter" role="img" aria-label={`Reserva em ${pct(p.initial_state.available_water_fraction)} da capacidade`}><i style={{ width: `${p.initial_state.available_water_fraction * 100}%` }} /></div>
             <p className="meta-13">Calculada a partir de {p.initial_state.observed_days} dias desde a semeadura ({p.initial_state.observed_source}).</p>
           </section>
-          <section className="card" aria-labelledby="h-acoes">
-            <h2 id="h-acoes">O que você quer fazer?</h2>
-            <LinkBtn primary to="/planejar"><CalendarDays size={18} aria-hidden />Planejar plantio</LinkBtn>
-            <LinkBtn to="/simulador"><Sprout size={18} aria-hidden />Acompanhar safra</LinkBtn>
-            <LinkBtn to="/registros?novo=evento"><Tractor size={18} aria-hidden />Registrar atividade</LinkBtn>
-          </section>
-          <section className="card" aria-labelledby="h-prox">
-            <h2 id="h-prox">Próxima atividade</h2>
-            {upcoming ? <p><b>{upcoming.data.tipo ?? upcoming.kind}</b> em {dFull(upcoming.event_at)}</p> : <Empty title="Nenhuma atividade agendada">Registre plantio, manejo ou colheita para ver aqui o que vem a seguir.</Empty>}
-          </section>
+          <Actions />
+          <Upcoming upcoming={upcoming} plot={ctx.plot?.name} />
           <section className="card" aria-labelledby="h-rend">
             <div className="row-between"><h2 id="h-rend">Rendimento de referência</h2><Pill tone="soil">Retrospectivo</Pill></div>
             {y.status === 'error' ? <ErrorState error={y.error} onRetry={y.retry} /> : !y.data ? <Loading rows={2} /> : <>
@@ -85,5 +85,20 @@ export function Overview() {
       </div>
     </div>
   );
+}
+function Actions() {
+  return <section className="card" aria-labelledby="h-acoes">
+    <h2 id="h-acoes">O que você quer fazer?</h2>
+    <LinkBtn primary to="/planejar"><CalendarDays size={18} aria-hidden />Planejar plantio</LinkBtn>
+    <LinkBtn to="/simulador"><Sprout size={18} aria-hidden />Acompanhar safra</LinkBtn>
+    <LinkBtn to="/registros?novo=evento"><Tractor size={18} aria-hidden />Registrar atividade</LinkBtn>
+    <LinkBtn to="/explorar"><Globe size={18} aria-hidden />Explorar uma região</LinkBtn>
+  </section>;
+}
+function Upcoming({ upcoming, plot }: { upcoming?: FieldRecord; plot?: string }) {
+  return <section className="card" aria-labelledby="h-prox">
+    <h2 id="h-prox">Próxima atividade{plot ? ` · ${plot}` : ''}</h2>
+    {upcoming ? <p><b>{upcoming.data.tipo ?? upcoming.kind}</b> em {dFull(upcoming.event_at)}</p> : <Empty title="Nenhuma atividade agendada">{plot ? `Registre plantio, manejo ou colheita do ${plot} para ver aqui o que vem a seguir.` : 'Registre plantio, manejo ou colheita para ver aqui o que vem a seguir.'}</Empty>}
+  </section>;
 }
 const n2s = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

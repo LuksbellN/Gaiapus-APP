@@ -1,4 +1,9 @@
+import { Fragment } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BatteryLow, Bell, Droplets } from 'lucide-react';
+import { useActiveContext } from '../App';
+import { plotElsewhere, resolvePlace, SORRISO } from '../context';
+import { ScopeStrip } from '../ui/ScopeStrip';
 import { devices, weather } from '../adapters';
 import { dShort, dTime, n1, pct } from '../format';
 import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, useAsync } from '../ui';
@@ -13,12 +18,17 @@ export function Devices() {
     {d.data && <Source meta={d.data.meta} />}</div>;
 }
 export function Alerts() {
-  const w = useAsync((s) => weather.waterProjection('5107925', s), []);
-  if (w.status === 'error') return <div className="page"><h1>Alertas</h1><ErrorState error={w.error} onRetry={w.retry} /></div>; if (!w.data) return <div className="page"><h1>Alertas</h1><Loading /></div>;
+  const [params] = useSearchParams(); const ctx = useActiveContext(); const place = resolvePlace(params, ctx); const elsewhere = plotElsewhere(place, ctx); const covered = place.code === SORRISO;
+  const w = useAsync((s) => (covered ? weather.waterProjection(place.code, s) : Promise.resolve(null)), [place.code]);
+  if (!covered) return <div className="page"><div className="page-head"><div className="stack-2"><h1>Alertas</h1><p>Só avisamos quando há evidência nos dados disponíveis. Cada alerta mostra motivo, período, fonte e incerteza.</p></div><Pill>{place.name}</Pill></div>
+    <ScopeStrip place={place} elsewhere={elsewhere} />
+    <Empty title={`Sem alertas de água para ${place.name}`} action={<div className="row"><LinkBtn to="/alertas?mun=5107925">Ver a demonstração de Sorriso</LinkBtn><LinkBtn to="/explorar?pais=BR">Ver regiões com dados</LinkBtn></div>}>Não há projeção de reserva de água publicada para esse município nesta versão, então não há como avisar. Isso não quer dizer que a lavoura esteja sem risco.</Empty></div>;
+  if (w.status === 'error') return <div className="page"><h1>Alertas</h1><ErrorState error={w.error} onRetry={w.retry} /></div>; if (!w.data?.data) return <div className="page"><h1>Alertas</h1><Loading /></div>;
   const p = w.data.data; const stress = p.days.filter((d) => d.stress); const l = p.evaluation.by_lead[0];
-  return <div className="page"><div className="page-head"><div className="stack-2"><h1>Alertas</h1><p>Só avisamos quando há evidência nos dados disponíveis. Cada alerta mostra motivo, período, fonte e incerteza.</p></div><Pill>Sorriso, MT · soja</Pill></div>
+  return <div className="page"><div className="page-head"><div className="stack-2"><h1>Alertas</h1><p>Só avisamos quando há evidência nos dados disponíveis. Cada alerta mostra motivo, período, fonte e incerteza.</p></div><Pill>{place.name} · soja</Pill></div>
+    <ScopeStrip place={place} elsewhere={elsewhere} />
     {stress.length === 0 ? <Empty title="Sem alertas de água">A reserva projetada fica acima do nível de estresse nos próximos {p.days.length} dias.</Empty> : <section className="card" style={{ borderColor: 'var(--warn)' }}><div className="row-between"><h2><Bell size={18} aria-hidden />Água abaixo do ideal para a soja</h2><Pill tone="warn">Atenção · previsão</Pill></div>
-      <dl className="kv" style={{ gridTemplateColumns: 'auto 1fr' }}>{[['Motivo', `Reserva em ${pct(stress[0].available_water_fraction)} da capacidade; déficit previsto de ${stress.reduce((a, d) => a + d.et_deficit_mm, 0).toLocaleString('pt-BR')} mm`], ['Período', stress.map((d) => dShort(d.date)).join(', ')], ['Fonte', `${p.forecast.provider} ${p.forecast.model}, emitida ${dTime(p.forecast.issued_at)}`], ['Ação', 'Acompanhar. A chuva prevista para os dias seguintes recompõe a reserva; nenhuma operação é recomendada automaticamente.'], ['Incerteza', `Erro médio da reserva com 1 dia de antecedência: ${n1(l.storage_mae_mm)} mm; acerto de estresse ${pct(l.stress_accuracy)}. Verificado contra a série do próprio provedor.`]].map(([k, v]) => <><dt key={k}>{k}</dt><dd key={k + 'v'} style={{ textAlign: 'left', fontWeight: 400 }}>{v}</dd></>)}</dl>
+      <dl className="kv" style={{ gridTemplateColumns: 'auto 1fr' }}>{[['Motivo', `Reserva em ${pct(stress[0].available_water_fraction)} da capacidade; déficit previsto de ${stress.reduce((a, d) => a + d.et_deficit_mm, 0).toLocaleString('pt-BR')} mm`], ['Período', stress.map((d) => dShort(d.date)).join(', ')], ['Fonte', `${p.forecast.provider} ${p.forecast.model}, emitida ${dTime(p.forecast.issued_at)}`], ['Ação', 'Acompanhar. A chuva prevista para os dias seguintes recompõe a reserva; nenhuma operação é recomendada automaticamente.'], ['Incerteza', `Erro médio da reserva com 1 dia de antecedência: ${n1(l.storage_mae_mm)} mm; acerto de estresse ${pct(l.stress_accuracy)}. Verificado contra a série do próprio provedor.`]].map(([k, v]) => <Fragment key={k}><dt>{k}</dt><dd style={{ textAlign: 'left', fontWeight: 400 }}>{v}</dd></Fragment>)}</dl>
       <div className="row"><LinkBtn primary to="/visao-geral">Ver previsão completa</LinkBtn></div><Source meta={w.data.meta} /></section>}
     <section className="stack-2"><h2>Outros tipos de alerta</h2><Empty title="Sem alertas de geada, calor, pragas ou sondas">Esses alertas dependem de fontes ainda não conectadas (previsão de temperatura, monitoramento fitossanitário e sondas reais). Não geramos aviso sem dado.</Empty></section></div>;
 }

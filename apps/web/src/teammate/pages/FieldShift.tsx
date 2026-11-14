@@ -3,12 +3,16 @@ import { simulations, weather } from '../adapters';
 import { n0, n1, n2, signed } from '../format';
 import { ErrorState, LinkBtn, Loading, Notice, Pill, Source, Stat, useAsync } from '../ui';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
+import { useActiveContext } from '../App';
+import { plotElsewhere, resolvePlace } from '../context';
+import { ScopeStrip } from '../ui/ScopeStrip';
 
 const METRICS: [string, string, string, number][] = [['covered_days', 'Dias com solo coberto', 'dias', 0], ['storage_at_next_sowing_mm', 'Reserva de água antes da próxima soja', 'mm', 1], ['off_season_water_use_mm', 'Água usada na entressafra', 'mm', 1], ['off_season_drainage_mm', 'Água drenada na entressafra', 'mm', 1], ['soy_deficit_mm', 'Déficit da soja', 'mm', 2], ['next_soy_establishment_deficit_mm', 'Déficit na implantação da próxima soja', 'mm', 2], ['maize_deficit_mm', 'Déficit do milho safrinha', 'mm', 1], ['maize_stress_days', 'Dias de estresse do milho', 'dias', 1]];
 const PARAM: Record<string, string> = { cover_kc: 'Kc da braquiária', straw_factor: 'Fator de palhada (1,0 = sem efeito)', cad_class: 'Classe de solo', soy_shift_days: 'Semeadura da soja (dias)' };
 const NOT: Record<string, string> = { yield: 'rendimento', 'soil carbon': 'carbono do solo', infiltration: 'infiltração', weeds: 'plantas daninhas', nitrogen: 'nitrogênio' };
 
 export function FieldShiftPage() {
+  const ctx = useActiveContext(); const place = resolvePlace(new URLSearchParams(), ctx, { followPlot: false }); const elsewhere = plotElsewhere(place, ctx);
   const f = useAsync((s) => simulations.fieldShift('5107925', s), []); const d = useAsync((s) => weather.dailySeries('5107925', s), []); const [year, setYear] = useState('2020/2021');
   if (f.status === 'error') return <div className="page"><h1>Field Shift</h1><ErrorState error={f.error} onRetry={f.retry} /></div>; if (!f.data) return <div className="page"><h1>Field Shift</h1><Loading rows={6} /></div>;
   const x = f.data.data; const ref = x.scenarios.reference_fallow.mean as Record<string, number>, bra = x.scenarios.brachiaria.mean as Record<string, number>, diff = x.difference_brachiaria_minus_reference as Record<string, number>;
@@ -17,6 +21,7 @@ export function FieldShiftPage() {
   return (
     <div className="page">
       <div className="page-head"><div className="stack-2"><h1>Field Shift — Sorriso, MT</h1><p>O que muda na água do solo se, depois do milho safrinha, a área ficar com braquiária em vez de pousio?</p></div><div className="row"><Pill tone="warn">Simulação histórica</Pill><Pill>6 safras · 2015/16 a 2020/21</Pill></div></div>
+      <ScopeStrip place={place} elsewhere={elsewhere} scale="município inteiro · simulação histórica" period="safras 2015/16 a 2020/21" />
       <div className="grid-3">
         <div className="card"><Stat label="Solo coberto" value={signed(diff.covered_days, 0)} unit="dias por ano" note={`${n0(ref.covered_days)} → ${n0(bra.covered_days)} dias`} /></div>
         <div className="card"><Stat label="Reserva antes da próxima soja" value={signed(diff.storage_at_next_sowing_mm, 2)} unit="mm" note={`${n1(ref.storage_at_next_sowing_mm)} → ${n1(bra.storage_at_next_sowing_mm)} mm · praticamente igual`} /></div>

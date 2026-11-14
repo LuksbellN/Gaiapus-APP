@@ -9,17 +9,22 @@ import { Empty, ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, Tab
 import { DualChart } from '../ui/DualChart';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
 import { ModelTest } from '../ui/SealedTest';
+import { useActiveContext } from '../App';
+import { plotElsewhere, resolvePlace, SORRISO, type ResolvedPlace } from '../context';
+import { ScopeStrip } from '../ui/ScopeStrip';
 
 const PLACES: Record<string, string> = { '5107925': 'Sorriso, MT', '3170206': 'Uberlândia, MG' };
 type Tab = 'clima' | 'agua' | 'safra' | 'imagem';
 const GAPS = 'Temperatura, umidade do ar, radiação, vento e ET0 mensal entram no modelo, mas suas séries municipais não foram publicadas neste pacote. Aparecerão aqui quando o backend as servir.';
 
 export function Municipality() {
-  const [params, setParams] = useSearchParams(); const code = PLACES[params.get('mun') ?? ''] ? params.get('mun')! : '5107925'; const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((t) => t === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const setTab = (t: Tab) => setParams({ mun: code, ...(t === 'clima' ? {} : { aba: t }), ...(t === 'safra' ? keep : {}) });
+  // Place: link → plot in use → Sorriso demonstration, restricted to the municipalities this screen has data for.
+  const [params, setParams] = useSearchParams(); const ctx = useActiveContext(); const resolved = resolvePlace(params, ctx); const place: ResolvedPlace = PLACES[resolved.code] ? resolved : { code: SORRISO, name: PLACES[SORRISO], origin: 'demo' }; const code = place.code; const elsewhere = plotElsewhere(place, ctx); const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((t) => t === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const setTab = (t: Tab) => setParams({ mun: code, ...(t === 'clima' ? {} : { aba: t }), ...(t === 'safra' ? keep : {}) });
   return (
     <div className="page">
       <div className="page-head"><div className="stack-2"><h1>{PLACES[code]}</h1><p>Dados na escala do município (IBGE {code}). Não representam a medição de um talhão.</p></div>
         <Seg legend="Município" name="mun" value={code} onChange={(v) => setParams({ mun: v, ...(tab === 'clima' ? {} : { aba: tab }), ...(tab === 'safra' ? keep : {}) })} options={Object.entries(PLACES).map(([value, label]) => ({ value, label }))} /></div>
+      <ScopeStrip place={place} elsewhere={elsewhere} />
       <Tabs label="Dados do município" value={tab} onChange={setTab} tabs={[{ id: 'clima', label: 'Clima', icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: 'Água', icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: 'Safra', icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: 'Imagem orbital', icon: <Satellite size={18} aria-hidden /> }]} />
       <TabPanel id={tab} key={code + tab}>{tab === 'clima' ? <Clima code={code} /> : tab === 'agua' ? <Agua code={code} /> : tab === 'safra' ? <Safra code={code} /> : <Imagem code={code} />}</TabPanel>
     </div>

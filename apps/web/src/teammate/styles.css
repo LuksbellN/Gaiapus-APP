@@ -115,6 +115,10 @@ fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s2); min-
 .notice { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 12px; border-radius: var(--r-control); border: 1px solid var(--border-strong); background: var(--surface-2); font-size: 15px; }
 .notice--warn { border-color: var(--warn); background: var(--tint-warn); } .notice--risk { border-color: var(--risk); background: var(--tint-risk); } .notice--water { border-color: var(--water); background: var(--tint-water); }
 .notice svg { margin-top: 2px; } .notice--warn svg { color: var(--warn); } .notice--risk svg { color: var(--risk); } .notice--water svg { color: var(--water); }
+/* Scope strip: where the data on screen come from (Docs/ux-preservacao/03, section 4). */
+.scope { display: grid; gap: 6px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); font-size: 15px; }
+.scope__line { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; margin: 0; } .scope__line svg { margin-top: 3px; color: var(--text-2); }
+.scope__line--warn svg { color: var(--warn); }
 .caps { list-style: none; margin: 0; padding: 0; display: grid; } .caps li { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--border); } .caps li:first-child { border-top: 0; padding-top: 0; }
 .plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
