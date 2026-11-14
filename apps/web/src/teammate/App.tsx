@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
-import { Bell, CalendarDays, CircleUserRound, CloudRain, Droplets, Globe, Layers, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
+import { Bell, CalendarDays, CircleHelp, CircleUserRound, CloudRain, Droplets, Globe, Layers, MapPin, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
 import { EDITION, MODE } from './config';
 import { useStore } from './store';
 import { setPrefs, usePrefs } from './prefs';
@@ -22,18 +22,19 @@ const Properties = lazyPage('/propriedades', () => import('./pages/Records'), 'P
 const Devices = lazyPage('/dispositivos', () => import('./pages/Devices'), 'Devices');
 const Alerts = lazyPage('/alertas', () => import('./pages/Devices'), 'Alerts');
 const DesignPreview = lazyPage(null, () => import('./pages/DesignPreview'), 'DesignPreview');
+const Help = lazyPage('/ajuda', () => import('./pages/Help'), 'Help');
 
-export const NAV = [
-  { to: '/explorar', label: 'Explorar', icon: Globe, mobile: true },
-  { to: '/visao-geral', label: 'Visão geral', icon: Sprout, mobile: true },
-  { to: '/municipio', label: 'Município', icon: CloudRain },
-  { to: '/planejar', label: 'Planejar', icon: CalendarDays },
-  { to: '/simulador', label: 'Simulador', icon: SlidersHorizontal, mobile: true },
-  { to: '/field-shift', label: 'Field Shift', icon: Layers },
-  { to: '/registros', label: 'Registros', icon: Tractor, mobile: true, sep: true },
-  { to: '/dispositivos', label: 'Sondas', icon: Droplets },
-  { to: '/alertas', label: 'Alertas', icon: Bell },
-] as const;
+// Destinations grouped by the farmer's task (Docs/ux-preservacao/03, section 3). Routes are unchanged.
+// `mobile` items form the bottom bar; every item is also listed, by group, in "Mais".
+type NavItem = { to: string; label: string; icon: typeof Globe; mobile?: boolean };
+export const NAV_GROUPS: { id: string; label: string; items: NavItem[] }[] = [
+  { id: 'explorar', label: 'Explorar', items: [{ to: '/explorar', label: 'Explorar', icon: Globe, mobile: true }, { to: '/municipio', label: 'Município', icon: CloudRain }] },
+  { id: 'acompanhar', label: 'Acompanhar', items: [{ to: '/visao-geral', label: 'Visão geral', icon: Sprout, mobile: true }, { to: '/alertas', label: 'Alertas', icon: Bell }, { to: '/dispositivos', label: 'Sondas', icon: Droplets }] },
+  { id: 'planejar', label: 'Planejar', items: [{ to: '/planejar', label: 'Planejar', icon: CalendarDays }, { to: '/simulador', label: 'Simulador', icon: SlidersHorizontal, mobile: true }, { to: '/field-shift', label: 'Field Shift', icon: Layers }] },
+  { id: 'lavoura', label: 'Minha lavoura', items: [{ to: '/propriedades', label: 'Propriedades', icon: MapPin }, { to: '/registros', label: 'Registros', icon: Tractor, mobile: true }] },
+  { id: 'ajuda', label: 'Conta e ajuda', items: [{ to: '/ajuda', label: 'Ajuda', icon: CircleHelp }] },
+];
+export const NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
 export function useActiveContext() {
   const plots = useStore((s) => s.plots); const props = useStore((s) => s.properties); const active = useStore((s) => s.activePlotId); const records = useStore((s) => s.records);
@@ -88,7 +89,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         </div>
       </header>
       <nav className="rail" aria-label="Principal">
-        {NAV.map((n) => <span key={n.to} style={{ display: 'contents' }}>{'sep' in n && <hr />}<NavLink to={n.to} className={'mobile' in n ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{n.label}</NavLink></span>)}
+        {NAV_GROUPS.map((g, i) => <div key={g.id} className="rail__group" role="group" aria-label={g.label}>{i > 0 && <hr />}{g.items.map((n) => <NavLink key={n.to} to={n.to} className={n.mobile ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{n.label}</NavLink>)}</div>)}
         <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />Mais</NavLink>
       </nav>
       <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
@@ -107,6 +108,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
           <Route path="/conta/*" element={<AccountPage />} />
           <Route path="/mais" element={<More />} />
           <Route path="/design-preview" element={<DesignPreview />} />
+          <Route path="/ajuda" element={<Help />} />
           <Route path="*" element={<div className="page"><h1>Página não encontrada</h1><p><Link to="/explorar">Voltar ao explorador</Link></p></div>} />
         </Routes>}
       </main>

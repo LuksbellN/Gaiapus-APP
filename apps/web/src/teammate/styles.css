@@ -60,6 +60,7 @@ h1, h2 { text-wrap: balance; }
 .rail a[aria-current='page'] { color: var(--text); background: var(--surface); font-weight: 600; }
 .rail a[aria-current='page']::before { content: ''; position: absolute; left: -6px; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--action); }
 .rail hr { width: 24px; border: 0; border-top: 1px solid var(--border); margin: 6px auto; }
+.rail__group { display: flex; flex-direction: column; gap: 2px; }
 .rail .only-mobile { display: none; }
 .main { min-width: 0; min-height: 0; overflow: auto; position: relative; }
 .page { max-width: 1280px; margin: 0 auto; padding: var(--s6); display: grid; gap: var(--s6); }
@@ -217,7 +218,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
   .app { grid-template: 56px minmax(0, 1fr) calc(64px + env(safe-area-inset-bottom, 0px)) / minmax(0, 1fr); }
   .header { padding: 0 var(--s3); gap: var(--s2); } .header .hide-sm { display: none; } .brand span { display: none; }
   .rail { grid-row: 3; flex-direction: row; border-right: 0; border-top: 1px solid var(--border); padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)); overflow: visible; justify-content: space-around; }
-  .rail a { flex: 1; min-height: 54px; font-size: 12px; } .rail a.more-only { display: none; } .rail hr { display: none; } .rail .only-mobile { display: flex; }
+  .rail a { flex: 1; min-height: 54px; font-size: 12px; } .rail a.more-only { display: none; } .rail hr { display: none; } .rail .only-mobile { display: flex; } .rail__group { display: contents; }
   .rail a[aria-current='page']::before { left: 20%; right: 20%; top: -4px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
   .page { padding: var(--s4); gap: var(--s4); } h1 { font-size: 24px; } .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .explore__panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 16px 16px 0 0; border-bottom: 0; height: var(--sheet-h, 46%); transition: height var(--t-panel) var(--ease-out); }

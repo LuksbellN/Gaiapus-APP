@@ -44,7 +44,7 @@ test.describe('RT-18 navegação', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   });
 
-  test.fixme('D-15: Propriedades e Ajuda na navegação do desktop', async ({ page }) => {
+  test('D-15: Propriedades e Ajuda na navegação do desktop', async ({ page }) => {
     await page.goto('/#/visao-geral');
     await expect(page.locator('nav.rail').getByRole('link', { name: /Propriedades/ })).toBeVisible();
     await expect(page.locator('nav.rail').getByRole('link', { name: /Ajuda/ })).toBeVisible();
