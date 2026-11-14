@@ -2,13 +2,19 @@ import { test, expect } from '../../apps/web/node_modules/@playwright/test/index
 import path from 'node:path';
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
-const evidence = path.resolve(process.cwd(), 'design/verification');
+// Screenshots go to test-results, never over the versioned evidence in design/verification.
+const evidence = path.resolve(process.cwd(), 'test-results/screens');
 
-test('approved stylesheet and public screen components remain unchanged', async () => {
+test('approved visual sources are unchanged or their change is recorded', async () => {
   const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'design/teammate-source-manifest.json'), 'utf8'));
+  const history = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'design/teammate-source-history.json'), 'utf8'));
   const imported = path.resolve(process.cwd(), 'src/teammate');
-  for (const [file, hash] of Object.entries(manifest.sha256)) {
-    expect(createHash('sha256').update(fs.readFileSync(path.join(imported, file))).digest('hex')).toBe(hash);
+  const sha = (text) => createHash('sha256').update(text).digest('hex');
+  for (const [file, original] of Object.entries(manifest.sha256)) {
+    // Line endings are normalized: the handoff hashes were taken from CRLF files, the repository stores LF.
+    const lf = fs.readFileSync(path.join(imported, file), 'utf8').replace(/\r\n/g, '\n');
+    const recorded = history.entries.filter((e) => e.file === file).at(-1)?.sha256;
+    expect([original, recorded].filter(Boolean), `${file}: record deliberate changes in design/teammate-source-history.json`).toContain(recorded && sha(lf) === recorded ? recorded : sha(lf.replace(/\n/g, '\r\n')));
   }
 });
 

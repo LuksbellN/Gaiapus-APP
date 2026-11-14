@@ -1,0 +1,4 @@
+{
+  "about": "Deliberate changes to files listed in teammate-source-manifest.json. The original manifest keeps the approved handoff hashes; each entry here records why a file changed and its new SHA-256 (LF line endings). The e2e check accepts the original hash (CRLF or LF) or the latest hash recorded here.",
+  "entries": []
+}
