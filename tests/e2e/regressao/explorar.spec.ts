@@ -126,7 +126,7 @@ test.describe('RT-04 busca com a API fora', () => {
 });
 
 test.describe('RT-05 busca multilíngue', () => {
-  test.fixme('D-11: Germany, Deutschland, Allemagne e Alemania encontram a Alemanha; "ver todos" quando passa de 12', async ({ page }) => {
+  test('D-11: Germany, Deutschland, Allemagne e Alemania encontram a Alemanha; "ver todos" quando passa de 12', async ({ page }) => {
     await page.goto('/#/explorar?semwebgl=1');
     for (const q of ['Germany', 'Deutschland', 'Allemagne', 'Alemania']) {
       await page.locator('#busca-local').fill(q);

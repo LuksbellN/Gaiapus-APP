@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ComponentType } from 'react';
 import { AdapterError } from './adapters/core';
 import { ErrorState, Loading } from './ui';
+import { translate } from './i18n';
 
 type Loader<T> = () => Promise<T>;
 const cache = new Map<Loader<unknown>, unknown>();
@@ -35,6 +36,6 @@ export function lazyPage<M, K extends keyof M>(path: string | null, loader: Load
   return function LazyPage() {
     const { mod, failed, retry } = useLazy(loader);
     if (mod) { const C = mod[name] as unknown as ComponentType; return <C />; }
-    return <div className="page">{failed ? <><h1>Não foi possível abrir esta tela</h1><ErrorState error={new AdapterError('network', 0)} onRetry={retry} /><p className="meta">Seus registros continuam salvos neste aparelho.</p></> : <Loading label="Carregando a tela…" rows={5} />}</div>;
+    return <div className="page">{failed ? <><h1>{translate('page.openFailed')}</h1><ErrorState error={new AdapterError('network', 0)} onRetry={retry} /><p className="meta">{translate('page.recordsSafe')}</p></> : <Loading label={translate('page.loadingScreen')} rows={5} />}</div>;
   };
 }

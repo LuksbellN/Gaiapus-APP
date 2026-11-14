@@ -2,11 +2,15 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } f
 import { AlertTriangle, CircleAlert, Database, Info, WifiOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Meta } from '../adapters/core';
+import { translate, useI18n, type MessageKey } from '../i18n';
+/** API error codes that have their own message (errors.api.*). */
+const API_CODES: Record<string, true> = Object.fromEntries(['invalid_input', 'not_found', 'unauthenticated', 'email_verification_required', 'identity_unavailable', 'dependency_failure', 'dependency_busy', 'database_unavailable', 'upstream_invalid', 'unsupported_input', 'fixture_not_available', 'rate_limited', 'result_expired', 'internal_error', 'request_failed', 'invalid_response'].map((c) => [c, true]));
 
-export const KIND_LABEL: Record<string, string> = { publicacao: 'Publicação da API', fixture: 'Dado de exemplo do pacote', mock: 'Dado ilustrativo', local: 'Salvo neste aparelho', sintetico: 'Dado sintético' };
+export const KIND_LABEL: Record<string, string> = new Proxy({} as Record<string, string>, { get: (_, k) => (typeof k === 'string' ? translate(`source.${k}`) : undefined) });
 export function Pill({ tone, children }: { tone?: 'water' | 'warn' | 'risk' | 'ok' | 'soil'; children: ReactNode }) { return <span className={`pill${tone ? ` pill--${tone}` : ''}`}>{children}</span>; }
 export function Source({ meta, extra }: { meta: Meta; extra?: ReactNode }) {
-  return <p className="source"><Database size={14} aria-hidden /><span><b>{KIND_LABEL[meta.kind]}</b> · Fonte: {meta.source}{meta.note ? ` · ${meta.note}` : ''}{extra ? <> · {extra}</> : null}</span></p>;
+  const { t } = useI18n(); const note = [meta.noteKey ? t(meta.noteKey as MessageKey, meta.noteVars) : null, meta.note].filter(Boolean).join(' · ');
+  return <p className="source"><Database size={14} aria-hidden /><span><b>{KIND_LABEL[meta.kind]}</b> · {t('source.label', { source: meta.source })}{note ? ` · ${note}` : ''}{extra ? <> · {extra}</> : null}</span></p>;
 }
 export function Notice({ tone = 'info', title, children }: { tone?: 'info' | 'warn' | 'risk' | 'water'; title?: string; children: ReactNode }) {
   const Icon = tone === 'risk' ? CircleAlert : tone === 'warn' ? AlertTriangle : Info;
@@ -16,16 +20,17 @@ export function Stat({ label, value, unit, note }: { label: string; value: React
   return <div className="stat"><span className="stat__label">{label}</span><span className="stat__value">{value}{unit && <small>{unit}</small>}</span>{note && <span className="meta-13">{note}</span>}</div>;
 }
 export function Empty({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) { return <div className="empty"><strong>{title}</strong>{children && <p>{children}</p>}{action}</div>; }
-export function Loading({ label = 'Carregando…', rows = 3 }: { label?: string; rows?: number }) { return <div className="stack-2" role="status" aria-live="polite"><span className="sr-only">{label}</span>{Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: i === 0 ? 28 : 20, width: `${90 - i * 14}%` }} />)}</div>; }
+export function Loading({ label, rows = 3 }: { label?: string; rows?: number }) { return <div className="stack-2" role="status" aria-live="polite"><span className="sr-only">{label ?? translate('common.loading')}</span>{Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: i === 0 ? 28 : 20, width: `${90 - i * 14}%` }} />)}</div>; }
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const code = (error as any)?.code as string | undefined;
   const offline = code === 'network'; const unreachable = code === 'api_unreachable';
-  const msg: Record<string, string> = { network: 'Os dados já carregados continuam na tela; tente de novo quando a rede voltar.', api_unreachable: 'Não foi possível falar com o servidor da Gaiapus. Isso não quer dizer que não haja dados; tente de novo em instantes.', municipality_not_covered: 'Este município é válido, mas ainda não tem análise publicada.', invalid_municipality_code: 'Código de município inválido.', invalid_crop: 'Cultura não reconhecida.' };
-  return <div className="notice notice--risk" role="alert">{offline ? <WifiOff size={18} aria-hidden /> : <CircleAlert size={18} aria-hidden />}<div className="stack-2"><span><strong>{offline ? 'Sem conexão. ' : unreachable ? 'Serviço indisponível. ' : 'Não foi possível carregar. '}</strong>{msg[code ?? ''] ?? 'Algo falhou ao buscar os dados.'}{code && !offline && !unreachable ? <span className="meta-13"> (código: {code})</span> : null}</span>{onRetry && <div><button className="btn btn--sm" onClick={onRetry}>Tentar de novo</button></div>}</div></div>;
+  const { t } = useI18n(); const known = ['network', 'api_unreachable', 'municipality_not_covered', 'invalid_municipality_code', 'invalid_crop', 'catalog_unavailable'];
+  const msg = code && known.includes(code) ? t(`errors.${code}` as MessageKey) : code && API_CODES[code] ? t(`errors.api.${code}` as MessageKey) : t('errors.generic');
+  return <div className="notice notice--risk" role="alert">{offline ? <WifiOff size={18} aria-hidden /> : <CircleAlert size={18} aria-hidden />}<div className="stack-2"><span><strong>{offline ? t('errors.offlineTitle') : unreachable ? t('errors.unreachableTitle') : t('errors.genericTitle')}</strong>{msg}{code && !offline && !unreachable ? <span className="meta-13"> {t('errors.code', { code })}</span> : null}</span>{onRetry && <div><button className="btn btn--sm" onClick={onRetry}>{t('common.retry')}</button></div>}</div></div>;
 }
 export function Field({ label, hint, error, children, optional }: { label: string; hint?: string; error?: string; optional?: boolean; children: (p: { id: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean }) => ReactNode }) {
   const id = useId(); const d = hint || error ? id + 'd' : undefined;
-  return <div className="field"><label htmlFor={id}>{label}{optional && <span className="meta-13" style={{ fontWeight: 400 }}> (opcional)</span>}</label>{children({ id, 'aria-describedby': d, 'aria-invalid': error ? true : undefined })}{error ? <span className="err" id={d}><CircleAlert size={14} aria-hidden />{error}</span> : hint ? <span className="hint" id={d}>{hint}</span> : null}</div>;
+  return <div className="field"><label htmlFor={id}>{label}{optional && <span className="meta-13" style={{ fontWeight: 400 }}> {translate('common.optional')}</span>}</label>{children({ id, 'aria-describedby': d, 'aria-invalid': error ? true : undefined })}{error ? <span className="err" id={d}><CircleAlert size={14} aria-hidden />{error}</span> : hint ? <span className="hint" id={d}>{hint}</span> : null}</div>;
 }
 export function Seg<T extends string>({ legend, name, value, onChange, options }: { legend: string; name: string; value: T; onChange: (v: T) => void; options: { value: T; label: string; disabled?: boolean; note?: string }[] }) {
   return <fieldset><legend>{legend}</legend><div className="seg">{options.map((o) => <label key={o.value} title={o.note}><input type="radio" name={name} value={o.value} checked={value === o.value} disabled={o.disabled} onChange={() => onChange(o.value)} />{o.label}</label>)}</div>{options.filter((o) => o.disabled && o.note).map((o) => <span key={o.value} className="hint meta-13">{o.label}: {o.note}</span>)}</fieldset>;
@@ -44,7 +49,7 @@ export function TabPanel({ id, children }: { id: string; children: ReactNode }) 
 export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null); const id = useId();
   useEffect(() => { const d = ref.current; if (!d) return; if (open && !d.open) d.showModal(); if (!open && d.open) d.close(); }, [open]);
-  return <dialog ref={ref} aria-labelledby={id} onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose(); }}><div className="stack"><div className="row-between"><h2 id={id}>{title}</h2><button className="btn btn--sm" onClick={onClose}>Fechar</button></div>{children}</div></dialog>;
+  return <dialog ref={ref} aria-labelledby={id} onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose(); }}><div className="stack"><div className="row-between"><h2 id={id}>{title}</h2><button className="btn btn--sm" onClick={onClose}>{translate('common.close')}</button></div>{children}</div></dialog>;
 }
 export function useAsync<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unknown[]) {
   const [s, set] = useState<{ status: 'loading' | 'ok' | 'error'; data?: T; error?: unknown }>({ status: 'loading' }); const [tick, setTick] = useState(0);

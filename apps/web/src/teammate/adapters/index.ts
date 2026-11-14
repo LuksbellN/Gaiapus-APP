@@ -8,7 +8,9 @@ import { cropIdFromName, isCropId, type CropId } from '../catalog';
 import { backend, publishedExample, request } from './http';
 import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
 import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
-import { dFull } from '../format';
+import { byName } from '../format';
+import { activeLocale } from '../i18n';
+import type { Locale } from '../i18n/locale';
 import { authAccount } from './session';
 
 export type Feature = { type: 'Feature'; id: number; properties: { code: string; name: string; sigla?: string }; geometry: { type: string; coordinates: any } };
@@ -16,8 +18,10 @@ export type FC = { type: 'FeatureCollection'; features: Feature[] };
 export type BBox = [[number, number], [number, number]];
 export type Place = { type: 'pais' | 'uf' | 'municipio'; code: string; name: string; uf: string; ufSigla: string };
 export type SearchResult = { places: Place[]; total: number; remote: 'ok' | 'failed' | 'skipped' };
-/** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia. */
-export type Country = { code: string; name: string; continent: string; bbox: BBox };
+/** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia.
+ *  `names` por idioma e `aliases` (nomes nas cinco línguas, ISO alfa-2/alfa-3) servem para mostrar e buscar; nunca como identificador. */
+export type Country = { code: string; a2: string | null; names: Record<Locale, string>; aliases: string[]; continent: string; bbox: BBox };
+export const countryName = (c: Country, locale: Locale = activeLocale()) => c.names[locale] ?? c.names.en;
 
 export function bboxOf(geometry: Feature['geometry']): BBox {
   let a = 180, b = 90, c = -180, d = -90;
@@ -56,7 +60,8 @@ export const geography = {
       const fc = (await this.municipalities(uf)).data!;
       for (const f of fc.features) if (norm(f.properties.name).includes(s) || f.properties.code.startsWith(s)) out.push({ type: 'municipio', code: f.properties.code, name: f.properties.name, uf, ufSigla: sig[uf] });
     }
-    for (const c of (await this.countries()).data) if (c.code !== 'BR' ? norm(c.name).includes(s) || norm(c.code) === s : norm(c.name).includes(s)) out.push({ type: 'pais', code: c.code, name: c.name, uf: '', ufSigla: c.continent });
+    const aliasesOf = new Map<string, string[]>();
+    for (const c of (await this.countries()).data) if (c.aliases.some((a) => (a.length <= 3 ? norm(a) === s : norm(a).includes(s)))) { aliasesOf.set(c.code, c.aliases); out.push({ type: 'pais', code: c.code, name: countryName(c), uf: '', ufSigla: c.continent }); }
     const published = await remote;
     for (const area of published.items) {
       if (area.kind !== 'municipality' || out.some(p => p.code === area.area_id)) continue;
@@ -65,53 +70,49 @@ export const geography = {
       const uf = st.find((f) => f.properties.sigla === ufSig)?.properties.code ?? '';
       out.push({ type: 'municipio', code: area.area_id, name: area.name, uf, ufSigla: ufSig });
     }
-    const rank = (p: Place) => (norm(p.name) === s ? 0 : norm(p.name).startsWith(s) ? 1 : 2) + (p.type === 'pais' && p.code !== 'BR' ? 0.5 : 0);
-    const places = out.sort((x, y) => rank(x) - rank(y) || x.name.localeCompare(y.name, 'pt-BR'));
+    // Exact match first, then prefix, then contains; countries match on any of their names/aliases (Germany, Deutschland, DEU…).
+    const score = (text: string) => (norm(text) === s ? 0 : norm(text).startsWith(s) ? 1 : 2);
+    const rank = (p: Place) => (p.type === 'pais' ? Math.min(...(aliasesOf.get(p.code) ?? [p.name]).map(score)) + (p.code !== 'BR' ? 0.5 : 0) : score(p.name));
+    const places = out.sort((x, y) => rank(x) - rank(y) || byName(x.name, y.name));
     return { places, total: places.length, remote: published.ok ? 'ok' : 'failed' };
   },
 };
 
-export type Product = { id: string; label: string; period: string; kind: 'historico' | 'previsao' | 'simulacao' | 'observacao'; to: string };
+export type Product = { id: string; kind: 'historico' | 'previsao' | 'simulacao' | 'observacao'; to: string; periods: { start: string; end: string }[]; crops: string[] };
 /** analise: everything published here; parcial: some products, others missing; sem_analise: catalogue answered, nothing here;
- *  nao_consultavel: the catalogue could not be consulted, so absence cannot be concluded. */
+ *  nao_consultavel: the catalogue could not be consulted, so absence cannot be concluded. Labels are translated by the screen. */
 export type CoverageLevel = 'analise' | 'parcial' | 'sem_analise' | 'nao_consultavel';
-export type Coverage = { code: string; level: CoverageLevel; summary: string; products: Product[]; missing: { id: string; label: string; reason: string }[] };
-const fmtPeriods = (ps: { start: string; end: string }[]) => ps.map((p) => (p.start === p.end ? dFull(p.start) : `${dFull(p.start)} – ${dFull(p.end)}`)).join(' · ');
-const REASON: Record<string, string> = { no_published_coverage: 'sem publicação para esta área', strategy_not_provided: 'comparação de manejo não fornecida para esta área', unsupported_crop: 'cultura não aceita por este produto', current_season_unavailable: 'safra atual ainda não disponível', incomplete_forcing: 'dados de clima incompletos para o período', missing_artifacts: 'cálculo indisponível neste ambiente', fixture_not_available: 'cálculo indisponível neste ambiente', unsupported_period: 'período não aceito por este produto' };
-const CROP_LABEL: Record<string, string> = { soy: 'soja', maize2: 'milho safrinha' };
-const PRODUCT_INFO: Record<string, { label: (crops: string[]) => string; kind: Product['kind']; to: (code: string) => string }> = {
-  water_risk_projection: { label: (c) => `Projeção de reserva de água${c.length ? ` (${c.map((x) => CROP_LABEL[x] ?? x).join(', ')})` : ''}`, kind: 'previsao', to: (code) => `/visao-geral?mun=${code}` },
-  strategy_comparison: { label: () => 'Field Shift: pousio × braquiária', kind: 'simulacao', to: () => '/field-shift' },
-  yield_estimate: { label: () => 'Rendimento municipal de referência', kind: 'historico', to: (code) => `/municipio?mun=${code}&aba=safra` },
-  history: { label: () => 'Histórico observado do município', kind: 'observacao', to: (code) => `/municipio?mun=${code}` },
+export type Coverage = { code: string; level: CoverageLevel; products: Product[]; missing: { id: string; crops: string[]; reason: string | null }[] };
+const PRODUCT_INFO: Record<string, { kind: Product['kind']; to: (code: string) => string }> = {
+  water_risk_projection: { kind: 'previsao', to: (code) => `/visao-geral?mun=${code}` },
+  strategy_comparison: { kind: 'simulacao', to: () => '/field-shift' },
+  yield_estimate: { kind: 'historico', to: (code) => `/municipio?mun=${code}&aba=safra` },
+  history: { kind: 'observacao', to: (code) => `/municipio?mun=${code}` },
 };
 export const coverage = {
   // Products come from the API catalogue; a published field inside the municipality adds its NDVI/rain product,
   // labelled as the rectangle's data, never the whole municipality's (Docs/ux-preservacao/06, section 3).
   async get(code: string, signal?: AbortSignal): Promise<Sourced<Coverage>> {
-    const meta = (note?: string): Sourced<Coverage>['meta'] => ({ kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus', note });
+    const meta = (note?: string): Sourced<Coverage>['meta'] => ({ kind: 'publicacao', source: 'Gaiapus API · /v1/coverage', note });
     let result: CoverageResult;
     try { result = await backend.coverage(code, signal); }
     catch (error) {
       if (!(error instanceof AdapterError && error.status === 404)) throw error;
       const idx = await loadCoverageIndex();
-      return { data: idx.status === 'ok'
-        ? { code, level: 'sem_analise', summary: 'Nenhuma análise publicada para este município nesta versão.', products: [], missing: [] }
-        : { code, level: 'nao_consultavel', summary: 'Não foi possível saber, pelo serviço atual, se há dados para este município. Isso não quer dizer que não existam.', products: [], missing: [] }, meta: meta() };
+      return { data: { code, level: idx.status === 'ok' ? 'sem_analise' : 'nao_consultavel', products: [], missing: [] }, meta: meta() };
     }
     const products: Product[] = []; const missing: Coverage['missing'] = [];
     for (const p of result.products) {
       const info = PRODUCT_INFO[p.product_id]; if (!info) continue;
-      if (p.availability !== 'no_data') products.push({ id: p.product_id, label: info.label(p.supported_crops), period: fmtPeriods(p.periods) || 'período não informado', kind: info.kind, to: info.to(code) });
-      else if (p.product_id !== 'history') missing.push({ id: p.product_id, label: info.label(p.supported_crops), reason: REASON[p.reason_code ?? ''] ?? (p.reason_code ?? 'sem dado') });
+      if (p.availability !== 'no_data') products.push({ id: p.product_id, kind: info.kind, to: info.to(code), periods: p.periods, crops: p.supported_crops });
+      else if (p.product_id !== 'history') missing.push({ id: p.product_id, crops: p.supported_crops, reason: p.reason_code });
     }
     const idx = await loadCoverageIndex();
     const field = fieldOf(idx, code);
     const fieldHistory = field?.products.find((p) => p.id === 'history' && p.availability !== 'no_data');
-    if (field && fieldHistory) products.push({ id: 'ndvi', label: 'NDVI (HLS) e chuva do recorte demonstrativo', period: fmtPeriods(fieldHistory.periods), kind: 'observacao', to: `/municipio?mun=${code}&aba=imagem` });
+    if (field && fieldHistory) products.push({ id: 'ndvi', kind: 'observacao', to: `/municipio?mun=${code}&aba=imagem`, periods: fieldHistory.periods, crops: [] });
     const level: CoverageLevel = products.length ? (missing.length ? 'parcial' : 'analise') : 'sem_analise';
-    const summary = products.length ? `Há: ${products.map((p) => p.label).join('; ')}.${missing.length ? ` Ainda não há: ${missing.map((m) => m.label).join('; ')}.` : ''}` : 'Limites disponíveis. Nenhuma análise publicada para este município nesta versão.';
-    return { data: { code, level, summary, products, missing }, meta: meta(result.publication_version) };
+    return { data: { code, level, products, missing }, meta: meta(result.publication_version) };
   },
 };
 

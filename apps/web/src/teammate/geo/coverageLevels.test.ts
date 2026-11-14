@@ -16,15 +16,15 @@ it('Uberlândia: parcial — rendimento e NDVI do recorte; falta água e Field S
   const c = (await coverage.get('3170206')).data;
   expect(c.level).toBe('parcial');
   expect(ids(c)).toEqual(['ndvi', 'yield_estimate']);
-  expect(c.products.find((p) => p.id === 'ndvi')!.label).toMatch(/recorte/);
+  expect(c.products.find((p) => p.id === 'ndvi')!.kind).toBe('observacao');
   expect(c.missing.map((m) => m.id).sort()).toEqual(['strategy_comparison', 'water_risk_projection']);
-  expect(c.missing.find((m) => m.id === 'strategy_comparison')!.reason).toBe('comparação de manejo não fornecida para esta área');
+  expect(c.missing.find((m) => m.id === 'strategy_comparison')!.reason).toBe('strategy_not_provided');
 });
 it('Rio Verde: só a imagem do recorte, nunca atribuída ao município inteiro (D-07, D-08)', async () => {
   const c = (await coverage.get('5218805')).data;
   expect(c.level).toBe('parcial');
   expect(ids(c)).toEqual(['ndvi']);
-  expect(c.products[0].period).toContain('2024');
+  expect(c.products[0].periods[0].start).toContain('2024');
 });
 it('Belo Horizonte: catálogo responde e não há nada — sem análise, sem número', async () => {
   const c = (await coverage.get('3106200')).data;
