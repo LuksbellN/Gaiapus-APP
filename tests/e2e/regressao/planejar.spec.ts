@@ -66,10 +66,16 @@ test.describe('RT-14 números', () => {
     await fill(page, '10,5');
     expect((await ecoStats(page))[0]).toContain('63.000,00');
   });
-  test.fixme('D-03: ponto decimal em português é recusado com orientação, nunca multiplicado', async ({ page }) => {
+  test('D-03: ponto decimal em português é recusado com orientação, nunca multiplicado', async ({ page }) => {
+    for (const area of ['10.5', '1.5', '10e2']) {
+      await fill(page, area);
+      const s = (await ecoStats(page)).join(' ');
+      expect(s).not.toMatch(/630\.000|90\.000|6\.000\.000/);
+      expect(s).toContain('Falta: área');
+    }
     await fill(page, '10.5');
-    const s = (await ecoStats(page)).join(' ');
-    expect(s).not.toContain('630.000');
-    expect(s).toMatch(/vírgula/);
+    await expect(page.getByText('Use vírgula para decimais, por exemplo 10,5.')).toBeVisible();
+    await fill(page, '1.234,5');
+    expect((await ecoStats(page))[0]).toContain('7.407.000,00');
   });
 });

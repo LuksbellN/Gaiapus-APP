@@ -8,7 +8,7 @@ import { money, n0, n1, n2, signed } from '../format';
 import { now, setState, uid, useStore } from '../store';
 import { ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, useAsync } from '../ui';
 import { CapabilityTable, ModelStatus } from '../ui/Crops';
-import { num, useDraftForm } from '../ui/form';
+import { num, numError, useDraftForm } from '../ui/form';
 import { economics, isPriceUnit, PRICE_UNIT_LABEL, type PriceUnit } from '../units';
 
 const SHIFT: Record<string, string> = { '-15': '20 de setembro (15 dias antes)', '0': '5 de outubro (calendário de referência)', '15': '20 de outubro (15 dias depois)' };
@@ -41,7 +41,7 @@ export function PlanPage() {
             {pendingCrop && <Notice tone="warn" title="Complete a cultura.">Este plano foi salvo como “{v.cultura}”, sem dizer a espécie ou a safra. Escolha abaixo para continuar; o restante foi mantido.</Notice>}
             <div className="form-grid">
               <Field label="Cultura" hint={crop && CROPS[crop].role !== 'Cultura' ? CROPS[crop].role : undefined}>{(a) => <select className="input" {...a} name="cultura" value={crop ?? ''} onChange={(e) => f.set('cultura_id', e.target.value)}>{pendingCrop && <option value="" disabled>Escolha a cultura…</option>}{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
-              <Field label="Área (ha)">{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('area')} />}</Field>
+              <Field label="Área (ha)" error={numError(v.area)}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('area')} />}</Field>
               <Field label="Irrigação">{(a) => <select className="input" {...a} {...f.bind('irrigacao')}><option>Sequeiro</option><option>Irrigado</option></select>}</Field>
               <Field label="Solo">{(a) => <select className="input" {...a} {...f.bind('solo')}>{['Não sei', 'Arenoso', 'Médio', 'Argiloso'].map((o) => <option key={o}>{o}</option>)}</select>}</Field>
             </div>
@@ -59,14 +59,14 @@ export function PlanPage() {
           </section>
           <section className="card" aria-labelledby="h-eco" data-testid="plan-eco"><div className="row-between"><h2 id="h-eco">Margem estimada</h2><Pill>Números informados por você</Pill></div><p className="meta">Receita = rendimento (kg/ha) × área (ha) × preço (R$/kg). Nenhum preço nem rendimento é preenchido por nós, e a estimativa do modelo não entra neste cálculo.</p>
             <div className="form-grid">
-              <Field label="Rendimento esperado (kg/ha)" hint={coffee ? 'Seu número, na mesma forma do café usada no preço.' : 'Seu próprio número, por exemplo da última safra.'}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('rendimento')} />}</Field>
+              <Field label="Rendimento esperado (kg/ha)" error={numError(v.rendimento)} hint={coffee ? 'Seu número, na mesma forma do café usada no preço.' : 'Seu próprio número, por exemplo da última safra.'}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('rendimento')} />}</Field>
               {coffee && <Field label="Forma do café" hint="Rendimento e preço precisam estar na mesma forma; não convertemos entre cereja, coco e beneficiado.">{(a) => <select className="input" {...a} {...f.bind('forma')}>{['Cereja', 'Coco', 'Beneficiado'].map((o) => <option key={o}>{o}</option>)}</select>}</Field>}
               <Field label="Unidade do preço">{(a) => <select className="input" {...a} {...f.bind('precoUnidade')}>{(Object.keys(PRICE_UNIT_LABEL) as PriceUnit[]).map((u) => <option key={u} value={u}>{PRICE_UNIT_LABEL[u]}</option>)}</select>}</Field>
-              {unit === 'saca' && <Field label="Peso da saca (kg)" hint="Informe o peso usado na sua negociação; não supomos 60 kg.">{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('saca')} />}</Field>}
-              <Field label={`Preço (${PRICE_UNIT_LABEL[unit]})`}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('preco')} />}</Field>
+              {unit === 'saca' && <Field label="Peso da saca (kg)" error={numError(v.saca)} hint="Informe o peso usado na sua negociação; não supomos 60 kg.">{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('saca')} />}</Field>}
+              <Field label={`Preço (${PRICE_UNIT_LABEL[unit]})`} error={numError(v.preco)}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('preco')} />}</Field>
               <Field label="Data do preço">{(a) => <input className="input" type="date" max="2100-12-31" {...a} {...f.bind('precoData')} />}</Field>
               <Field label="Fonte do preço" optional>{(a) => <input className="input" autoComplete="off" {...a} {...f.bind('precoFonte')} placeholder="Ex.: cooperativa…" />}</Field>
-              <Field label="Custo total (R$/ha)" hint="Para a mesma área e a mesma safra.">{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('custo')} />}</Field>
+              <Field label="Custo total (R$/ha)" error={numError(v.custo)} hint="Para a mesma área e a mesma safra.">{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('custo')} />}</Field>
             </div>
             <div className="grid-2" aria-live="polite">
               <Stat label="Receita bruta" value={eco.revenue == null ? '—' : money(eco.revenue)} note={eco.revenue != null ? `${n0(num(v.rendimento))} kg/ha × ${v.area} ha × R$ ${n2(eco.priceKg)}/kg${unit === 'saca' ? ` (saca de ${v.saca} kg)` : unit === 't' ? ' (preço por tonelada ÷ 1.000)' : ''}${coffee ? ` · café ${v.forma.toLowerCase()}` : ''}` : undefined} />
