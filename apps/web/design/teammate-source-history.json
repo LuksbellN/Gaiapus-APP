@@ -156,6 +156,12 @@
       "date": "2026-11-14",
       "reason": "I5/I3: Município, componentes científicos e Planejar traduzíveis; opções gravadas como códigos",
       "sha256": "aa4669d10c4ed1424c3f9e2c5d8e7dfe8a84a383f7f88f01bd1c206bbd0dc852"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I3: Simulador, Field Shift, Sondas, Alertas, Propriedades e Registros traduzíveis",
+      "sha256": "db7ca5b512843d454af39777a13155c5238be0f72d09aba099de91b0d0bdcaed"
     }
   ]
 }

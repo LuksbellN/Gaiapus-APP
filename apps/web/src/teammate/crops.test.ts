@@ -52,3 +52,16 @@ describe('exemplos do contrato por cultura', () => {
   it('modelo e abrangência vêm da resposta: Sorriso tem Ridge nacional (1.0.0) e MLP regional (1.1.0), cada um com o seu rótulo', async () => { const r = await crops.yieldExamples({ crop: 'soy', municipalityCode: SORRISO }); const labels = r.map((x) => `${modelLabel(x.data.model)}|${modelScope(x.data.model)}|${x.data.estimate_kg_ha}`).sort(); expect(labels).toEqual(['MLP regional (MG e MT)|MG+MT|3516.3', 'Ridge nacional|national|3554']); for (const x of r) expect(x.meta.source).toContain(modelLabel(x.data.model)); });
   it('cultura fora do contrato continua sendo invalid_crop', async () => { await expect(crops.yieldExamples({ crop: 'banana' })).rejects.toMatchObject({ code: 'invalid_crop' }); });
 });
+
+describe('códigos das opções gravadas (I3)', () => {
+  it('registro antigo ganha o código sem perder o texto; texto desconhecido fica como está', async () => {
+    const { migrate } = await import('./store');
+    const base = { id: 'x', plotId: 't', cycleId: 't:2026/2027', event_at: '2026-10-05', recorded_at: '', updated_at: '', origin: 'informado' as const, schema: 1 as const, revision: 1 };
+    const m = migrate({ session: null, properties: [], plots: [], drafts: {}, activePlotId: null, plans: [{ id: 'p', createdAt: '', data: { cultura: 'Soja', irrigacao: 'Irrigado', solo: 'Argiloso' } }],
+      records: [{ ...base, kind: 'evento', data: { tipo: 'Floração' } }, { ...base, kind: 'venda', data: { situacao: 'Previsto' } }, { ...base, kind: 'evento', data: { tipo: 'Granizo forte' } }] });
+    expect(m.records[0].data).toEqual({ tipo: 'Floração', tipo_code: 'flowering' });
+    expect(m.records[1].data).toEqual({ situacao: 'Previsto', situacao_code: 'planned' });
+    expect(m.records[2].data).toEqual({ tipo: 'Granizo forte' });
+    expect(m.plans[0].data).toMatchObject({ irrigacao: 'Irrigado', irrigacao_code: 'irrigated', solo_code: 'clay', cultura_id: 'soy' });
+  });
+});

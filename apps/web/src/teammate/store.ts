@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { cropIdFromName, isAmbiguousCropName } from './catalog';
+import { withCodes } from './options';
 
 export type Property = { id: string; name: string; municipalityCode: string; municipalityName: string; uf: string; areaHa: number | null; createdAt: string; updatedAt: string };
 export type Plot = { id: string; propertyId: string; name: string; areaHa: number | null; soil: string; irrigation: string; polygon: 'demo_uberlandia' | null; createdAt: string; updatedAt: string };
@@ -20,7 +21,8 @@ let persistent = true;
 // (ID do contrato) sem apagar nem reescrever nada. Nome ambíguo ("Café", "Milho") fica sem ID e marcado
 // com `cultura_pendente`, para a interface pedir o complemento em vez de adivinhar espécie ou safra.
 const withCropId = (d: Record<string, string>): Record<string, string> => { if ('cultura_id' in d || !('cultura' in d)) return d; const id = cropIdFromName(d.cultura); return { ...d, cultura_id: id ?? '', ...(!id && isAmbiguousCropName(d.cultura) ? { cultura_pendente: '1' } : {}) }; };
-export function migrate(s: State): State { return { ...s, records: s.records.map((r) => (r.kind === 'plantio' ? { ...r, data: withCropId(r.data) } : r)), plans: s.plans.map((p) => ({ ...p, data: withCropId(p.data) })) }; }
+// Choice fields gain stable codes next to the stored Portuguese text (options.ts); nothing is removed or rewritten.
+export function migrate(s: State): State { return { ...s, records: s.records.map((r) => ({ ...r, data: withCodes(r.kind === 'plantio' ? withCropId(r.data) : r.data) })), plans: s.plans.map((p) => ({ ...p, data: withCodes(withCropId(p.data)) })) }; }
 function load(): State { try { const raw = localStorage.getItem(activeKey) ?? (activeKey === KEY + '.guest' ? localStorage.getItem(KEY) : null); return raw ? migrate({ ...initial, ...JSON.parse(raw) }) : initial; } catch { persistent = false; return initial; } }
 let state: State = typeof localStorage === 'undefined' ? initial : { ...load(), session: null };
 const subs = new Set<() => void>();

@@ -39,11 +39,11 @@ const IBGE = 'IBGE · API Malhas v4 e Localidades';
 export const geography = {
   ufsWithMunicipalities: Object.keys(MUN_LOADERS),
   // Países do globo, para navegar. Nenhum dado agrícola é agregado por país; análise só existe em municípios do Brasil.
-  async countries(signal?: AbortSignal): Promise<Sourced<Country[]>> { await wait(signal, 20); const d = await once('countries', () => import('../data/geo/countries.json').then((m) => m.default)); return { data: d.countries as unknown as Country[], meta: { kind: 'fixture', source: 'MapLibre demotiles · Natural Earth (domínio público)', note: 'Limites simplificados, só para navegação.' } }; },
+  async countries(signal?: AbortSignal): Promise<Sourced<Country[]>> { await wait(signal, 20); const d = await once('countries', () => import('../data/geo/countries.json').then((m) => m.default)); return { data: d.countries as unknown as Country[], meta: { kind: 'fixture', source: 'MapLibre demotiles · Natural Earth', noteKey: 'notes.countries' } }; },
   async states(signal?: AbortSignal): Promise<Sourced<FC>> { await wait(signal); const data = await once('states', () => import('../data/geo/states.json').then((m) => m.default as unknown as FC)); return { data, meta: { kind: 'fixture', source: IBGE } }; },
   async municipalities(uf: string, signal?: AbortSignal): Promise<Sourced<FC | null>> {
     await wait(signal);
-    if (!MUN_LOADERS[uf]) return { data: null, meta: { kind: 'fixture', source: IBGE, note: 'Malha municipal desta UF ainda não carregada nesta edição.' } };
+    if (!MUN_LOADERS[uf]) return { data: null, meta: { kind: 'fixture', source: IBGE, noteKey: 'notes.noMesh' } };
     return { data: await once('mun' + uf, MUN_LOADERS[uf]), meta: { kind: 'fixture', source: IBGE } };
   },
   // Busca por nome ou identificador (sigla/código da UF, código IBGE de 7 dígitos).
@@ -129,7 +129,7 @@ export const weather = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const data = (await once('daily', () => import('../data/sorriso-daily.json').then((m) => m.default))) as unknown as Daily;
-    return { data, meta: { kind: 'fixture', source: data.source, note: 'scenario/*_daily.csv do pacote v7 · simulação histórica.' } };
+    return { data, meta: { kind: 'fixture', source: data.source, note: 'scenario/*_daily.csv · v7', noteKey: 'notes.dailySeries' } };
   },
 };
 
@@ -162,7 +162,7 @@ export const imagery = {
       field: { geojson, label }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })),
       sources: { imagery: ndvi?.source ?? 'NASA HLS v2', rain: rain?.source ?? 'NASA POWER / IMERG', weather_scope: local?.sources.weather_scope, rain_validation: local?.sources.rain_validation },
       validation: local ? { accepted_scenes: local.validation.accepted_scenes, total_scenes: local.validation.total_scenes, min_valid_fraction: local.validation.min_valid_fraction } : { accepted_scenes: points.filter((p) => p.value != null).length, total_scenes: points.length },
-    }, meta: { kind: 'publicacao', source: ndvi?.source ?? 'NASA HLS v2', note: `${field.name}. Recorte demonstrativo rural; não é um talhão cadastrado nem o município inteiro.` } };
+    }, meta: { kind: 'publicacao', source: ndvi?.source ?? 'NASA HLS v2', note: field.name, noteKey: 'notes.field' } };
   },
 };
 
@@ -180,7 +180,7 @@ const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient
 /** Nome do modelo tirado da resposta: tipo + abrangência. 1.0.0 não traz `scope`; a versão antiga era só nacional. */
 export function modelLabel(m: YieldModel) { const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null); return `${MODEL_TYPE[m.type] ?? m.type}${scope === 'national' ? ' nacional' : scope ? ` regional (${scope.replace('+', ' e ')})` : ''}`; }
 export const modelScope = (m: YieldModel) => m.scope ?? (/national/.test(m.version) ? 'national' : 'national');
-const yieldMeta = (data: YieldEstimate, example: string, kind: 'fixture' | 'publicacao' = 'fixture'): Sourced<YieldEstimate>['meta'] => ({ kind, source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, note: 'Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.' });
+const yieldMeta = (data: YieldEstimate, example: string, kind: 'fixture' | 'publicacao' = 'fixture'): Sourced<YieldEstimate>['meta'] => ({ kind, source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, noteKey: 'notes.yieldExample' });
 const YIELD_FIXTURES: Record<string, () => Promise<{ default: unknown }>> = {
   'soy:5107925': () => import('../data/fixtures/yield-soy-5107925-day75.json'),
   'maize2:5107925': () => import('../data/fixtures/yield-maize2-5107925-day75.json'),
@@ -199,7 +199,7 @@ export const crops = {
     const load = YIELD_FIXTURES[`${req.crop}:${req.municipalityCode}`];
     if (!load) throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<YieldEstimate>(`yield-${req.crop}-${req.municipalityCode}-day${req.municipalityCode === '3170206' ? 20 : 75}`, signal);
-    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), note: `${result.meta.note ?? ''} · Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.` } };
+    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), note: result.meta.note } };
   },
   // Todas as respostas de exemplo disponíveis para a cultura (e, se informado, para o município).
   // Sem serviço HTTP ligado, é o que o frontend consegue mostrar; lista vazia = integração pendente, não "sem cobertura".
@@ -216,13 +216,13 @@ export const crops = {
   async regionalMlp(code: string, signal?: AbortSignal): Promise<Sourced<{ horizon_days: number; expected_kg_ha: number }[]>> {
     await wait(signal);
     const all = (await import('../data/fixtures/soy-mg-mt-mlp.json')).default;
-    return { data: all.filter((x) => x.municipality_code === code), meta: { kind: 'fixture', source: 'MLP regional soja MG/MT (soy_mg_mt, guia 30)', note: 'Amostras de verificação (smoke) da safra 2021; retrospectivo, não liberado para operação. No teste 2022–2024 o ganho sobre o histórico não foi confirmado.' } };
+    return { data: all.filter((x) => x.municipality_code === code), meta: { kind: 'fixture', source: 'MLP soy_mg_mt (guia 30)', noteKey: 'notes.mlp' } };
   },
   // Teste selado 2022–2024, aberto uma única vez após o congelamento (data/frozen/test_2022_2024_v7.json).
   async sealedTest(signal?: AbortSignal): Promise<Sourced<SealedTest>> {
     await wait(signal);
     const data = (await import('../data/sealed-test-2022-2024.json')).default as unknown as SealedTest;
-    return { data, meta: { kind: 'fixture', source: `${data.source} · pacote v7`, note: 'MAE é erro médio em kg/ha, não intervalo de previsão. Retrospectivo; nada liberado para operação.' } };
+    return { data, meta: { kind: 'fixture', source: `${data.source} · v7`, noteKey: 'notes.sealed' } };
   },
   async matrix(signal?: AbortSignal) { await wait(signal); const data = (await import('../data/crop-matrix.json')).default; return { data, meta: { kind: 'fixture' as const, source: 'metrics/crop_matrix.csv · validação walk-forward 2019–2021 (anterior ao teste 2022–2024)' } }; },
 };
@@ -263,14 +263,15 @@ export const seasons = {
   },
 };
 
-export type Device = { id: string; name: string; plot: string; depth_cm: number; calibration: string; last_reading_at: string; vwc_pct: number | null; soil_temp_c: number | null; battery_pct: number; signal: string; fault: string | null };
+// Synthetic demonstration probes. Labels are translated by the screen; the fault is a code, not text.
+export type Device = { id: string; depth_cm: number; calibrated: boolean; last_reading_at: string; vwc_pct: number | null; soil_temp_c: number | null; battery_pct: number; signal: 'good' | 'weak'; fault: { code: 'no_reading_low_battery'; hours: number } | null };
 export const devices = {
   async list(signal?: AbortSignal): Promise<Sourced<Device[]>> {
     await wait(signal);
     return { data: [
-      { id: 'sonda-demo-01', name: 'Sonda demonstrativa 01', plot: 'Talhão demonstrativo', depth_cm: 20, calibration: 'Sem calibração de campo', last_reading_at: '2026-11-14T09:00:00-03:00', vwc_pct: 24.6, soil_temp_c: 26.1, battery_pct: 82, signal: 'Bom', fault: null },
-      { id: 'sonda-demo-02', name: 'Sonda demonstrativa 02', plot: 'Talhão demonstrativo', depth_cm: 40, calibration: 'Sem calibração de campo', last_reading_at: '2026-11-13T21:00:00-03:00', vwc_pct: null, soil_temp_c: null, battery_pct: 12, signal: 'Fraco', fault: 'Sem leitura há 12 h · bateria baixa' },
-    ], meta: { kind: 'sintetico', source: 'Telemetria sintética (data/fake)', note: 'Gerada para testar ingestão. Nunca usada em treino nem em decisão.' } };
+      { id: 'sonda-demo-01', depth_cm: 20, calibrated: false, last_reading_at: '2026-11-14T09:00:00-03:00', vwc_pct: 24.6, soil_temp_c: 26.1, battery_pct: 82, signal: 'good', fault: null },
+      { id: 'sonda-demo-02', depth_cm: 40, calibrated: false, last_reading_at: '2026-11-13T21:00:00-03:00', vwc_pct: null, soil_temp_c: null, battery_pct: 12, signal: 'weak', fault: { code: 'no_reading_low_battery', hours: 12 } },
+    ], meta: { kind: 'sintetico', source: 'data/fake', noteKey: 'notes.devices' } };
   },
 };
 
