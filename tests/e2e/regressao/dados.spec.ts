@@ -20,8 +20,11 @@ test.describe('RT-06 contexto do talhão', () => {
     await page.goto('/#/registros?novo=evento');
     await page.getByLabel('Data', { exact: true }).fill('2027-01-10');
     await page.getByRole('button', { name: /Salvar manejo/ }).click();
+    await expect(page.getByText('Manejo ou evento salvo.')).toBeVisible();
     await page.locator('.page-head select').selectOption({ label: 'Talhão B' });
+    await expect(page.locator('.header__ctx')).toContainText('Talhão B');
     await page.goto('/#/visao-geral');
+    await expect(page.locator('#h-prox')).toContainText('Talhão B');
     await expect(page.locator('#h-prox').locator('..')).not.toContainText('10 jan 2027');
   });
 });
