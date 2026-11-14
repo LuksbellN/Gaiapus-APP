@@ -1,0 +1,2719 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaiapus.local/app/0.1.0",
+  "title": "GaiapusContracts",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "$defs": {
+    "YieldPayload": {
+      "title": "Gaiapus yield estimate",
+      "description": "Municipal yield at harvest (kg/ha) from data available up to a validated cutoff after sowing. Separate product from the water-risk projection.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "product",
+        "status",
+        "generated_at",
+        "municipality_code",
+        "crop",
+        "harvest_year",
+        "sowing_date",
+        "sowing_basis",
+        "days_after_sowing_requested",
+        "supported_cutoffs_days",
+        "cutoff_days_used",
+        "estimate_kg_ha",
+        "observed_through",
+        "model",
+        "validation",
+        "coverage",
+        "availability",
+        "warnings"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "product": {
+          "const": "yield_estimate"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "before_first_cutoff",
+            "not_supported"
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "crop": {
+          "enum": [
+            "soy",
+            "maize2"
+          ]
+        },
+        "harvest_year": {
+          "type": "integer",
+          "minimum": 2002
+        },
+        "sowing_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "sowing_basis": {
+          "enum": [
+            "hypothetical_fixed_calendar_per_state",
+            "reported_by_user"
+          ],
+          "description": "Origin of sowing_date. The models were validated on the state calendar; a reported date shifts the features (see calendar sensitivity)"
+        },
+        "days_after_sowing_requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supported_cutoffs_days": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 15
+          }
+        },
+        "cutoff_days_used": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Largest validated cutoff not after the requested day"
+        },
+        "estimate_kg_ha": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "observed_through": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Last day of data the estimate used"
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "type",
+            "sources",
+            "artifact_sha256",
+            "trained_through_harvest"
+          ],
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "baseline",
+                "ridge",
+                "hgb",
+                "mlp"
+              ]
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "artifact_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "trained_through_harvest": {
+              "type": "integer"
+            }
+          }
+        },
+        "validation": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "years",
+            "cutoff_days",
+            "mae_kg_ha",
+            "bias_kg_ha",
+            "label_families",
+            "municipalities",
+            "scope"
+          ],
+          "properties": {
+            "years": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "cutoff_days": {
+              "type": "integer"
+            },
+            "mae_kg_ha": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bias_kg_ha": {
+              "type": "number"
+            },
+            "label_families": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "municipalities": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "scope": {
+              "type": "string"
+            },
+            "out_of_training_municipalities": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mae_kg_ha",
+                "label_families"
+              ],
+              "properties": {
+                "mae_kg_ha": {
+                  "type": "number"
+                },
+                "label_families": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "forcing_days_expected",
+            "forcing_days_present",
+            "sources"
+          ],
+          "properties": {
+            "forcing_days_expected": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "forcing_days_present": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "availability": {
+          "const": "retrospective_inputs_vintages_unverified"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ready"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_kg_ha": {
+                "type": "number"
+              },
+              "cutoff_days_used": {
+                "type": "integer"
+              },
+              "validation": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "not": {
+                  "const": "ready"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate_kg_ha": {
+                "type": "null"
+              },
+              "validation": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WaterRiskPayload": {
+      "title": "Gaiapus water-risk projection",
+      "description": "Soil water, deficit and stress for N days after a decision, driven by the forecast issued before the request. Never converted into a yield effect.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "product",
+        "status",
+        "generated_at",
+        "municipality_code",
+        "location",
+        "crop",
+        "sowing_date",
+        "sowing_basis",
+        "decision_at",
+        "crop_day_at_decision",
+        "horizon_days_requested",
+        "horizon_days_served",
+        "max_validated_lead_days",
+        "soil",
+        "forecast",
+        "initial_state",
+        "days",
+        "reference_days",
+        "evaluation",
+        "yield_effect",
+        "yield_effect_note",
+        "warnings"
+      ],
+      "$defs": {
+        "day": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "date",
+            "lead_days",
+            "crop_day",
+            "phase",
+            "rain_mm",
+            "et0_mm",
+            "storage_end_mm",
+            "available_water_fraction",
+            "et_deficit_mm",
+            "ks",
+            "stress",
+            "validated_lead"
+          ],
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "lead_days": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "crop_day": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "phase": {
+              "enum": [
+                "establishment",
+                "vegetative",
+                "reproductive",
+                "maturation"
+              ]
+            },
+            "rain_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "et0_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "storage_end_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "available_water_fraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "et_deficit_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ks": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "stress": {
+              "type": "boolean"
+            },
+            "validated_lead": {
+              "type": "boolean",
+              "description": "False beyond the largest lead that passed the backtest"
+            }
+          }
+        }
+      },
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "product": {
+          "const": "water_risk_projection"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "partially_validated",
+            "not_supported"
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "latitude",
+            "longitude"
+          ],
+          "properties": {
+            "latitude": {
+              "type": "number"
+            },
+            "longitude": {
+              "type": "number"
+            }
+          }
+        },
+        "crop": {
+          "enum": [
+            "soy",
+            "maize2"
+          ]
+        },
+        "sowing_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "sowing_basis": {
+          "enum": [
+            "hypothetical_fixed_calendar_per_state",
+            "reported_by_user"
+          ]
+        },
+        "decision_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crop_day_at_decision": {
+          "type": "integer"
+        },
+        "horizon_days_requested": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "horizon_days_served": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_validated_lead_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "soil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cad_class",
+            "capacity_mm",
+            "initial_fraction_at_sowing",
+            "basis"
+          ],
+          "properties": {
+            "cad_class": {
+              "type": "string"
+            },
+            "capacity_mm": {
+              "type": "number"
+            },
+            "initial_fraction_at_sowing": {
+              "type": "number"
+            },
+            "basis": {
+              "type": "string"
+            }
+          }
+        },
+        "forecast": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider",
+            "model",
+            "issued_at",
+            "available_at",
+            "retrieved_at",
+            "issue_time_source"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "issued_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "available_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "retrieved_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "issue_time_source": {
+              "type": "string"
+            }
+          }
+        },
+        "initial_state": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "date",
+            "storage_mm",
+            "available_water_fraction",
+            "observed_days",
+            "observed_source"
+          ],
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "storage_mm": {
+              "type": "number"
+            },
+            "available_water_fraction": {
+              "type": "number"
+            },
+            "observed_days": {
+              "type": "integer"
+            },
+            "observed_source": {
+              "type": "string"
+            }
+          }
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WaterRiskPayload/$defs/day"
+          }
+        },
+        "reference_days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WaterRiskPayload/$defs/day"
+          },
+          "description": "Same bucket driven by the 2001-2021 day-of-year climatology, for comparison"
+        },
+        "evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "verification",
+            "reference",
+            "rule",
+            "by_lead"
+          ],
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "verification": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "rule": {
+              "type": "object"
+            },
+            "by_lead": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "lead_days",
+                  "storage_mae_mm",
+                  "reference_storage_mae_mm",
+                  "stress_accuracy",
+                  "coverage",
+                  "passed"
+                ],
+                "properties": {
+                  "lead_days": {
+                    "type": "integer"
+                  },
+                  "storage_mae_mm": {
+                    "type": "number"
+                  },
+                  "reference_storage_mae_mm": {
+                    "type": "number"
+                  },
+                  "stress_accuracy": {
+                    "type": "number"
+                  },
+                  "coverage": {
+                    "type": "number"
+                  },
+                  "passed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "yield_effect": {
+          "type": "null"
+        },
+        "yield_effect_note": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ReasonCode": {
+      "enum": [
+        "no_published_coverage",
+        "unsupported_crop",
+        "missing_artifacts",
+        "incomplete_forcing",
+        "unsupported_period",
+        "fixture_not_available",
+        "current_season_unavailable",
+        "strategy_not_provided"
+      ]
+    },
+    "Period": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "ResponseMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "app_contract_version": {
+          "const": "0.1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "publication_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "context_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "app_contract_version",
+        "request_id"
+      ]
+    },
+    "ScientificMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "app_contract_version": {
+          "const": "0.1.0"
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "publication_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "context_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "execution_origin": {
+          "enum": [
+            "fixture",
+            "live"
+          ]
+        },
+        "result_basis": {
+          "enum": [
+            "observation",
+            "retrospective_estimate",
+            "forecast_projection",
+            "hypothetical_scenario",
+            "mixed"
+          ]
+        },
+        "save_handle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "expires_at"
+          ]
+        }
+      },
+      "required": [
+        "app_contract_version",
+        "request_id",
+        "publication_version",
+        "context_key",
+        "execution_origin",
+        "result_basis"
+      ]
+    },
+    "YieldEstimateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/YieldPayload"
+        },
+        "meta": {
+          "$ref": "#/$defs/ScientificMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "WaterRiskProjectionResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/WaterRiskPayload"
+        },
+        "meta": {
+          "$ref": "#/$defs/ScientificMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ScientificEnvelope": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/YieldEstimateResponse"
+        },
+        {
+          "$ref": "#/$defs/WaterRiskProjectionResponse"
+        }
+      ]
+    },
+    "ExplorationContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "view": {
+          "enum": [
+            "explore",
+            "timeline",
+            "compare"
+          ]
+        },
+        "product_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "history",
+                "yield_estimate",
+                "water_risk_projection",
+                "strategy_comparison"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "layer_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "period": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "end": {
+                  "type": "string",
+                  "format": "date"
+                }
+              },
+              "required": [
+                "start",
+                "end"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selected_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "example_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "area_id",
+        "view",
+        "product_id",
+        "layer_id",
+        "period",
+        "selected_date",
+        "example_id"
+      ]
+    },
+    "SourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "source_id",
+        "description",
+        "url",
+        "source_revision"
+      ]
+    },
+    "Geography": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "kind": {
+          "enum": [
+            "country",
+            "state",
+            "municipality",
+            "published_field"
+          ]
+        },
+        "parent_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country_id": {
+          "const": "BR"
+        },
+        "state_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bbox": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "geometry_ref": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "area_id",
+        "name",
+        "kind",
+        "parent_id",
+        "country_id",
+        "state_id",
+        "scope"
+      ]
+    },
+    "GeographyPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Geography"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "SupportedInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/YieldEstimateRequest"
+            },
+            {
+              "$ref": "#/$defs/WaterRiskProjectionRequest"
+            }
+          ]
+        },
+        "example_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "input",
+        "example_id"
+      ]
+    },
+    "ProductCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "available",
+            "partial",
+            "no_data"
+          ]
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date"
+              },
+              "end": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          }
+        },
+        "supported_crops": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "soy",
+              "maize2"
+            ]
+          }
+        },
+        "supported_cutoffs_days": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "supported_horizons_days": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "evaluated_horizon_days": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "writable_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "run_available": {
+          "type": "boolean"
+        },
+        "run_access": {
+          "const": "authenticated"
+        },
+        "execution_origin": {
+          "anyOf": [
+            {
+              "enum": [
+                "fixture",
+                "live"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supported_inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SupportedInput"
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          }
+        }
+      },
+      "required": [
+        "product_id",
+        "availability",
+        "reason_code",
+        "periods",
+        "supported_crops",
+        "supported_cutoffs_days",
+        "supported_horizons_days",
+        "evaluated_horizon_days",
+        "writable_inputs",
+        "run_available",
+        "run_access",
+        "execution_origin",
+        "supported_inputs",
+        "source_refs"
+      ]
+    },
+    "CoverageResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProductCapability"
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          }
+        },
+        "publication_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "area_id",
+        "products",
+        "source_refs",
+        "publication_version"
+      ]
+    },
+    "ObservationPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quality": {
+          "enum": [
+            "valid",
+            "missing",
+            "partial"
+          ]
+        },
+        "acquired_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scene_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_fraction": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "date",
+        "value",
+        "quality",
+        "acquired_at",
+        "scene_id",
+        "valid_fraction"
+      ]
+    },
+    "ObservationSeries": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "series_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "unit": {
+          "enum": [
+            "mm",
+            "1"
+          ]
+        },
+        "time_basis": {
+          "const": "UTC"
+        },
+        "spatial_support": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "interval": {
+          "enum": [
+            "daily",
+            "acquisition"
+          ]
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ObservationPoint"
+          }
+        }
+      },
+      "required": [
+        "series_id",
+        "unit",
+        "time_basis",
+        "spatial_support",
+        "source",
+        "interval",
+        "points"
+      ]
+    },
+    "ImageryReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "scene_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "collection": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "corners": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "spatial_support": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "date",
+        "scene_id",
+        "collection",
+        "url",
+        "corners",
+        "spatial_support"
+      ]
+    },
+    "ObservationsResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "period": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date"
+            },
+            "end": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "available",
+            "partial",
+            "no_data"
+          ]
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ObservationSeries"
+          }
+        },
+        "imagery": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImageryReference"
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          }
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      },
+      "required": [
+        "area_id",
+        "period",
+        "availability",
+        "reason_code",
+        "series",
+        "imagery",
+        "source_refs",
+        "alternatives"
+      ]
+    },
+    "ExampleSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "example_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        },
+        "period": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date"
+            },
+            "end": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "result_basis": {
+          "enum": [
+            "observation",
+            "retrospective_estimate",
+            "forecast_projection",
+            "hypothetical_scenario",
+            "mixed"
+          ]
+        }
+      },
+      "required": [
+        "example_id",
+        "title",
+        "area_id",
+        "product_id",
+        "period",
+        "result_basis"
+      ]
+    },
+    "ExamplePage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExampleSummary"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "ExampleDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "example_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        },
+        "period": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date"
+            },
+            "end": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "result_basis": {
+          "enum": [
+            "observation",
+            "retrospective_estimate",
+            "forecast_projection",
+            "hypothetical_scenario",
+            "mixed"
+          ]
+        },
+        "input_snapshot": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/YieldEstimateRequest"
+            },
+            {
+              "$ref": "#/$defs/WaterRiskProjectionRequest"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/ScientificEnvelope"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      },
+      "required": [
+        "example_id",
+        "title",
+        "area_id",
+        "product_id",
+        "period",
+        "result_basis",
+        "input_snapshot",
+        "result",
+        "source_refs",
+        "warnings"
+      ]
+    },
+    "YieldEstimateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "crop": {
+          "enum": [
+            "soy",
+            "maize2"
+          ]
+        },
+        "harvest_year": {
+          "type": "integer",
+          "minimum": 2002,
+          "maximum": 2100
+        },
+        "days_after_sowing": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        }
+      },
+      "required": [
+        "municipality_code",
+        "crop",
+        "harvest_year",
+        "days_after_sowing"
+      ]
+    },
+    "WaterRiskProjectionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "crop": {
+          "enum": [
+            "soy",
+            "maize2"
+          ]
+        },
+        "sowing_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "decision_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "horizon_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        }
+      },
+      "required": [
+        "municipality_code",
+        "crop",
+        "sowing_date",
+        "decision_at",
+        "horizon_days"
+      ]
+    },
+    "Profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "user_id",
+        "display_name",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "Preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "locale": {
+          "enum": [
+            "pt-BR",
+            "en"
+          ]
+        },
+        "last_monitored_place_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "locale",
+        "last_monitored_place_id"
+      ]
+    },
+    "MeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "preferences": {
+          "$ref": "#/$defs/Preferences"
+        }
+      },
+      "required": [
+        "profile",
+        "preferences"
+      ]
+    },
+    "MonitoredPlace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "kind": {
+          "enum": [
+            "country",
+            "state",
+            "municipality",
+            "published_field"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "area_id",
+        "kind",
+        "label",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "MonitoredPlacePage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MonitoredPlace"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "ComparisonSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_basis": {
+          "enum": [
+            "observation",
+            "retrospective_estimate",
+            "forecast_projection",
+            "hypothetical_scenario",
+            "mixed"
+          ]
+        },
+        "monitored_place_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "product_id",
+        "area_id",
+        "created_at",
+        "updated_at",
+        "result_basis",
+        "monitored_place_id"
+      ]
+    },
+    "ComparisonDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_basis": {
+          "enum": [
+            "observation",
+            "retrospective_estimate",
+            "forecast_projection",
+            "hypothetical_scenario",
+            "mixed"
+          ]
+        },
+        "monitored_place_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 10000
+        },
+        "input_snapshot": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/YieldEstimateRequest"
+            },
+            {
+              "$ref": "#/$defs/WaterRiskProjectionRequest"
+            }
+          ]
+        },
+        "output_envelope": {
+          "$ref": "#/$defs/ScientificEnvelope"
+        },
+        "source_versions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scientific_revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "publication_version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "app_contract_version": {
+              "const": "0.1.0"
+            }
+          },
+          "required": [
+            "scientific_revision",
+            "publication_version",
+            "app_contract_version"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "product_id",
+        "area_id",
+        "created_at",
+        "updated_at",
+        "result_basis",
+        "monitored_place_id",
+        "notes",
+        "input_snapshot",
+        "output_envelope",
+        "source_versions"
+      ]
+    },
+    "ComparisonPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ComparisonSummary"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "EvidenceReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_key": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "publication_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "context_key",
+        "publication_version",
+        "reviewed_at"
+      ]
+    },
+    "EvidenceReviewResult": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EvidenceReview"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "UpdateAccountRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "locale": {
+          "enum": [
+            "pt-BR",
+            "en"
+          ]
+        },
+        "last_monitored_place_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "minProperties": 1
+    },
+    "CreatePlaceRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "area_id"
+      ]
+    },
+    "RenamePlaceRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "label"
+      ]
+    },
+    "SaveComparisonRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "example"
+                },
+                "example_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "required": [
+                "kind",
+                "example_id"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "analysis"
+                },
+                "save_handle_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "kind",
+                "save_handle_id"
+              ]
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 10000
+        },
+        "monitored_place_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "title"
+      ]
+    },
+    "EditComparisonRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 10000
+        }
+      },
+      "required": [],
+      "minProperties": 1
+    },
+    "RecordEvidenceRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "publication_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "context_key",
+        "publication_version"
+      ]
+    },
+    "PageQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": []
+    },
+    "GeographyQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "q": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "parent_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": []
+    },
+    "CoverageQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "area_id"
+      ]
+    },
+    "ObservationsQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "area_id",
+        "start",
+        "end"
+      ]
+    },
+    "ExamplesQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "product_id": {
+          "enum": [
+            "history",
+            "yield_estimate",
+            "water_risk_projection",
+            "strategy_comparison"
+          ]
+        }
+      },
+      "required": []
+    },
+    "EvidenceQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "context_key"
+      ]
+    },
+    "PrivateIdParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "ExampleIdParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "field_errors": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ]
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "error",
+        "meta"
+      ]
+    },
+    "GeographyPageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/GeographyPage"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "CoverageResultResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/CoverageResult"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ObservationsResultResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ObservationsResult"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ExamplePageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ExamplePage"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ExampleDetailResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ExampleDetail"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "MeResultResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MeResult"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "MonitoredPlaceResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoredPlace"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "MonitoredPlacePageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MonitoredPlacePage"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ComparisonPageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ComparisonPage"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ComparisonDetailResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ComparisonDetail"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "EvidenceReviewResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/EvidenceReview"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "EvidenceReviewResultResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/EvidenceReviewResult"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    }
+  }
+}

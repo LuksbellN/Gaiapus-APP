@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "product": "yield_estimate",
+  "generated_at": "2026-11-14T13:44:33.465929+00:00",
+  "municipality_code": "5107925",
+  "crop": "soy",
+  "harvest_year": 2021,
+  "sowing_date": "2020-10-05",
+  "sowing_basis": "hypothetical_fixed_calendar_per_state",
+  "days_after_sowing_requested": 75,
+  "supported_cutoffs_days": [
+    30,
+    45,
+    60,
+    75,
+    90,
+    105
+  ],
+  "cutoff_days_used": 75,
+  "observed_through": "2020-12-18",
+  "model": {
+    "version": "research_v6_walk_forward",
+    "type": "ridge",
+    "sources": [
+      "IBGE PAM lagged yield (harvest year-2 and earlier)",
+      "NASA POWER daily meteorology and IMERG rain",
+      "FAO-56 water balance by phase",
+      "IBGE municipal point and POWER elevation"
+    ],
+    "artifact_sha256": "16fca88b5a496430c1b837ea76f29cf016d50479f81ccb715d630cfba45f491e",
+    "trained_through_harvest": 2019
+  },
+  "coverage": {
+    "forcing_days_expected": 75,
+    "forcing_days_present": 75,
+    "sources": [
+      "NASA POWER daily point"
+    ]
+  },
+  "availability": "retrospective_inputs_vintages_unverified",
+  "warnings": [
+    "Retrospective example: harvest 2021 label is known and was used only for validation",
+    "Municipal yield, not field yield; sowing date is a fixed state calendar"
+  ],
+  "status": "ready",
+  "estimate_kg_ha": 3554.0,
+  "validation": {
+    "years": [
+      2019,
+      2020,
+      2021
+    ],
+    "cutoff_days": 75,
+    "mae_kg_ha": 391.0,
+    "bias_kg_ha": 217.2,
+    "label_families": 1893,
+    "municipalities": 631,
+    "scope": "walk-forward, municipalities used in training",
+    "out_of_training_municipalities": {
+      "mae_kg_ha": 378.5,
+      "label_families": 477
+    }
+  }
+}

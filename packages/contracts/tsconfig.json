@@ -1,0 +1,1 @@
+{ "extends": "../../tsconfig.base.json", "compilerOptions": { "outDir": "dist", "rootDir": "." }, "include": ["src/**/*.ts", "schemas/*.json", "upstream/**/*.json", "fixtures/*.json"], "exclude": ["**/*.test.ts"] }

@@ -1,0 +1,22 @@
+{
+  "repository": "https://github.com/LeandroJerse/Gaiapus_nasa",
+  "revision": "ecae8c4457c0bd152915ea16495c83ad5097cfd4",
+  "files": {
+    "gaiapus-mvp/data/BR.geojson": "7146c004645c01dad5923e1af4e56be965908f04d6616e204bc492b3bad6191b",
+    "gaiapus-mvp/data/field.json": "3f9c84162fad1e87d56fa921cd31db2edb6f2fd88e3270d4cb6c38f570e1b6a0",
+    "gaiapus-mvp/data/city.geojson": "4a899f303f4b07895b7611579f33ea20174f36ff67340e22456694d79822c61d",
+    "gaiapus-mvp/data/scene.png": "10b009574aa42de65b6b636552fc63fdeb8056e03c9cef63f2f3852865a5f0bf",
+    "gaiapus-mvp/data/regions/rio-verde/field.json": "24a0904dd4af96391a76fdbd8fb7c6781de293cc92a32770c16a80f0a1dd9425",
+    "gaiapus-mvp/data/regions/rio-verde/city.geojson": "fe9fe4ef656eccfa2e75c8dde012f89d8d69adeb8c4782895c3f42ade84f8608",
+    "gaiapus-mvp/data/regions/rio-verde/scene.png": "e0c675e03b78cd29455d71cb19ac061d97a36c078294003f7934d4ad88193a05",
+    "gaiapus-mvp/data/regions/barreiras/field.json": "1e86221c5a548c6f29cdeaca384d265e5d8a0d327d0b41d43864d3509381e6c0",
+    "gaiapus-mvp/data/regions/barreiras/city.geojson": "b3c28a266f570735dea68608ff451f14776ad1431a9b5d51c0adb33696625834",
+    "gaiapus-mvp/data/regions/barreiras/scene.png": "512545a4b4fa52c7aad8e9e316283384c99acf8033007f27456934aed5b98c6c",
+    "contracts/yield-estimate.schema.json": "b52fcf22c6ed5ec5b559c70755c283431c3ab54754ef9a11b12c1aba69f22ce1",
+    "contracts/water-projection.schema.json": "de5a311ee738dbfd000553246b1e18586c048836db495710677c2e474e730f8d",
+    "contracts/examples/yield-soy-5107925-day75.json": "68a9e40da89bf254f84f8cd5d1807315868e9a8912319d297758a2fb5d79affd",
+    "contracts/examples/yield-maize2-5107925-day75.json": "03da420349a25219887eb14ff2767648b164b374ff8ea3eba4ae57291cb0f04f",
+    "contracts/examples/yield-soy-3170206-day20.json": "8145daba85eaa7e17b5dd74d5e6fefb7cfe410b23bc5b87fb6f62369d53f1036",
+    "contracts/examples/water-soy-5107925-N10.json": "ccc96be8adc78cca8ac3812bac3f3766a02037c0d1cac1a8c32ae24d6536e4b6"
+  }
+}

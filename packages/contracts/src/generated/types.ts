@@ -1,0 +1,822 @@
+/* Generated from application schemas; run pnpm contracts:generate. */
+
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReasonCode".
+ */
+export type ReasonCode =
+  | 'no_published_coverage'
+  | 'unsupported_crop'
+  | 'missing_artifacts'
+  | 'incomplete_forcing'
+  | 'unsupported_period'
+  | 'fixture_not_available'
+  | 'current_season_unavailable'
+  | 'strategy_not_provided';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ScientificEnvelope".
+ */
+export type ScientificEnvelope = YieldEstimateResponse | WaterRiskProjectionResponse;
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EvidenceReviewResult".
+ */
+export type EvidenceReviewResult = EvidenceReview | null;
+
+export interface GaiapusContracts {
+  YieldPayload?: YieldPayload;
+  WaterRiskPayload?: WaterRiskPayload;
+  ReasonCode?: ReasonCode;
+  Period?: Period;
+  ResponseMeta?: ResponseMeta;
+  ScientificMeta?: ScientificMeta;
+  YieldEstimateResponse?: YieldEstimateResponse;
+  WaterRiskProjectionResponse?: WaterRiskProjectionResponse;
+  ScientificEnvelope?: ScientificEnvelope;
+  ExplorationContext?: ExplorationContext;
+  SourceReference?: SourceReference;
+  Geography?: Geography;
+  GeographyPage?: GeographyPage;
+  SupportedInput?: SupportedInput;
+  ProductCapability?: ProductCapability;
+  CoverageResult?: CoverageResult;
+  ObservationPoint?: ObservationPoint;
+  ObservationSeries?: ObservationSeries;
+  ImageryReference?: ImageryReference;
+  ObservationsResult?: ObservationsResult;
+  ExampleSummary?: ExampleSummary;
+  ExamplePage?: ExamplePage;
+  ExampleDetail?: ExampleDetail;
+  YieldEstimateRequest?: YieldEstimateRequest;
+  WaterRiskProjectionRequest?: WaterRiskProjectionRequest;
+  Profile?: Profile;
+  Preferences?: Preferences;
+  MeResult?: MeResult;
+  MonitoredPlace?: MonitoredPlace;
+  MonitoredPlacePage?: MonitoredPlacePage;
+  ComparisonSummary?: ComparisonSummary;
+  ComparisonDetail?: ComparisonDetail;
+  ComparisonPage?: ComparisonPage;
+  EvidenceReview?: EvidenceReview;
+  EvidenceReviewResult?: EvidenceReviewResult;
+  UpdateAccountRequest?: UpdateAccountRequest;
+  CreatePlaceRequest?: CreatePlaceRequest;
+  RenamePlaceRequest?: RenamePlaceRequest;
+  SaveComparisonRequest?: SaveComparisonRequest;
+  EditComparisonRequest?: EditComparisonRequest;
+  RecordEvidenceRequest?: RecordEvidenceRequest;
+  PageQuery?: PageQuery;
+  GeographyQuery?: GeographyQuery;
+  CoverageQuery?: CoverageQuery;
+  ObservationsQuery?: ObservationsQuery;
+  ExamplesQuery?: ExamplesQuery;
+  EvidenceQuery?: EvidenceQuery;
+  PrivateIdParams?: PrivateIdParams;
+  ExampleIdParams?: ExampleIdParams;
+  ErrorResponse?: ErrorResponse;
+  GeographyPageResponse?: GeographyPageResponse;
+  CoverageResultResponse?: CoverageResultResponse;
+  ObservationsResultResponse?: ObservationsResultResponse;
+  ExamplePageResponse?: ExamplePageResponse;
+  ExampleDetailResponse?: ExampleDetailResponse;
+  MeResultResponse?: MeResultResponse;
+  MonitoredPlaceResponse?: MonitoredPlaceResponse;
+  MonitoredPlacePageResponse?: MonitoredPlacePageResponse;
+  ComparisonPageResponse?: ComparisonPageResponse;
+  ComparisonDetailResponse?: ComparisonDetailResponse;
+  EvidenceReviewResponse?: EvidenceReviewResponse;
+  EvidenceReviewResultResponse?: EvidenceReviewResultResponse;
+}
+/**
+ * Municipal yield at harvest (kg/ha) from data available up to a validated cutoff after sowing. Separate product from the water-risk projection.
+ *
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "YieldPayload".
+ */
+export interface YieldPayload {
+  schema_version: '1.0.0';
+  product: 'yield_estimate';
+  status: 'ready' | 'before_first_cutoff' | 'not_supported';
+  generated_at: string;
+  municipality_code: string;
+  crop: 'soy' | 'maize2';
+  harvest_year: number;
+  sowing_date: string;
+  /**
+   * Origin of sowing_date. The models were validated on the state calendar; a reported date shifts the features (see calendar sensitivity)
+   */
+  sowing_basis: 'hypothetical_fixed_calendar_per_state' | 'reported_by_user';
+  days_after_sowing_requested: number;
+  /**
+   * @minItems 1
+   */
+  supported_cutoffs_days: [number, ...number[]];
+  /**
+   * Largest validated cutoff not after the requested day
+   */
+  cutoff_days_used: number | null;
+  estimate_kg_ha: number | null;
+  /**
+   * Last day of data the estimate used
+   */
+  observed_through: string | null;
+  model: {
+    version: string;
+    type: 'baseline' | 'ridge' | 'hgb' | 'mlp';
+    sources: string[];
+    artifact_sha256: string;
+    trained_through_harvest: number;
+  };
+  validation: {
+    years: number[];
+    cutoff_days: number;
+    mae_kg_ha: number;
+    bias_kg_ha: number;
+    label_families: number;
+    municipalities: number;
+    scope: string;
+    out_of_training_municipalities?: {
+      mae_kg_ha: number;
+      label_families: number;
+    };
+  } | null;
+  coverage: {
+    forcing_days_expected: number;
+    forcing_days_present: number;
+    sources: string[];
+  };
+  availability: 'retrospective_inputs_vintages_unverified';
+  warnings: string[];
+}
+/**
+ * Soil water, deficit and stress for N days after a decision, driven by the forecast issued before the request. Never converted into a yield effect.
+ *
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "WaterRiskPayload".
+ */
+export interface WaterRiskPayload {
+  schema_version: '1.0.0';
+  product: 'water_risk_projection';
+  status: 'ready' | 'partially_validated' | 'not_supported';
+  generated_at: string;
+  municipality_code: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  crop: 'soy' | 'maize2';
+  sowing_date: string;
+  sowing_basis: 'hypothetical_fixed_calendar_per_state' | 'reported_by_user';
+  decision_at: string;
+  crop_day_at_decision: number;
+  horizon_days_requested: number;
+  horizon_days_served: number;
+  max_validated_lead_days: number;
+  soil: {
+    cad_class: string;
+    capacity_mm: number;
+    initial_fraction_at_sowing: number;
+    basis: string;
+  };
+  forecast: {
+    provider: string;
+    model: string;
+    issued_at: string | null;
+    available_at: string | null;
+    retrieved_at: string;
+    issue_time_source: string;
+  };
+  initial_state: {
+    date: string;
+    storage_mm: number;
+    available_water_fraction: number;
+    observed_days: number;
+    observed_source: string;
+  } | null;
+  days: Day[];
+  /**
+   * Same bucket driven by the 2001-2021 day-of-year climatology, for comparison
+   */
+  reference_days: Day[];
+  evaluation: {
+    method: string;
+    verification: string;
+    reference: string;
+    rule: {};
+    by_lead: {
+      lead_days: number;
+      storage_mae_mm: number;
+      reference_storage_mae_mm: number;
+      stress_accuracy: number;
+      coverage: number;
+      passed: boolean;
+    }[];
+  };
+  yield_effect: null;
+  yield_effect_note: string;
+  warnings: string[];
+}
+/**
+ * This interface was referenced by `WaterRiskPayload`'s JSON-Schema
+ * via the `definition` "day".
+ */
+export interface Day {
+  date: string;
+  lead_days: number;
+  crop_day: number;
+  phase: 'establishment' | 'vegetative' | 'reproductive' | 'maturation';
+  rain_mm: number;
+  et0_mm: number;
+  storage_end_mm: number;
+  available_water_fraction: number;
+  et_deficit_mm: number;
+  ks: number;
+  stress: boolean;
+  /**
+   * False beyond the largest lead that passed the backtest
+   */
+  validated_lead: boolean;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "Period".
+ */
+export interface Period {
+  start: string;
+  end: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ResponseMeta".
+ */
+export interface ResponseMeta {
+  app_contract_version: '0.1.0';
+  request_id: string;
+  publication_version?: string;
+  context_key?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ScientificMeta".
+ */
+export interface ScientificMeta {
+  app_contract_version: '0.1.0';
+  request_id: string;
+  publication_version: string;
+  context_key: string;
+  execution_origin: 'fixture' | 'live';
+  result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
+  save_handle?: {
+    id: string;
+    expires_at: string;
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "YieldEstimateResponse".
+ */
+export interface YieldEstimateResponse {
+  data: YieldPayload;
+  meta: ScientificMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "WaterRiskProjectionResponse".
+ */
+export interface WaterRiskProjectionResponse {
+  data: WaterRiskPayload;
+  meta: ScientificMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExplorationContext".
+ */
+export interface ExplorationContext {
+  area_id: string | null;
+  view: 'explore' | 'timeline' | 'compare';
+  product_id: ('history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison') | null;
+  layer_id: string | null;
+  period: Period | null;
+  selected_date: string | null;
+  example_id: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SourceReference".
+ */
+export interface SourceReference {
+  source_id: string;
+  description: string;
+  url: string;
+  source_revision: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "Geography".
+ */
+export interface Geography {
+  area_id: string;
+  name: string;
+  kind: 'country' | 'state' | 'municipality' | 'published_field';
+  parent_id: string | null;
+  country_id: 'BR';
+  state_id: string | null;
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  bbox?: [number, number, number, number];
+  geometry_ref?: string;
+  scope: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "GeographyPage".
+ */
+export interface GeographyPage {
+  items: Geography[];
+  next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SupportedInput".
+ */
+export interface SupportedInput {
+  input: YieldEstimateRequest | WaterRiskProjectionRequest;
+  example_id: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "YieldEstimateRequest".
+ */
+export interface YieldEstimateRequest {
+  municipality_code: string;
+  crop: 'soy' | 'maize2';
+  harvest_year: number;
+  days_after_sowing: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "WaterRiskProjectionRequest".
+ */
+export interface WaterRiskProjectionRequest {
+  municipality_code: string;
+  crop: 'soy' | 'maize2';
+  sowing_date: string;
+  decision_at: string;
+  horizon_days: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ProductCapability".
+ */
+export interface ProductCapability {
+  product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+  availability: 'available' | 'partial' | 'no_data';
+  reason_code: ReasonCode | null;
+  periods: Period[];
+  supported_crops: ('soy' | 'maize2')[];
+  supported_cutoffs_days: number[];
+  supported_horizons_days: number[];
+  evaluated_horizon_days: number | null;
+  writable_inputs: string[];
+  run_available: boolean;
+  run_access: 'authenticated';
+  execution_origin: ('fixture' | 'live') | null;
+  supported_inputs: SupportedInput[];
+  source_refs: SourceReference[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "CoverageResult".
+ */
+export interface CoverageResult {
+  area_id: string;
+  products: ProductCapability[];
+  source_refs: SourceReference[];
+  publication_version: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ObservationPoint".
+ */
+export interface ObservationPoint {
+  date: string;
+  value: number | null;
+  quality: 'valid' | 'missing' | 'partial';
+  acquired_at: string | null;
+  scene_id: string | null;
+  valid_fraction: number | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ObservationSeries".
+ */
+export interface ObservationSeries {
+  series_id: string;
+  unit: 'mm' | '1';
+  time_basis: 'UTC';
+  spatial_support: string;
+  source: string;
+  interval: 'daily' | 'acquisition';
+  points: ObservationPoint[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ImageryReference".
+ */
+export interface ImageryReference {
+  date: string;
+  scene_id: string;
+  collection: string;
+  url: string;
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  corners: [[number, number], [number, number], [number, number], [number, number]];
+  spatial_support: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ObservationsResult".
+ */
+export interface ObservationsResult {
+  area_id: string;
+  period: Period;
+  availability: 'available' | 'partial' | 'no_data';
+  reason_code: ReasonCode | null;
+  series: ObservationSeries[];
+  imagery: ImageryReference[];
+  source_refs: SourceReference[];
+  alternatives: string[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExampleSummary".
+ */
+export interface ExampleSummary {
+  example_id: string;
+  title: string;
+  area_id: string;
+  product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+  period: Period;
+  result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExamplePage".
+ */
+export interface ExamplePage {
+  items: ExampleSummary[];
+  next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExampleDetail".
+ */
+export interface ExampleDetail {
+  example_id: string;
+  title: string;
+  area_id: string;
+  product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+  period: Period;
+  result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
+  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest;
+  result: ScientificEnvelope;
+  source_refs: SourceReference[];
+  warnings: string[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "Profile".
+ */
+export interface Profile {
+  user_id: string;
+  display_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "Preferences".
+ */
+export interface Preferences {
+  locale: 'pt-BR' | 'en';
+  last_monitored_place_id: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MeResult".
+ */
+export interface MeResult {
+  profile: Profile;
+  preferences: Preferences;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MonitoredPlace".
+ */
+export interface MonitoredPlace {
+  id: string;
+  area_id: string;
+  kind: 'country' | 'state' | 'municipality' | 'published_field';
+  label: string;
+  created_at: string;
+  updated_at: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MonitoredPlacePage".
+ */
+export interface MonitoredPlacePage {
+  items: MonitoredPlace[];
+  next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ComparisonSummary".
+ */
+export interface ComparisonSummary {
+  id: string;
+  title: string;
+  product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+  area_id: string;
+  created_at: string;
+  updated_at: string;
+  result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
+  monitored_place_id: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ComparisonDetail".
+ */
+export interface ComparisonDetail {
+  id: string;
+  title: string;
+  product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+  area_id: string;
+  created_at: string;
+  updated_at: string;
+  result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
+  monitored_place_id: string | null;
+  notes: string;
+  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest;
+  output_envelope: ScientificEnvelope;
+  source_versions: {
+    scientific_revision: string;
+    publication_version: string;
+    app_contract_version: '0.1.0';
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ComparisonPage".
+ */
+export interface ComparisonPage {
+  items: ComparisonSummary[];
+  next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EvidenceReview".
+ */
+export interface EvidenceReview {
+  context_key: string;
+  publication_version: string;
+  reviewed_at: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "UpdateAccountRequest".
+ */
+export interface UpdateAccountRequest {
+  display_name?: string | null;
+  locale?: 'pt-BR' | 'en';
+  last_monitored_place_id?: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "CreatePlaceRequest".
+ */
+export interface CreatePlaceRequest {
+  area_id: string;
+  label?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "RenamePlaceRequest".
+ */
+export interface RenamePlaceRequest {
+  label: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SaveComparisonRequest".
+ */
+export interface SaveComparisonRequest {
+  source:
+    | {
+        kind: 'example';
+        example_id: string;
+      }
+    | {
+        kind: 'analysis';
+        save_handle_id: string;
+      };
+  title: string;
+  notes?: string;
+  monitored_place_id?: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EditComparisonRequest".
+ */
+export interface EditComparisonRequest {
+  title?: string;
+  notes?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "RecordEvidenceRequest".
+ */
+export interface RecordEvidenceRequest {
+  context_key: string;
+  publication_version: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "PageQuery".
+ */
+export interface PageQuery {
+  cursor?: string;
+  limit?: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "GeographyQuery".
+ */
+export interface GeographyQuery {
+  cursor?: string;
+  limit?: number;
+  q?: string;
+  parent_id?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "CoverageQuery".
+ */
+export interface CoverageQuery {
+  area_id: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ObservationsQuery".
+ */
+export interface ObservationsQuery {
+  area_id: string;
+  start: string;
+  end: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExamplesQuery".
+ */
+export interface ExamplesQuery {
+  cursor?: string;
+  limit?: number;
+  area_id?: string;
+  product_id?: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EvidenceQuery".
+ */
+export interface EvidenceQuery {
+  context_key: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "PrivateIdParams".
+ */
+export interface PrivateIdParams {
+  id: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExampleIdParams".
+ */
+export interface ExampleIdParams {
+  id: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ErrorResponse".
+ */
+export interface ErrorResponse {
+  error: {
+    code: string;
+    message: string;
+    field_errors?: {
+      [k: string]: string;
+    };
+  };
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "GeographyPageResponse".
+ */
+export interface GeographyPageResponse {
+  data: GeographyPage;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "CoverageResultResponse".
+ */
+export interface CoverageResultResponse {
+  data: CoverageResult;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ObservationsResultResponse".
+ */
+export interface ObservationsResultResponse {
+  data: ObservationsResult;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExamplePageResponse".
+ */
+export interface ExamplePageResponse {
+  data: ExamplePage;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ExampleDetailResponse".
+ */
+export interface ExampleDetailResponse {
+  data: ExampleDetail;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MeResultResponse".
+ */
+export interface MeResultResponse {
+  data: MeResult;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MonitoredPlaceResponse".
+ */
+export interface MonitoredPlaceResponse {
+  data: MonitoredPlace;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "MonitoredPlacePageResponse".
+ */
+export interface MonitoredPlacePageResponse {
+  data: MonitoredPlacePage;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ComparisonPageResponse".
+ */
+export interface ComparisonPageResponse {
+  data: ComparisonPage;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ComparisonDetailResponse".
+ */
+export interface ComparisonDetailResponse {
+  data: ComparisonDetail;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EvidenceReviewResponse".
+ */
+export interface EvidenceReviewResponse {
+  data: EvidenceReview;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "EvidenceReviewResultResponse".
+ */
+export interface EvidenceReviewResultResponse {
+  data: EvidenceReviewResult;
+  meta: ResponseMeta;
+}
