@@ -1,18 +1,27 @@
 <!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050c20" />
-    <meta
-      name="description"
-      content="Explore evidências ambientais, conheça suas fontes e compare exemplos publicados com a Gaiapus."
-    />
-    <title>Gaiapus · Evidências para o seu campo</title>
-    <link rel="icon" href="/brand/gaiapus-logo.jpg" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Gaiapus — encontre sua lavoura, entenda água e clima, compare manejos e registre sua safra.">
+  <meta name="theme-color" content="#0B1411">
+  <title>Gaiapus · Água, clima e safra</title>
+  <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin>
+  <style>
+    html { background: #0B1411; color: #EAF2EB; }
+    html[data-theme='light'] { background: #F5F7F2; color: #173326; }
+    .boot { min-height: 100vh; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 12px; font: 500 16px system-ui, sans-serif; }
+    .boot b { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+    .boot i { width: 120px; height: 3px; border-radius: 2px; background: rgba(135, 201, 143, .2); overflow: hidden; position: relative; }
+    .boot i::after { content: ''; position: absolute; inset: 0; width: 40%; background: #87C98F; border-radius: 2px; animation: boot 1.1s ease-in-out infinite alternate; }
+    @keyframes boot { to { transform: translateX(150%); } }
+    @media (prefers-reduced-motion: reduce) { .boot i::after { animation: none; width: 100%; opacity: .5; } }
+  </style>
+  <script>try { if (JSON.parse(localStorage.getItem('gaiapus.v1') || '{}').theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}</script>
+</head>
+<body>
+  <div id="root"><div class="boot" role="status"><b translate="no">Gaiapus</b><span>Carregando…</span><i aria-hidden="true"></i></div></div>
+  <noscript><p style="padding:24px;font-family:system-ui">A Gaiapus precisa de JavaScript para mostrar o mapa e os dados.</p></noscript>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

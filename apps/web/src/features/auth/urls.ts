@@ -3,7 +3,7 @@ export function authRedirect(kind: 'callback' | 'recovery', origin = window.loca
 }
 
 export function safeReturnPath(path: string | null) {
-  return path?.startsWith('/?') || path === '/' ? path : '/';
+  return path?.startsWith('/?') || path?.startsWith('/#/') || path === '/' ? path : '/';
 }
 
 export function callbackProblem(url: URL) {

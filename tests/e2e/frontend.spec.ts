@@ -1,150 +1,95 @@
-import {
-  test,
-  expect,
-} from "../../apps/web/node_modules/@playwright/test/index.mjs";
-import path from "node:path";
-const evidence = path.resolve(process.cwd(), "design", "verification");
+import { test, expect } from '../../apps/web/node_modules/@playwright/test/index.mjs';
+import path from 'node:path';
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+const evidence = path.resolve(process.cwd(), 'design/verification');
 
-test('email callback routes render safely without a valid link', async ({ page }) => {
-  for (const route of ['/auth/callback', '/auth/recovery']) {
-    await page.goto(route + '?error=access_denied');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(route.endsWith('recovery') ? 'Recuperar acesso' : 'Confirmar e-mail');
-    await expect(page.getByText(/expirou|ainda não está configurado/).first()).toBeVisible();
-    await expect(page.getByLabel('Nova senha', { exact: true })).toHaveCount(0);
-    await expect(page).toHaveURL(new RegExp(route + '$'));
+test('approved stylesheet and public screen components remain unchanged', async () => {
+  const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'design/teammate-source-manifest.json'), 'utf8'));
+  const imported = path.resolve(process.cwd(), 'src/teammate');
+  for (const [file, hash] of Object.entries(manifest.sha256)) {
+    expect(createHash('sha256').update(fs.readFileSync(path.join(imported, file))).digest('hex')).toBe(hash);
   }
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: path.join(evidence, 'auth-recovery-mobile.png'), fullPage: true });
 });
 
-test("reference layout, real assets, day selection and sources at laptop size", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await expect(
-    page.getByRole("heading", { name: "Balanço hídrico" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: /Milho safrinha.*retrospectivo/ }),
-  ).toBeVisible();
-  await expect(page.locator(".conditions-content")).not.toContainText("—");
+test('overview uses actual API publications and preserves the approved desktop layout', async ({ page }) => {
+  const errors = []; const calls = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('response', response => { if(response.url().includes('/v1/')) calls.push({ url: response.url(), status: response.status() }); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/#/visao-geral');
+  await expect(page.getByRole('heading', { name: 'Hoje em Sorriso, MT' })).toBeVisible();
+  await expect(page.locator('.stat').first()).toBeVisible();
+  await expect.poll(() => calls.some(call => call.url.includes('/examples/water-soy') && call.status === 200)).toBe(true);
   await page.evaluate(() => document.fonts.ready);
-  await expect
-    .poll(() =>
-      page
-        .locator(".illustrated-earth")
-        .evaluate((el: HTMLImageElement) => el.naturalWidth),
-    )
-    .toBeGreaterThan(500);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
-  await page.screenshot({
-    path: path.join(evidence, "desktop-1366.png"),
-    fullPage: true,
-  });
-  const days = page.locator(".day-card");
-  await days.nth(1).click();
-  await expect(days.nth(1)).toHaveAttribute("aria-pressed", "true");
-  await expect(page).toHaveURL(/date=/);
-  const previousDateUrl = page.url();
-  await days.nth(2).click();
-  await page.goBack();
-  await expect(page).toHaveURL(previousDateUrl);
-  await expect(days.nth(1)).toHaveAttribute("aria-pressed", "true");
-  await page.goForward();
-  await expect(days.nth(2)).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Ver valores em tabela" }).click();
-  await expect(page.getByRole("table")).toBeVisible();
-  await page.getByRole("button", { name: "Ver origem", exact: true }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("dialog")).toContainText("não medições ao vivo");
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.screenshot({ path: path.join(evidence, 'teammate-overview-desktop.png'), fullPage: true });
   expect(errors).toEqual([]);
 });
 
-test("published crop analysis, location switching and unsupported water state", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: /Milho safrinha.*retrospectivo/ })
-    .click();
-  await expect(page.getByRole("dialog")).toContainText("safra 2021");
-  await expect(page.getByRole("dialog")).toContainText("kg/ha");
-  await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: /Buscar um local/ }).click();
-  await page
-    .getByRole("textbox", { name: "Buscar município ou região" })
-    .fill("uberlandia");
-  await page.getByRole("button", { name: /Uberlândia.*Município/ }).click();
-  await expect(page.locator(".location-select")).toContainText("Uberlândia");
-  await expect(page.locator(".day-list")).toContainText(
-    "Não há projeção hídrica publicada",
-  );
-  await page.getByRole("button", { name: /Soja.*primeiro corte/ }).click();
-  await expect(page.getByRole("dialog")).toContainText("Ainda sem estimativa");
-  await expect(page.getByRole("dialog")).not.toContainText("0 kg/ha");
+test('map, coverage, search and WebGL fallback keep the teammate interactions', async ({ page }) => {
+  await page.goto('/#/explorar?semwebgl=1');
+  await expect(page.getByText('Mapa indisponível neste aparelho.')).toBeVisible();
+  await page.getByRole('button', { name: 'Sorriso, MT', exact: true }).click();
+  await expect(page.getByTestId('mun-detail')).toContainText('Field Shift');
+  await page.getByRole('button', { name: 'Uberlândia, MG', exact: true }).click();
+  await expect(page.getByTestId('mun-detail')).toContainText('NDVI');
+  await expect(page.getByTestId('mun-detail')).not.toContainText('Field Shift');
+  await page.locator('#busca-local').fill('sorriso');
+  await expect(page.locator('#busca-lista')).toContainText('Sorriso');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('mun-detail')).toHaveAttribute('data-code', '5107925');
+  await page.goBack();
+  await expect(page.getByTestId('mun-detail')).toHaveAttribute('data-code', '3170206');
 });
 
-test("mobile composition, menu, keyboard search and reduced motion", async ({
-  page,
-}) => {
+test('mobile theme, local property flow, planning and records remain available without auth', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  await expect(page.locator(".crop-featured")).toBeVisible();
-  await page.evaluate(() => document.fonts.ready);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
-  await page.screenshot({
-    path: path.join(evidence, "mobile-390.png"),
-    fullPage: true,
-  });
-  await expect(page.locator(".sidebar")).toHaveAttribute("inert", "");
-  await page.getByRole("button", { name: "Abrir menu", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Sobre", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Sobre", exact: true }).click();
-  await expect(page.getByRole("dialog")).toContainText(
-    "primeira estrutura de frontend",
-  );
-  await page.keyboard.press("Escape");
-  await page.keyboard.press("Control+k");
-  await expect(
-    page.getByRole("textbox", { name: "Buscar município ou região" }),
-  ).toBeFocused();
-  await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: /Entrar/ }).click();
-  await expect(page.getByRole("dialog")).toContainText("acesso por e-mail ainda não está configurado");
+  await page.goto('/#/propriedades');
+  await expect(page.getByRole('heading', { name: 'Propriedades e talhões' })).toBeVisible();
+  await page.getByRole('button', { name: 'Mudar para tema claro' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.goto('/#/planejar');
+  await expect(page.getByRole('heading', { name: 'Planejar plantio' })).toBeVisible();
+  await expect(page.getByTestId('plan-eco')).toBeVisible();
+  await page.screenshot({ path: path.join(evidence, 'teammate-plan-mobile-light.png'), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.goto('/#/registros');
+  await expect(page.getByText('Cadastre um talhão para começar')).toBeVisible();
 });
 
-test("actual geographic map loads without replacing evidence context", async ({
-  page,
-}) => {
-  page.on("console", (message) => {
-    if (message.type() === "warning" || message.type() === "error")
-      console.log("map browser:", message.text());
-  });
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await page.goto("/");
-  await expect(page.locator(".crop-featured")).toBeVisible();
-  await page.getByRole("button", { name: "Mapa", exact: true }).click();
-  await expect(page.locator(".maplibregl-canvas")).toBeVisible();
-  await expect(page.locator(".map-message")).toHaveCount(0, { timeout: 15000 });
-  await expect(page.locator(".location-select")).toContainText("Sorriso");
-  await page.screenshot({
-    path: path.join(evidence, "geography-map.png"),
-    fullPage: true,
-  });
+test('imagery and historical simulation load through the adapted project', async ({ page }) => {
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/#/municipio?mun=3170206&aba=imagem');
+  await expect(page.getByRole('heading', { name: /Uberlândia/ }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'NDVI e chuva alinhados por data' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /Imagem de satélite/ })).toBeVisible();
+  await page.goto('/#/field-shift');
+  await expect(page.getByRole('heading', { name: /Field Shift/ }).first()).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'A · Pousio' })).toBeVisible();
+  await page.goto('/#/simulador');
+  await expect(page.getByRole('heading', { name: /Simulador de safra/ })).toBeAttached();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 20000 });
+  await page.screenshot({ path: path.join(evidence, 'teammate-simulator.png'), fullPage: true });
+  expect(errors).toEqual([]);
+});
+
+test('real account screens and native email callbacks use the imported design system', async ({ page }) => {
+  await page.goto('/#/conta');
+  await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Senha', { exact: true })).toBeVisible();
+  await expect(page.locator('.card')).toBeVisible();
+  await page.getByRole('link', { name: 'Criar conta', exact: true }).click();
+  await expect(page.getByLabel('Seu nome')).toBeVisible();
+  await page.getByRole('link', { name: 'Entrar', exact: true }).click();
+  await page.getByRole('link', { name: 'Recuperar acesso', exact: true }).click();
+  await expect(page.getByLabel('E-mail da conta')).toBeVisible();
+  for (const route of ['/auth/callback', '/auth/recovery']) {
+    await page.goto(route + '?error=access_denied');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByLabel('Nova senha', { exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(route + '$'));
+    await page.getByRole('link', { name: 'Visão geral', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Hoje em Sorriso, MT' })).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/');
+  }
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { AuthPanel } from './AuthPanel';
+
 import { exchangeEmailCode, supabase } from './client';
 import { callbackProblem, safeReturnPath } from './urls';
 import { canResumeRecovery, clearRecovery, rememberRecovery } from './recovery';
@@ -11,7 +11,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [emailUrl] = useState(() => new URL(location.href));
-  const [returnPath] = useState(() => safeReturnPath(sessionStorage.getItem('gaiapus.auth.return')));
+  const [returnPath] = useState(() => safeReturnPath(sessionStorage.getItem('gaiapus.auth.return') ?? '/#/explorar'));
 
   useEffect(() => {
     const url = emailUrl;
@@ -58,16 +58,16 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
     finally { setBusy(false); }
   }
 
-  return <main className="auth-page"><section className="auth-surface" aria-labelledby="auth-title">
-    <a className="auth-brand" href="/">Gaiapus</a>
+  return <main className="page" style={{ maxWidth: 520 }}><section className="card" aria-labelledby="auth-title">
+
     <h1 id="auth-title">{recovery ? 'Recuperar acesso' : 'Confirmar e-mail'}</h1>
     <p role="status">{message}</p>
-    {status === 'ready' && <form className="auth-form" onSubmit={updatePassword}>
-      <label>Nova senha<input autoComplete="new-password" type="password" required minLength={8} value={password} disabled={busy} onChange={e => setPassword(e.target.value)} /></label>
-      <label>Confirmar nova senha<input autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
-      <button className="primary-button" disabled={busy}>{busy ? 'Salvando…' : 'Salvar nova senha'}</button>
+    {status === 'ready' && <form className="stack" onSubmit={updatePassword}>
+      <label>Nova senha<input className="input" autoComplete="new-password" type="password" required minLength={8} value={password} disabled={busy} onChange={e => setPassword(e.target.value)} /></label>
+      <label>Confirmar nova senha<input className="input" autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
+      <button className="btn btn--primary" disabled={busy}>{busy ? 'Salvando…' : 'Salvar nova senha'}</button>
     </form>}
-    {status === 'error' && supabase && <AuthPanel />}
-    <a className="text-button" href={returnPath}>Voltar à exploração</a>
+    {status === 'error' && supabase && <div className="row"><a className="btn" href="/#/conta/recuperar">Pedir novo link</a><a className="btn" href="/#/conta">Entrar ou reenviar confirmação</a></div>}
+    <a className="btn" href={returnPath}>Voltar à exploração</a>
   </section></main>;
 }

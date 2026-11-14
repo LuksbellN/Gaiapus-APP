@@ -1,0 +1,14 @@
+{
+  "source": "Nasa-Frontend/src",
+  "captured": "2026-11-14",
+  "sha256": {
+    "styles.css": "dc8dd907d606c181280305d44efe800d29d0ca6137b082946fadcac8e40dd8ae",
+    "map/ExplorerMap.tsx": "8dae6a3ecefa4e5fa24d2f9077631d5c782c66555f8b4ef3f81370c04d3fa643",
+    "sim/Field3D.tsx": "f34db7ba768f6e22da6c6fd72c940ff7728a91e78c303300303f33a219bf8e31",
+    "pages/Overview.tsx": "5926b504014b0aadb9700128b5b99b7807d5bae0cf40bad3216130b20401dbc8",
+    "pages/Explore.tsx": "59510975fea5acad0bb2e269baf46361bfac56efc72469678688e77bb04925f8",
+    "pages/Simulator.tsx": "62847a11bbb02e0f80fa89dbe72f969906ea0c6fe2dfa03a6ec6bc0fe867d982",
+    "pages/Plan.tsx": "2ae58172af39506412f90bd25bbcbb92b014605a154177f13bca45c2ec74273b",
+    "ui/index.tsx": "f81aa0d3f700fe6268306d28871e74d324fec73ffcf2e382f283133dab01f984"
+  }
+}

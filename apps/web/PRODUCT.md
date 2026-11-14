@@ -1,5 +1,7 @@
 # Product
 
+> The active frontend is the approved teammate handoff in `src/teammate`. Its design is documented in `DESIGN.md`; integration boundaries are in `README.md`. Earlier visual descriptions below are historical.
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform

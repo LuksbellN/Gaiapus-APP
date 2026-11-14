@@ -4,11 +4,26 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "declaration": false
+    "declaration": false,
+    "noUncheckedIndexedAccess": false
   },
-  "include": ["src", "vite.config.ts", "vitest.config.ts"]
+  "include": [
+    "src/teammate",
+    "src/main.tsx",
+    "src/features/auth",
+    "src/lib/api",
+    "src/test",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

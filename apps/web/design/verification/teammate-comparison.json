@@ -1,0 +1,112 @@
+[
+  {
+    "name": "reference",
+    "metrics": [
+      {
+        "selector": ".header",
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 64,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(11, 20, 17)"
+      },
+      {
+        "selector": ".rail",
+        "x": 0,
+        "y": 64,
+        "width": 88,
+        "height": 836,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(11, 20, 17)"
+      },
+      {
+        "selector": ".main",
+        "x": 88,
+        "y": 64,
+        "width": 1352,
+        "height": 836,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "selector": ".page",
+        "x": 124,
+        "y": 64,
+        "width": 1280,
+        "height": 1711.265625,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "selector": ".card",
+        "x": 148,
+        "y": 271.6875,
+        "width": 888,
+        "height": 290.5,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(20, 35, 28)"
+      }
+    ]
+  },
+  {
+    "name": "integrated",
+    "metrics": [
+      {
+        "selector": ".header",
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 64,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(11, 20, 17)"
+      },
+      {
+        "selector": ".rail",
+        "x": 0,
+        "y": 64,
+        "width": 88,
+        "height": 836,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(11, 20, 17)"
+      },
+      {
+        "selector": ".main",
+        "x": 88,
+        "y": 64,
+        "width": 1352,
+        "height": 836,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "selector": ".page",
+        "x": 124,
+        "y": 64,
+        "width": 1280,
+        "height": 1711.265625,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      {
+        "selector": ".card",
+        "x": 148,
+        "y": 271.6875,
+        "width": 888,
+        "height": 290.5,
+        "font": "\"Source Sans 3\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "color": "rgb(234, 242, 235)",
+        "background": "rgb(20, 35, 28)"
+      }
+    ]
+  }
+]
