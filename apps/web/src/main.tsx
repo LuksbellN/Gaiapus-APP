@@ -6,10 +6,14 @@ import "@fontsource/manrope/latin-700.css";
 import "@fontsource/source-sans-3/latin-400.css";
 import "@fontsource/source-sans-3/latin-600.css";
 import App from "./App";
+import { initializeAuth } from './features/auth/client';
+import { AuthPage } from './features/auth/AuthPage';
 import "./styles/app.css";
 
 async function start() {
-  if (import.meta.env.DEV && import.meta.env.VITE_APP_API_MODE !== "http") {
+  const authRoute = location.pathname === '/auth/callback' || location.pathname === '/auth/recovery';
+  await initializeAuth();
+  if (!authRoute && import.meta.env.DEV && import.meta.env.VITE_APP_API_MODE !== "http") {
     const { worker } = await import("./mocks/browser");
     await worker.start({
       onUnhandledRequest: "bypass",
@@ -19,7 +23,8 @@ async function start() {
   }
   createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-      <App />
+      {authRoute
+        ? <AuthPage recovery={location.pathname === '/auth/recovery'} /> : <App />}
     </React.StrictMode>,
   );
 }

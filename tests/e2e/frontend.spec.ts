@@ -5,6 +5,18 @@ import {
 import path from "node:path";
 const evidence = path.resolve(process.cwd(), "design", "verification");
 
+test('email callback routes render safely without a valid link', async ({ page }) => {
+  for (const route of ['/auth/callback', '/auth/recovery']) {
+    await page.goto(route + '?error=access_denied');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(route.endsWith('recovery') ? 'Recuperar acesso' : 'Confirmar e-mail');
+    await expect(page.getByText(/expirou|ainda não está configurado/).first()).toBeVisible();
+    await expect(page.getByLabel('Nova senha', { exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(route + '$'));
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: path.join(evidence, 'auth-recovery-mobile.png'), fullPage: true });
+});
+
 test("reference layout, real assets, day selection and sources at laptop size", async ({
   page,
 }) => {
@@ -114,7 +126,7 @@ test("mobile composition, menu, keyboard search and reduced motion", async ({
   ).toBeFocused();
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: /Entrar/ }).click();
-  await expect(page.getByRole("dialog")).toContainText("próxima etapa");
+  await expect(page.getByRole("dialog")).toContainText("acesso por e-mail ainda não está configurado");
 });
 
 test("actual geographic map loads without replacing evidence context", async ({

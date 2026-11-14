@@ -47,6 +47,9 @@ importers:
       '@gaiapus/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@supabase/supabase-js':
+        specifier: 2.80.0
+        version: 2.80.0
       lucide-react:
         specifier: 1.73.0
         version: 1.73.0(@types/react@19.3.0)(react@19.3.1)

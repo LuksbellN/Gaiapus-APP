@@ -6,6 +6,7 @@ import type {
   ObservationsResult,
   ResponseMeta,
 } from "@gaiapus/contracts";
+import { currentAccessToken } from '../../features/auth/client';
 type Envelope<T> = { data: T; meta: ResponseMeta };
 export class ApiError extends Error {
   constructor(
@@ -84,4 +85,4 @@ export class ApiClient {
     ))!.data;
   }
 }
-export const api = new ApiClient();
+export const api = new ApiClient(undefined, currentAccessToken);

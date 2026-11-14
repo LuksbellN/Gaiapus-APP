@@ -1,3 +1,5 @@
+import { AuthPanel } from './features/auth/AuthPanel';
+import { useAuthSession } from './features/auth/useAuthSession';
 import {
   lazy,
   Suspense,
@@ -77,6 +79,7 @@ const stateName: Record<string, string> = {
 };
 
 export default function App() {
+  const authSession = useAuthSession();
   const [context, dispatch] = useReducer(
     reduceContext,
     location.search,
@@ -398,7 +401,7 @@ export default function App() {
             <ChevronDown size={16} />
           </button>
           <button className="sign-in" onClick={() => setModal("signin")}>
-            Entrar <ArrowRight size={15} />
+            {authSession ? 'Minha conta' : 'Entrar'} <ArrowRight size={15} />
           </button>
         </header>
 
@@ -986,26 +989,7 @@ export default function App() {
             </>
           )}
           {modal === "signin" && (
-            <>
-              <div className="auth-illustration">
-                <Sprout size={38} />
-              </div>
-              <p>
-                Salve locais monitorados e retome comparações com os dados e
-                versões originais.
-              </p>
-              <div className="notice">
-                <Info size={18} />
-                <span>
-                  A conexão de contas será entregue na próxima etapa. Nesta
-                  primeira versão, todos os exemplos e suas fontes podem ser
-                  explorados sem cadastro.
-                </span>
-              </div>
-              <button className="primary-button" onClick={() => setModal(null)}>
-                Continuar explorando <ArrowRight size={16} />
-              </button>
-            </>
+            <AuthPanel />
           )}
           {modal === "about" && (
             <>
