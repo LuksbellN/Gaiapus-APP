@@ -96,12 +96,12 @@ test.describe('RT-03 mapa indisponível', () => {
 });
 
 test.describe('RT-04 busca com a API fora', () => {
-  test.fixme('D-01: países, estados e municípios locais continuam encontráveis, com aviso da consulta remota', async ({ page }) => {
+  test('D-01: países, estados e municípios locais continuam encontráveis, com aviso da consulta remota', async ({ page }) => {
     await page.route('**/v1/geography**', (r) => r.abort());
     await page.goto('/#/explorar?semwebgl=1');
     await page.locator('#busca-local').fill('argentina');
     await expect(page.locator('#busca-lista')).toContainText('Argentina');
-    await expect(page.locator('#busca-lista')).toContainText(/consulta de lugares publicados falhou/);
+    await expect(page.getByTestId('search-results')).toContainText(/consulta de lugares publicados falhou/);
     await page.locator('#busca-local').fill('sorriso');
     await expect(page.locator('#busca-lista')).toContainText('Sorriso');
   });

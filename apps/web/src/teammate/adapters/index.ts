@@ -13,6 +13,7 @@ export type Feature = { type: 'Feature'; id: number; properties: { code: string;
 export type FC = { type: 'FeatureCollection'; features: Feature[] };
 export type BBox = [[number, number], [number, number]];
 export type Place = { type: 'pais' | 'uf' | 'municipio'; code: string; name: string; uf: string; ufSigla: string };
+export type SearchResult = { places: Place[]; total: number; remote: 'ok' | 'failed' | 'skipped' };
 /** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia. */
 export type Country = { code: string; name: string; continent: string; bbox: BBox };
 
@@ -40,9 +41,12 @@ export const geography = {
     return { data: await once('mun' + uf, MUN_LOADERS[uf]), meta: { kind: 'fixture', source: IBGE } };
   },
   // Busca por nome ou identificador (sigla/código da UF, código IBGE de 7 dígitos).
-  async search(q: string, signal?: AbortSignal): Promise<Place[]> {
+  // Os lugares do pacote (países, estados, municípios de MG e MT) aparecem sempre. A consulta ao catálogo
+  // publicado da API é complementar: se falhar, os resultados locais continuam e `remote` diz que falhou.
+  async search(q: string, signal?: AbortSignal): Promise<SearchResult> {
     await wait(signal, 40);
-    const s = norm(q); if (s.length < 2) return [];
+    const s = norm(q); if (s.length < 2) return { places: [], total: 0, remote: 'skipped' };
+    const remote = backend.geography(q, signal).then((r) => ({ ok: true as const, items: r.items }), (error) => { if ((error as Error)?.name === 'AbortError') throw error; return { ok: false as const, items: [] }; });
     const st = (await this.states()).data.features;
     const sig = Object.fromEntries(st.map((f) => [f.properties.code, f.properties.sigla!]));
     const out: Place[] = st.filter((f) => norm(f.properties.name).includes(s) || norm(f.properties.sigla!) === s || f.properties.code === s).map((f) => ({ type: 'uf', code: f.properties.code, name: f.properties.name, uf: f.properties.code, ufSigla: f.properties.sigla! }));
@@ -51,14 +55,17 @@ export const geography = {
       for (const f of fc.features) if (norm(f.properties.name).includes(s) || f.properties.code.startsWith(s)) out.push({ type: 'municipio', code: f.properties.code, name: f.properties.name, uf, ufSigla: sig[uf] });
     }
     for (const c of (await this.countries()).data) if (c.code !== 'BR' ? norm(c.name).includes(s) || norm(c.code) === s : norm(c.name).includes(s)) out.push({ type: 'pais', code: c.code, name: c.name, uf: '', ufSigla: c.continent });
-    const published = await backend.geography(q, signal);
+    const published = await remote;
     for (const area of published.items) {
       if (area.kind !== 'municipality' || out.some(p => p.code === area.area_id)) continue;
-      const uf = area.area_id.slice(0, 2);
-      out.push({ type: 'municipio', code: area.area_id, name: area.name, uf, ufSigla: sig[uf] ?? '' });
+      // UF from the catalogue's own state_id (BR-MT), never from the identifier prefix.
+      const ufSig = area.state_id?.startsWith('BR-') ? area.state_id.slice(3) : '';
+      const uf = st.find((f) => f.properties.sigla === ufSig)?.properties.code ?? '';
+      out.push({ type: 'municipio', code: area.area_id, name: area.name, uf, ufSigla: ufSig });
     }
     const rank = (p: Place) => (norm(p.name) === s ? 0 : norm(p.name).startsWith(s) ? 1 : 2) + (p.type === 'pais' && p.code !== 'BR' ? 0.5 : 0);
-    return out.sort((x, y) => rank(x) - rank(y) || x.name.localeCompare(y.name, 'pt-BR')).slice(0, 12);
+    const places = out.sort((x, y) => rank(x) - rank(y) || x.name.localeCompare(y.name, 'pt-BR'));
+    return { places, total: places.length, remote: published.ok ? 'ok' : 'failed' };
   },
 };
 

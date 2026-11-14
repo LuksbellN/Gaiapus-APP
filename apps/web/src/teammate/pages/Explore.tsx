@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronRight, Layers, LocateFixed, MapPin, Minus, Plus, RotateCcw, Search } from 'lucide-react';
-import { coverage, geography, imagery, type Coverage, type FC, type Place } from '../adapters';
+import { coverage, geography, imagery, type Coverage, type FC, type Place, type SearchResult } from '../adapters';
 import { latestOnly, type Meta } from '../adapters/core';
 import type { MapHandle, MapLayers, Selection } from '../map/types';
 import { PRESETS } from '../config';
@@ -159,21 +159,27 @@ function MunDetail({ code, name, uf, cov, munStatus, found, retry, onSeeCovered,
   );
 }
 
+const SEARCH_LIMIT = 12;
 function PlaceSearch({ onPick }: { onPick: (p: Place) => void }) {
-  const [q, setQ] = useState(''); const [res, setRes] = useState<Place[] | null>(null); const [act, setAct] = useState(0); const [open, setOpen] = useState(false); const run = useRef(latestOnly()).current;
-  useEffect(() => { if (q.trim().length < 2) { setRes(null); return; } run((sg) => geography.search(q, sg)).then((r) => { if (!r.stale) { setRes(r.value); setAct(0); } }).catch(() => setRes([])); }, [q]); // eslint-disable-line
+  const [q, setQ] = useState(''); const [res, setRes] = useState<SearchResult | null>(null); const [all, setAll] = useState(false); const [act, setAct] = useState(0); const [open, setOpen] = useState(false); const run = useRef(latestOnly()).current;
+  useEffect(() => { setAll(false); if (q.trim().length < 2) { setRes(null); return; } run((sg) => geography.search(q, sg)).then((r) => { if (!r.stale) { setRes(r.value); setAct(0); } }).catch(() => setRes({ places: [], total: 0, remote: 'failed' })); }, [q]); // eslint-disable-line
+  const shown = res ? (all ? res.places : res.places.slice(0, SEARCH_LIMIT)) : [];
   const choose = (p: Place) => { onPick(p); setQ(''); setOpen(false); };
   return (
     <div className="search" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
       <Search className="lead" size={18} aria-hidden />
       <label className="sr-only" htmlFor="busca-local">Buscar país, estado ou município por nome ou código IBGE</label>
-      <input id="busca-local" className="input" role="combobox" aria-expanded={open && !!res} aria-controls="busca-lista" aria-autocomplete="list" aria-activedescendant={open && res?.length ? `busca-op-${act}` : undefined} placeholder="Buscar país, lugar ou código IBGE…" value={q} autoComplete="off" spellCheck={false} name="busca-local" enterKeyHint="search"
+      <input id="busca-local" className="input" role="combobox" aria-expanded={open && !!res} aria-controls="busca-lista" aria-autocomplete="list" aria-activedescendant={open && shown.length ? `busca-op-${act}` : undefined} placeholder="Buscar país, lugar ou código IBGE…" value={q} autoComplete="off" spellCheck={false} name="busca-local" enterKeyHint="search"
         onChange={(e) => { setQ(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)}
-        onKeyDown={(e) => { if (!res?.length) { if (e.key === 'Escape') setOpen(false); return; } if (e.key === 'ArrowDown') { e.preventDefault(); setAct((a) => (a + 1) % res.length); } else if (e.key === 'ArrowUp') { e.preventDefault(); setAct((a) => (a - 1 + res.length) % res.length); } else if (e.key === 'Enter') { e.preventDefault(); choose(res[act]); } else if (e.key === 'Escape') setOpen(false); }} />
-      {open && res && <ul className="search__list" id="busca-lista" role="listbox" aria-label="Resultados">
-        {res.length === 0 ? <li role="option" aria-selected={false} aria-disabled style={{ cursor: 'default' }}><span className="meta">Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT.</span></li>
-          : res.map((p, i) => <li key={p.type + p.code} id={`busca-op-${i}`} role="option" aria-selected={i === act} onMouseDown={(e) => { e.preventDefault(); choose(p); }}><span>{p.name}{p.type === 'municipio' ? `, ${p.ufSigla}` : ''}</span><span className="meta-13">{p.type === 'pais' ? `País · ${p.ufSigla}` : p.type === 'uf' ? 'Estado' : p.code}</span></li>)}
-      </ul>}
+        onKeyDown={(e) => { if (!shown.length) { if (e.key === 'Escape') setOpen(false); return; } if (e.key === 'ArrowDown') { e.preventDefault(); setAct((a) => (a + 1) % shown.length); } else if (e.key === 'ArrowUp') { e.preventDefault(); setAct((a) => (a - 1 + shown.length) % shown.length); } else if (e.key === 'Enter') { e.preventDefault(); choose(shown[act]); } else if (e.key === 'Escape') setOpen(false); }} />
+      {open && res && <div className="search__list" data-testid="search-results">
+        <ul id="busca-lista" role="listbox" aria-label="Resultados" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {shown.length === 0 ? <li role="option" aria-selected={false} aria-disabled style={{ cursor: 'default' }}><span className="meta">{res.remote === 'failed' ? 'Nenhum lugar deste aplicativo tem esse nome, e a consulta de lugares publicados falhou. Tente de novo em instantes.' : 'Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT.'}</span></li>
+            : shown.map((p, i) => <li key={p.type + p.code} id={`busca-op-${i}`} role="option" aria-selected={i === act} onMouseDown={(e) => { e.preventDefault(); choose(p); }}><span>{p.name}{p.type === 'municipio' && p.ufSigla ? `, ${p.ufSigla}` : ''}</span><span className="meta-13">{p.type === 'pais' ? `País · ${p.ufSigla}` : p.type === 'uf' ? 'Estado' : p.code}</span></li>)}
+        </ul>
+        {res.remote === 'failed' && shown.length > 0 && <p className="meta-13" role="status" style={{ padding: '6px 12px', margin: 0 }}>A consulta de lugares publicados falhou. Mostrando os lugares deste aplicativo.</p>}
+        {!all && res.total > SEARCH_LIMIT && <button type="button" className="btn btn--sm btn--ghost" style={{ margin: '4px 8px 8px' }} onMouseDown={(e) => e.preventDefault()} onClick={() => setAll(true)}>Ver todos os {res.total} resultados</button>}
+      </div>}
     </div>
   );
 }

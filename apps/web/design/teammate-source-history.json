@@ -6,6 +6,12 @@
       "date": "2026-11-14",
       "reason": "B2 (D-03): campos numéricos mostram orientação de decimal",
       "sha256": "ad523488defeff48fc8fa3a0ee07c79976fbd3841e0c5682fe5b6de4b1e31760"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "B1 (D-01): busca mantém lugares locais com a API fora; ver todos os resultados",
+      "sha256": "294bf7d5116f18cdafa7cb85874424cac57959da4e3be4e8fef0a780f6fefdae"
     }
   ]
 }
