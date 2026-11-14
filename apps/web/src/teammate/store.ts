@@ -8,13 +8,13 @@ export type RecordKind = 'plantio' | 'evento' | 'colheita' | 'venda';
 export type FieldRecord = { id: string; kind: RecordKind; plotId: string; cycleId: string; event_at: string; recorded_at: string; updated_at: string; origin: 'informado' | 'observado' | 'estimado' | 'sintetico'; schema: 1; revision: number; data: Record<string, string> };
 export type Plan = { id: string; createdAt: string; data: Record<string, string> };
 export type Session = { userId: string; name: string; email: string; researchConsent: boolean; consentAt: string | null } | null;
-export type State = { theme: 'dark' | 'light'; session: Session; properties: Property[]; plots: Plot[]; records: FieldRecord[]; plans: Plan[]; drafts: Record<string, Record<string, string>>; activePlotId: string | null };
+export type State = { session: Session; properties: Property[]; plots: Plot[]; records: FieldRecord[]; plans: Plan[]; drafts: Record<string, Record<string, string>>; activePlotId: string | null };
 
 const KEY = 'gaiapus.v1';
 let activeKey = KEY + '.guest';
 let accountScope = 0;
 export const getAccountScope = () => accountScope;
-const initial: State = { theme: 'dark', session: null, properties: [], plots: [], records: [], plans: [], drafts: {}, activePlotId: null };
+const initial: State = { session: null, properties: [], plots: [], records: [], plans: [], drafts: {}, activePlotId: null };
 let persistent = true;
 // Registros e planos salvos antes do catálogo guardavam só o nome da cultura. A migração acrescenta `cultura_id`
 // (ID do contrato) sem apagar nem reescrever nada. Nome ambíguo ("Café", "Milho") fica sem ID e marcado
@@ -34,16 +34,16 @@ export function setState(patch: Partial<State> | ((s: State) => Partial<State>))
 export function useStore<T>(sel: (s: State) => T): T { return useSyncExternalStore((cb) => { subs.add(cb); return () => subs.delete(cb); }, () => sel(state)); }
 export const uid = (p: string) => `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 export const now = () => new Date().toISOString();
-export function resetAll() { state = { ...initial, theme: state.theme, session: state.session }; try { localStorage.removeItem(activeKey); if (activeKey === KEY + '.guest') localStorage.removeItem(KEY); } catch { /* sem armazenamento */ } subs.forEach((f) => f()); }
+export function resetAll() { state = { ...initial, session: state.session }; try { localStorage.removeItem(activeKey); if (activeKey === KEY + '.guest') localStorage.removeItem(KEY); } catch { /* sem armazenamento */ } subs.forEach((f) => f()); }
 // Only the verified Supabase session bridge calls this; stored identity never authenticates.
+// Device preferences (theme, language) live in prefs.ts and are not part of any account bucket.
 export function activateAccount(session: Session) {
   const nextKey = session ? KEY + '.user.' + session.userId : KEY + '.guest';
   if (nextKey === activeKey) { setState({ session: session ? { ...session, researchConsent: state.session?.researchConsent ?? false, consentAt: state.session?.consentAt ?? null } : null }); return; }
-  const theme = state.theme;
   accountScope++;
   activeKey = nextKey;
   const saved = load();
-  state = { ...saved, theme, session: session ? { ...session, researchConsent: saved.session?.researchConsent ?? false, consentAt: saved.session?.consentAt ?? null } : null };
+  state = { ...saved, session: session ? { ...session, researchConsent: saved.session?.researchConsent ?? false, consentAt: saved.session?.consentAt ?? null } : null };
   subs.forEach(f => f());
 }
 export function setDraft(key: string, data: Record<string, string> | null) { setState((s) => { const d = { ...s.drafts }; if (data) d[key] = data; else delete d[key]; return { drafts: d }; }); }

@@ -2,7 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { NavLink, Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { Bell, CalendarDays, CircleUserRound, CloudRain, Droplets, Globe, Layers, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
 import { EDITION, MODE } from './config';
-import { setState, useStore } from './store';
+import { useStore } from './store';
+import { setPrefs, usePrefs } from './prefs';
 import { Pill } from './ui';
 import { lazyPage, preloadLightPages, preloadRoute } from './lazyPage';
 import { More } from './pages/More';
@@ -42,7 +43,7 @@ export function useActiveContext() {
 }
 
 export function App({ authPage }: { authPage?: ReactNode } = {}) {
-  const theme = useStore((s) => s.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext();
+  const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext();
   useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'dark' ? '#0B1411' : '#F5F7F2'); }, [theme]);
   useEffect(() => { document.getElementById('conteudo')?.scrollTo?.(0, 0); }, [loc.pathname]);
   useEffect(() => {
@@ -65,7 +66,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         <div className="header__end">
           <span className="hide-sm"><Pill>Edição {EDITION.year}</Pill></span>
           <span className="hide-sm"><Pill tone="warn">{MODE.label}</Pill></span>
-          <button className="icon-btn" aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'} onClick={() => setState({ theme: theme === 'dark' ? 'light' : 'dark' })}>{theme === 'dark' ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}</button>
+          <button className="icon-btn" aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'} onClick={() => setPrefs({ theme: theme === 'dark' ? 'light' : 'dark' })}>{theme === 'dark' ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}</button>
           <Link to="/conta" className="ctx-btn" aria-label={session ? `Conta de ${session.name}` : 'Entrar ou criar conta'}><CircleUserRound size={20} aria-hidden /><span className="hide-sm">{session ? session.name : 'Entrar'}</span></Link>
         </div>
       </header>

@@ -21,7 +21,7 @@ describe('catálogo de culturas', () => {
 
 describe('migração do armazenamento local', () => {
   const rec = (id: string, data: Record<string, string>) => ({ id, kind: 'plantio' as const, plotId: 't1', cycleId: 't1:2026/2027', event_at: '2026-10-05', recorded_at: 'x', updated_at: 'x', origin: 'informado' as const, schema: 1 as const, revision: 1, data });
-  const old: State = { theme: 'dark', session: null, properties: [], plots: [], drafts: {}, activePlotId: null,
+  const old: State = { session: null, properties: [], plots: [], drafts: {}, activePlotId: null,
     records: [rec('a', { cultura: 'Milho safrinha', area: '10', cultivar: 'AG 8088' }), rec('b', { cultura: 'Outra', area: '2' }), rec('c', { cultura: 'Café', area: '3', idade: '4' }), { ...rec('d', { quantidade: '100', unidade: 'saca', saca: '60' }), kind: 'colheita' }],
     plans: [{ id: 'p1', createdAt: 'x', data: { cultura: 'Café', area: '5', preco: '1200' } }, { id: 'p2', createdAt: 'x', data: { cultura: 'Soja', area: '50' } }] };
   const m = migrate(old);

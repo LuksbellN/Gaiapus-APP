@@ -17,7 +17,7 @@
     @keyframes boot { to { transform: translateX(150%); } }
     @media (prefers-reduced-motion: reduce) { .boot i::after { animation: none; width: 100%; opacity: .5; } }
   </style>
-  <script>try { if (JSON.parse(localStorage.getItem('gaiapus.v1') || '{}').theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}</script>
+  <script>try { var p = JSON.parse(localStorage.getItem('gaiapus.prefs') || localStorage.getItem('gaiapus.v1.guest') || '{}'); if (p.theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}</script>
 </head>
 <body>
   <div id="root"><div class="boot" role="status"><b translate="no">Gaiapus</b><span>Carregando…</span><i aria-hidden="true"></i></div></div>
