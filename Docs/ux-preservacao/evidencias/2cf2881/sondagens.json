@@ -1,0 +1,456 @@
+{
+ "base": "http://127.0.0.1:5173",
+ "at": "2026-11-14T21:45:38.085Z",
+ "results": {
+  "busca:resultados": {
+   "5107925": [
+    "Sorriso, MT 5107925"
+   ],
+   "alemanha": [
+    "Alemanha País · Europa"
+   ],
+   "germany": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "deutschland": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "allemagne": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "alemania": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "DEU": [
+    "Madre de Deus de Minas, MG 3139102",
+    "Alemanha País · Europa"
+   ],
+   "de": [
+    "Delfim Moreira, MG 3121100",
+    "Delfinópolis, MG 3121209",
+    "Delta, MG 3121258",
+    "Denise, MT 5103452",
+    "Descoberto, MG 3121308",
+    "Desterro de Entre Rios, MG 3121407",
+    "Desterro do Melo, MG 3121506",
+    "Alvorada de Minas, MG 3102407",
+    "Antônio Prado de Minas, MG 3103108",
+    "Augusto de Lima, MG 3104809",
+    "Bandeira, MG 3105202",
+    "Bandeira do Sul, MG 3105301"
+   ],
+   "estados unidos": [
+    "Estados Unidos País · América do Norte"
+   ],
+   "usa": [
+    "Estados Unidos País · América do Norte"
+   ],
+   "united states": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "japão": [
+    "Japão País · Ásia"
+   ],
+   "japan": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "rio verde": [
+    "Rio Verde, GO 5218805",
+    "Conceição do Rio Verde, MG 3117702",
+    "Lucas do Rio Verde, MT 5105259",
+    "São Sebastião do Rio Verde, MG 3164902"
+   ],
+   "barreiras": [
+    "Barreiras, BA 2903201"
+   ],
+   "sorriso": [
+    "Sorriso, MT 5107925"
+   ],
+   "uberlandia": [
+    "Uberlândia, MG 3170206"
+   ],
+   "MT": [
+    "Mato Grosso Estado"
+   ],
+   "são": [
+    "São Bento Abade, MG 3160801",
+    "São Brás do Suaçuí, MG 3160900",
+    "São Domingos das Dores, MG 3160959",
+    "São Domingos do Prata, MG 3161007",
+    "São Félix de Minas, MG 3161056",
+    "São Félix do Araguaia, MT 5107859",
+    "São Francisco, MG 3161106",
+    "São Francisco de Paula, MG 3161205",
+    "São Francisco de Sales, MG 3161304",
+    "São Francisco do Glória, MG 3161403",
+    "São Geraldo, MG 3161502",
+    "São Geraldo da Piedade, MG 3161601"
+   ],
+   "zz": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ]
+  },
+  "busca:rio-verde-selecionado": {
+   "hash": "#/explorar?semwebgl=1&pais=BR&uf=52&mun=5218805",
+   "h1": "Município",
+   "crumbs": "Mundo Brasil GO 5218805",
+   "body": "Municípios ainda não carregados Malha municipal desta UF ainda não carregada nesta edição. O estado continua navegável no mapa. Nesta edição, a malha municipal cobre MG e MT. Atalhos Brasil Sorriso, MT Uberlândia, MG"
+  },
+  "mundo:lista": {
+   "n": 232,
+   "firstText": [
+    "Brasil27 unidades da federação · análise em MG e MTCom análise",
+    "Afeganistão Ásia",
+    "África do Sul África"
+   ],
+   "lastText": [
+    "Zâmbia África",
+    "Zimbábue África"
+   ],
+   "cv": "auto",
+   "markers": [
+    "Sorriso",
+    "Uberlândia"
+   ]
+  },
+  "mundo:respostas>=400": [],
+  "api-fora:busca(abort)": {
+   "argentina": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "sorriso": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "mato grosso": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ]
+  },
+  "api-fora:busca(503)": {
+   "argentina": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "sorriso": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ],
+   "mato grosso": [
+    "Nada encontrado. A busca cobre países, os estados do Brasil e os municípios de MG e MT."
+   ]
+  },
+  "api-fora:telas": {
+   "explorar-sorriso": {
+    "h1": [
+     "Sorriso"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "visao-geral": {
+    "h1": [
+     "Visão geral"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "municipio-safra": {
+    "h1": [
+     "Sorriso, MT"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "municipio-clima": {
+    "h1": [
+     "Sorriso, MT"
+    ],
+    "alerts": [],
+    "stats": [],
+    "cards": 1
+   },
+   "simulador": {
+    "h1": [
+     "Simulador"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "field-shift": {
+    "h1": [
+     "Field Shift"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "planejar": {
+    "h1": [
+     "Planejar plantio"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [
+     "—",
+     "—"
+    ],
+    "cards": 5
+   },
+   "alertas": {
+    "h1": [
+     "Alertas"
+    ],
+    "alerts": [
+     "Sem conexão. Sem conexão. Os dados já carregados continuam na tela; tente de novo quando a rede voltar. Tentar de novo"
+    ],
+    "stats": [],
+    "cards": 0
+   },
+   "propriedades": {
+    "h1": [
+     "Propriedades e talhões"
+    ],
+    "alerts": [],
+    "stats": [],
+    "cards": 2
+   }
+  },
+  "rascunho:A-B-A": {
+   "opts": [
+    "Talhão A",
+    "Talhão B"
+   ],
+   "steps": [
+    {
+     "label": "início (talhão ativo)",
+     "plot": "Talhão A",
+     "cultivar": "",
+     "area": "12,5",
+     "status": "Rascunho salvo automaticamente neste aparelho",
+     "drafts": {}
+    },
+    {
+     "label": "digitou no A",
+     "plot": "Talhão A",
+     "cultivar": "CULTIVAR-DO-A",
+     "area": "12,5",
+     "status": "Rascunho salvo automaticamente neste aparelho",
+     "drafts": {
+      "registro:plantio:fkn0": "CULTIVAR-DO-A"
+     }
+    },
+    {
+     "label": "trocou para B",
+     "plot": "Talhão B",
+     "cultivar": "",
+     "area": "30",
+     "status": "Rascunho salvo automaticamente neste aparelho",
+     "drafts": {
+      "registro:plantio:fkn0": "CULTIVAR-DO-A"
+     }
+    },
+    {
+     "label": "digitou no B",
+     "plot": "Talhão B",
+     "cultivar": "CULTIVAR-DO-B",
+     "area": "30",
+     "status": "Rascunho salvo automaticamente neste aparelho",
+     "drafts": {
+      "registro:plantio:fkn0": "CULTIVAR-DO-A",
+      "registro:plantio:ah6s": "CULTIVAR-DO-B"
+     }
+    },
+    {
+     "label": "voltou para A",
+     "plot": "Talhão A",
+     "cultivar": "",
+     "area": "12,5",
+     "status": "Rascunho salvo automaticamente neste aparelho",
+     "drafts": {
+      "registro:plantio:fkn0": "CULTIVAR-DO-A",
+      "registro:plantio:ah6s": "CULTIVAR-DO-B"
+     }
+    },
+    {
+     "label": "recarregou (A ativo)",
+     "plot": "Talhão A",
+     "cultivar": "CULTIVAR-DO-A",
+     "area": "12,5",
+     "status": "Rascunho recuperado · Rascunho salvo automaticamente neste aparelho",
+     "drafts": {
+      "registro:plantio:fkn0": "CULTIVAR-DO-A",
+      "registro:plantio:ah6s": "CULTIVAR-DO-B"
+     }
+    }
+   ]
+  },
+  "numero:area-no-plano (esperado com 10,5 ha: R$ 63.000,00)": {
+   "10,5": "Receita bruta R$ 63.000,00 3.000 kg/ha × 10,5 ha × R$ 2,00/kg || Margem R$ 63.000,00 Receita − R$ 0/ha × 10,5 ha · preço de 14/11/2026",
+   "10.5": "Receita bruta R$ 630.000,00 3.000 kg/ha × 10.5 ha × R$ 2,00/kg || Margem R$ 630.000,00 Receita − R$ 0/ha × 10.5 ha · preço de 14/11/2026",
+   "1.5": "Receita bruta R$ 90.000,00 3.000 kg/ha × 1.5 ha × R$ 2,00/kg || Margem R$ 90.000,00 Receita − R$ 0/ha × 1.5 ha · preço de 14/11/2026",
+   "1,000.5": "Receita bruta R$ 6.003,00 3.000 kg/ha × 1,000.5 ha × R$ 2,00/kg || Margem R$ 6.003,00 Receita − R$ 0/ha × 1,000.5 ha · preço de 14/11/2026",
+   "1 000,5": "Receita bruta — || Margem — Falta: área.",
+   "10e2": "Receita bruta R$ 6.000.000,00 3.000 kg/ha × 10e2 ha × R$ 2,00/kg || Margem R$ 6.000.000,00 Receita − R$ 0/ha × 10e2 ha · preço de 14/11/2026"
+  },
+  "contexto:talhão em Uberlândia ativo": {
+   "visao-geral": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Hoje em Sorriso, MT"
+    ],
+    "pillsTop": [
+     "Previsão",
+     "Escala municipal"
+    ],
+    "demoNotice": false,
+    "hash": "#/visao-geral"
+   },
+   "planejar": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Planejar plantio"
+    ],
+    "pillsTop": [
+     "Uberlândia, MG"
+    ],
+    "demoNotice": false,
+    "hash": "#/planejar"
+   },
+   "simulador": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Simulador de safra — Sorriso, MT"
+    ],
+    "pillsTop": [],
+    "demoNotice": false,
+    "hash": "#/simulador"
+   },
+   "municipio": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Sorriso, MT"
+    ],
+    "pillsTop": [],
+    "demoNotice": false,
+    "hash": "#/municipio"
+   },
+   "alertas": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Alertas"
+    ],
+    "pillsTop": [
+     "Sorriso, MT · soja"
+    ],
+    "demoNotice": false,
+    "hash": "#/alertas"
+   },
+   "field-shift": {
+    "header": "Contexto atual: Sítio Teste · Talhão A · sem plantio registrado — abrir registros",
+    "h1": [
+     "Field Shift — Sorriso, MT"
+    ],
+    "pillsTop": [
+     "Simulação histórica",
+     "6 safras · 2015/16 a 2020/21"
+    ],
+    "demoNotice": false,
+    "hash": "#/field-shift"
+   }
+  },
+  "contexto:próxima atividade com Talhão B ativo (evento é do A)": {
+   "header": "Contexto atual: Sítio Teste · Talhão B · sem plantio registrado — abrir registros",
+   "prox": "Próxima atividade Emergência em 10 jan 2027"
+  },
+  "planos": {
+   "listed": {
+    "shown": 5,
+    "stored": 7,
+    "more": false
+   },
+   "reopened": {
+    "place": "Sorriso, MT · demonstração",
+    "item": "Soja · Uberlândia, MG · 7 ha 14/11/2026, 18:45"
+   },
+   "simuladorHash": "#/simulador?cultura=soy&mun=5107925"
+  },
+  "foco-titulo-tema": {
+   "primeiroTab": "Pular para o conteúdo",
+   "aposSkip": "conteudo",
+   "aposNavegar": {
+    "active": "A:Planejar",
+    "title": "Gaiapus · Água, clima e safra",
+    "h1": "Planejar plantio",
+    "liveRegions": 1
+   },
+   "tema": {
+    "theme": "light",
+    "keys": [
+     "gaiapus.v1.guest"
+    ],
+    "themeColor": "#F5F7F2"
+   },
+   "temaAposRecarregar": "light",
+   "storage": {
+    "gaiapus.v1.guest": 115
+   }
+  },
+  "celular:navegacao": {
+   "barra": [
+    "Explorar",
+    "Visão geral",
+    "Simulador",
+    "Registros",
+    "Mais"
+   ],
+   "mais": [
+    "Município",
+    "Planejar",
+    "Field Shift",
+    "Sondas",
+    "Alertas",
+    "Propriedades e talhões",
+    "Conta",
+    "Linguagem visual"
+   ],
+   "headerButtons": [
+    "Gaiapus — início 44x44",
+    "Contexto atual: Demonstração — abrir registros 152x44",
+    "Mudar para tema claro 44x44",
+    "Entrar ou criar conta 46x44"
+   ]
+  },
+  "auth:sem-supabase": {
+   "cadastro": {
+    "submitDisabled": true,
+    "noValidate": false,
+    "notice": "Contas indisponíveis. Configure o Supabase para entrar. A exploração e os registros locais continuam disponíveis sem conta.",
+    "fields": [
+     "Seu nome|text|required=true|autocomplete=name",
+     "E-mail|email|required=true|autocomplete=email",
+     "Senha|password|required=true|autocomplete=new-password"
+    ]
+   },
+   "callback": {
+    "url": "http://127.0.0.1:5173/auth/callback",
+    "h1": "Confirmar e-mail",
+    "msg": "O acesso por e-mail ainda não está configurado neste ambiente.",
+    "links": [
+     "Voltar à exploração → /#/explorar"
+    ]
+   }
+  }
+ }
+}
