@@ -14,6 +14,7 @@ export type ActiveContext = { plot: Plot | null; property: Property | null };
 /** Names this frontend already knows; the coverage catalogue (G2) extends this. */
 const KNOWN: Record<string, string> = { '5107925': 'Sorriso, MT', '3170206': 'Uberlândia, MG', '5218805': 'Rio Verde, GO', '2903201': 'Barreiras, BA' };
 
+export const isKnownPlace = (code: string) => code in KNOWN;
 export function placeName(code: string, ctx?: ActiveContext): string {
   if (ctx?.property?.municipalityCode === code) return `${ctx.property.municipalityName}, ${ctx.property.uf}`;
   return KNOWN[code] ?? `município IBGE ${code}`;

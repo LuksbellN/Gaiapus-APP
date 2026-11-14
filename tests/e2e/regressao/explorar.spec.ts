@@ -66,13 +66,13 @@ test.describe('RT-02 cobertura', () => {
     await expect(d.getByRole('link', { name: 'Cadastrar propriedade aqui' })).toBeVisible();
   });
 
-  test.fixme('D-07: município do catálogo fora de MG/MT mostra geografia não carregada, não "não encontrado"', async ({ page }) => {
+  test('D-07: município do catálogo fora de MG/MT mostra geografia não carregada, não "não encontrado"', async ({ page }) => {
     await page.goto('/#/explorar?pais=BR&uf=52&mun=5218805&semwebgl=1');
     await expect(title(page)).toHaveText('Rio Verde');
     await expect(page.getByText('Município não encontrado')).toHaveCount(0);
   });
 
-  test.fixme('D-09: "Regiões com dados" lista o catálogo da API, incluindo Rio Verde e Barreiras', async ({ page }) => {
+  test('D-09: "Regiões com dados" lista o catálogo da API, incluindo Rio Verde e Barreiras', async ({ page }) => {
     await page.goto('/#/explorar?semwebgl=1');
     await page.getByRole('button', { name: /Regiões com dados/ }).click();
     for (const n of ['Sorriso', 'Uberlândia', 'Rio Verde', 'Barreiras']) await expect(page.getByTestId('with-data')).toContainText(n);

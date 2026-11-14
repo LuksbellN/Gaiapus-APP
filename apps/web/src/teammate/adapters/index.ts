@@ -6,7 +6,9 @@ import { getState, setState, uid, now, getAccountScope, type FieldRecord, type P
 import { norm } from '../format';
 import { cropIdFromName, isCropId, type CropId } from '../catalog';
 import { backend, publishedExample, request } from './http';
-import type { ObservationsResult } from '@gaiapus/contracts';
+import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
+import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
+import { dFull } from '../format';
 import { authAccount } from './session';
 
 export type Feature = { type: 'Feature'; id: number; properties: { code: string; name: string; sigla?: string }; geometry: { type: string; coordinates: any } };
@@ -70,35 +72,46 @@ export const geography = {
 };
 
 export type Product = { id: string; label: string; period: string; kind: 'historico' | 'previsao' | 'simulacao' | 'observacao'; to: string };
-export type Coverage = { code: string; level: 'analise' | 'somente_geografia'; summary: string; products: Product[] };
-const COVERAGE: Record<string, Coverage> = {
-  '5107925': { code: '5107925', level: 'analise', summary: 'Projeção hídrica, simulação Field Shift e referência municipal de rendimento.', products: [
-    { id: 'water', label: 'Projeção de reserva de água (soja)', period: '14–19 nov 2026 · emitida 14 nov 2026', kind: 'previsao', to: '/visao-geral' },
-    { id: 'field-shift', label: 'Field Shift: pousio × braquiária', period: 'Safras 2015/16 a 2020/21', kind: 'simulacao', to: '/field-shift' },
-    { id: 'yield', label: 'Rendimento municipal de referência', period: 'Colheita 2021 · retrospectivo', kind: 'historico', to: '/municipio' } ] },
-  '3170206': { code: '3170206', level: 'analise', summary: 'NDVI por imagem orbital e chuva diária em um recorte demonstrativo rural.', products: [
-    { id: 'ndvi', label: 'NDVI (HLS) e chuva (IMERG)', period: '1 abr – 31 jul 2024', kind: 'observacao', to: '/municipio' },
-    { id: 'yield', label: 'Rendimento municipal de referência', period: 'Colheita 2021 · antes do 1º corte', kind: 'historico', to: '/municipio' } ] },
+/** analise: everything published here; parcial: some products, others missing; sem_analise: catalogue answered, nothing here;
+ *  nao_consultavel: the catalogue could not be consulted, so absence cannot be concluded. */
+export type CoverageLevel = 'analise' | 'parcial' | 'sem_analise' | 'nao_consultavel';
+export type Coverage = { code: string; level: CoverageLevel; summary: string; products: Product[]; missing: { id: string; label: string; reason: string }[] };
+const fmtPeriods = (ps: { start: string; end: string }[]) => ps.map((p) => (p.start === p.end ? dFull(p.start) : `${dFull(p.start)} – ${dFull(p.end)}`)).join(' · ');
+const REASON: Record<string, string> = { no_published_coverage: 'sem publicação para esta área', strategy_not_provided: 'comparação de manejo não fornecida para esta área', unsupported_crop: 'cultura não aceita por este produto', current_season_unavailable: 'safra atual ainda não disponível', incomplete_forcing: 'dados de clima incompletos para o período', missing_artifacts: 'cálculo indisponível neste ambiente', fixture_not_available: 'cálculo indisponível neste ambiente', unsupported_period: 'período não aceito por este produto' };
+const CROP_LABEL: Record<string, string> = { soy: 'soja', maize2: 'milho safrinha' };
+const PRODUCT_INFO: Record<string, { label: (crops: string[]) => string; kind: Product['kind']; to: (code: string) => string }> = {
+  water_risk_projection: { label: (c) => `Projeção de reserva de água${c.length ? ` (${c.map((x) => CROP_LABEL[x] ?? x).join(', ')})` : ''}`, kind: 'previsao', to: (code) => `/visao-geral?mun=${code}` },
+  strategy_comparison: { label: () => 'Field Shift: pousio × braquiária', kind: 'simulacao', to: () => '/field-shift' },
+  yield_estimate: { label: () => 'Rendimento municipal de referência', kind: 'historico', to: (code) => `/municipio?mun=${code}&aba=safra` },
+  history: { label: () => 'Histórico observado do município', kind: 'observacao', to: (code) => `/municipio?mun=${code}` },
 };
 export const coverage = {
-  covered: Object.keys(COVERAGE),
+  // Products come from the API catalogue; a published field inside the municipality adds its NDVI/rain product,
+  // labelled as the rectangle's data, never the whole municipality's (Docs/ux-preservacao/06, section 3).
   async get(code: string, signal?: AbortSignal): Promise<Sourced<Coverage>> {
-    const empty: Coverage = { code, level: 'somente_geografia', summary: 'Limites disponíveis. Nenhuma análise publicada para este município nesta edição.', products: [] };
-    try {
-      const result = await backend.coverage(code, signal);
-      const ids: Record<string, string> = { water_risk_projection: 'water', strategy_comparison: 'field-shift', yield_estimate: 'yield', history: 'ndvi' };
-      const available = new Set(result.products.filter(p => p.availability !== 'no_data').map(p => ids[p.product_id]));
-      if (code === '3170206') {
-        const fieldCoverage = await backend.coverage('published-field-uberlandia', signal);
-        if (fieldCoverage.products.some(p => p.product_id === 'history' && p.availability !== 'no_data')) available.add('ndvi');
-      }
-      const original = COVERAGE[code];
-      const products = original?.products.filter(p => available.has(p.id)) ?? [];
-      return { data: products.length ? { ...original, products } : empty, meta: { kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus', note: result.publication_version } };
-    } catch (error) {
-      if (error instanceof AdapterError && error.status === 404) return { data: empty, meta: { kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus' } };
-      throw error;
+    const meta = (note?: string): Sourced<Coverage>['meta'] => ({ kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus', note });
+    let result: CoverageResult;
+    try { result = await backend.coverage(code, signal); }
+    catch (error) {
+      if (!(error instanceof AdapterError && error.status === 404)) throw error;
+      const idx = await loadCoverageIndex();
+      return { data: idx.status === 'ok'
+        ? { code, level: 'sem_analise', summary: 'Nenhuma análise publicada para este município nesta versão.', products: [], missing: [] }
+        : { code, level: 'nao_consultavel', summary: 'Não foi possível saber, pelo serviço atual, se há dados para este município. Isso não quer dizer que não existam.', products: [], missing: [] }, meta: meta() };
     }
+    const products: Product[] = []; const missing: Coverage['missing'] = [];
+    for (const p of result.products) {
+      const info = PRODUCT_INFO[p.product_id]; if (!info) continue;
+      if (p.availability !== 'no_data') products.push({ id: p.product_id, label: info.label(p.supported_crops), period: fmtPeriods(p.periods) || 'período não informado', kind: info.kind, to: info.to(code) });
+      else if (p.product_id !== 'history') missing.push({ id: p.product_id, label: info.label(p.supported_crops), reason: REASON[p.reason_code ?? ''] ?? (p.reason_code ?? 'sem dado') });
+    }
+    const idx = await loadCoverageIndex();
+    const field = fieldOf(idx, code);
+    const fieldHistory = field?.products.find((p) => p.id === 'history' && p.availability !== 'no_data');
+    if (field && fieldHistory) products.push({ id: 'ndvi', label: 'NDVI (HLS) e chuva do recorte demonstrativo', period: fmtPeriods(fieldHistory.periods), kind: 'observacao', to: `/municipio?mun=${code}&aba=imagem` });
+    const level: CoverageLevel = products.length ? (missing.length ? 'parcial' : 'analise') : 'sem_analise';
+    const summary = products.length ? `Há: ${products.map((p) => p.label).join('; ')}.${missing.length ? ` Ainda não há: ${missing.map((m) => m.label).join('; ')}.` : ''}` : 'Limites disponíveis. Nenhuma análise publicada para este município nesta versão.';
+    return { data: { code, level, summary, products, missing }, meta: meta(result.publication_version) };
   },
 };
 
@@ -119,19 +132,36 @@ export const weather = {
   },
 };
 
-export type Imagery = typeof import('../data/uberlandia-field.json');
+/** Field imagery normalised for the screens. Optional fields exist only where the publication provides them. */
+export type FieldImagery = { areaId: string; label: string; imageUrl: string; image: { date: string; corners: number[][]; scene_id: string };
+  field: { geojson: any; label: string }; observations: { date: string; ndvi: number | null; acquired_at: string | null; scene_id: string | null; valid_fraction: number; field_pixels?: number }[];
+  rainfall: { date: string; rain_mm: number | null }[]; sources: { imagery: string; rain: string; weather_scope?: string; rain_validation?: string };
+  validation: { accepted_scenes: number; total_scenes: number; min_valid_fraction?: number } };
 export const imagery = {
-  async series(code: string, signal?: AbortSignal): Promise<Sourced<Imagery & { imageUrl: string }>> {
+  /** Imagery of the published demonstration field inside municipality `code`, found through the catalogue. */
+  async series(code: string, signal?: AbortSignal): Promise<Sourced<FieldImagery>> {
     await wait(signal);
-    if (code !== '3170206') throw new AdapterError('municipality_not_covered', 422);
-    const [d, observed] = await Promise.all([import('../data/uberlandia-field.json'), request<ObservationsResult>('/observations?area_id=published-field-uberlandia&start=2024-04-01&end=2024-07-31', { signal })]);
+    const idx = await loadCoverageIndex(); const field = fieldOf(idx, code);
+    if (!field) throw new AdapterError(idx.status === 'ok' ? 'municipality_not_covered' : 'catalog_unavailable', idx.status === 'ok' ? 422 : 503);
+    const hist = field.products.find((p) => p.id === 'history')?.periods[0];
+    const [start, end] = hist ? [hist.start, hist.end] : ['2024-01-01', '2024-12-31'];
+    const observed = await request<ObservationsResult>(`/observations?area_id=${encodeURIComponent(field.id)}&start=${start}&end=${end}`, { signal });
     const image = observed.imagery.at(-1);
     if (!image) throw new AdapterError('municipality_not_covered', 422);
     const ndvi = observed.series.find(s => s.series_id === 'ndvi');
     const rain = observed.series.find(s => s.series_id === 'rainfall');
-    // Geometry and QA pixel counts remain the approved publication's presentation metadata.
-    const observations = (ndvi?.points ?? []).map(point => ({ ...d.default.observations.find(o => o.date === point.date), date: point.date, ndvi: point.value, acquired_at: point.acquired_at, scene_id: point.scene_id, valid_fraction: point.valid_fraction })) as Imagery['observations'];
-    return { data: { ...d.default, image: { ...d.default.image, ...image }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })), imageUrl: image.url } as Imagery & { imageUrl: string }, meta: { kind: 'publicacao', source: ndvi?.source ?? d.default.sources.imagery, note: 'Recorte demonstrativo rural; não é um talhão cadastrado.' } };
+    // Uberlândia keeps the approved publication's presentation metadata (pixel counts, validation thresholds).
+    const local = field.id === 'published-field-uberlandia' ? (await import('../data/uberlandia-field.json')).default : null;
+    const geojson = local?.field.geojson ?? (field.geometryRef ? await fetch(field.geometryRef, { signal }).then((r) => (r.ok ? r.json() : null)).then((g) => g?.geometry ?? g).catch(() => null) : null);
+    const points = ndvi?.points ?? [];
+    const observations = points.map((point) => ({ field_pixels: local?.observations.find((o) => o.date === point.date)?.field_pixels, date: point.date, ndvi: point.value, acquired_at: point.acquired_at, scene_id: point.scene_id, valid_fraction: point.valid_fraction ?? 0 }));
+    const label = local?.field.label ?? 'Recorte demonstrativo rural';
+    return { data: {
+      areaId: field.id, label, imageUrl: image.url, image: { date: image.date, corners: image.corners, scene_id: image.scene_id },
+      field: { geojson, label }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })),
+      sources: { imagery: ndvi?.source ?? 'NASA HLS v2', rain: rain?.source ?? 'NASA POWER / IMERG', weather_scope: local?.sources.weather_scope, rain_validation: local?.sources.rain_validation },
+      validation: local ? { accepted_scenes: local.validation.accepted_scenes, total_scenes: local.validation.total_scenes, min_valid_fraction: local.validation.min_valid_fraction } : { accepted_scenes: points.filter((p) => p.value != null).length, total_scenes: points.length },
+    }, meta: { kind: 'publicacao', source: ndvi?.source ?? 'NASA HLS v2', note: `${field.name}. Recorte demonstrativo rural; não é um talhão cadastrado nem o município inteiro.` } };
   },
 };
 

@@ -6,7 +6,7 @@ import { MOTION } from '../config';
 import { reducedMotion } from '../ui';
 
 import type { MapHandle, MapLayers, Selection } from './types';
-type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
+type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; placeBox?: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
 
 const SOUTH_AMERICA: BBox = [[-92, -52], [-22, 16]];
 const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
@@ -48,6 +48,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     let box: BBox = !s.pais ? SOUTH_AMERICA : s.pais === 'BR' ? BRAZIL : countryBox!; let extra = s.pais ? 24 : 8;
     const uf = s.uf && states?.features.find((f) => f.properties.code === s.uf); if (uf) { box = bboxOf(uf.geometry); extra = 28; }
     const mun = s.mun && municipalities?.features.find((f) => f.properties.code === s.mun); if (mun) { box = bboxOf(mun.geometry); extra = padding.bottom ? 36 : 90; }
+    else if (s.mun && latest.current.placeBox) { box = latest.current.placeBox; extra = padding.bottom ? 36 : 90; } // catalogue box when the mesh is not loaded
     else if (s.mun && !municipalities) return; // espera a malha chegar para não enquadrar o lugar errado
     m.stop();
     m.fitBounds(box, { padding: { top: padding.top + extra, bottom: padding.bottom + extra, left: padding.left + extra, right: padding.right + extra }, duration: instant || reducedMotion() ? 0 : MOTION.fly, maxZoom: 10, essential: false });
@@ -101,7 +102,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     applySelected();
   };
   useEffect(() => { sync(); camera(); }, [p.states, p.municipalities, p.image]); // eslint-disable-line
-  useEffect(() => { applySelected(); camera(); }, [p.countryBox?.[0][0], p.countryBox?.[1][1], p.selection.pais, p.selection.uf, p.selection.mun, p.padding.left, p.padding.right, p.padding.bottom, p.padding.top]); // eslint-disable-line
+  useEffect(() => { applySelected(); camera(); }, [p.placeBox?.[0][0], p.countryBox?.[0][0], p.countryBox?.[1][1], p.selection.pais, p.selection.uf, p.selection.mun, p.padding.left, p.padding.right, p.padding.bottom, p.padding.top]); // eslint-disable-line
   useEffect(() => { applySelected(); }, [p.layers, p.covered]); // eslint-disable-line
   useEffect(() => {
     const m = mapRef.current; if (!m) return; markerEls.current.forEach((x) => x.remove()); markerEls.current = [];

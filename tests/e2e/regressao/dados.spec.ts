@@ -42,7 +42,7 @@ test.describe('RT-07 município', () => {
     await expect(page.getByText(/Sem imagem orbital processada/)).toBeVisible();
   });
 
-  test.fixme('D-08: recorte publicado de Rio Verde mostra NDVI do recorte', async ({ page }) => {
+  test('D-08: recorte publicado de Rio Verde mostra NDVI do recorte', async ({ page }) => {
     await page.goto('/#/municipio?mun=5218805&aba=imagem');
     await expect(page.getByRole('heading', { name: /NDVI/ })).toBeVisible();
     await expect(page.getByText(/recorte/i).first()).toBeVisible();

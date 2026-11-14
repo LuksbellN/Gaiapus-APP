@@ -24,7 +24,8 @@ export function yieldExampleCount(crop: CropId, mun?: string | null) {
 /** Simulação hídrica diária e cena 3D existem só para a rotação de Sorriso (soja → milho safrinha → pousio/braquiária). */
 export const hasDailySeries = (crop: CropId, mun: string | null) => mun === SORRISO && crop === 'soy';
 
-export function capabilities(crop: CropId, mun: string | null): Capability[] {
+/** `field`: the municipality has a published demonstration field with imagery (from the coverage catalogue). */
+export function capabilities(crop: CropId, mun: string | null, opts: { field?: boolean } = {}): Capability[] {
   const info = CROPS[crop]; const here = mun ? yieldExampleCount(crop, mun) : 0; const anywhere = yieldExampleCount(crop);
   const inRotation = mun === SORRISO && crop === 'maize2';
   return [
@@ -40,8 +41,8 @@ export function capabilities(crop: CropId, mun: string | null): Capability[] {
       : inRotation
         ? { id: 'hidrica', label: 'Simulação hídrica', status: 'demo', note: 'O milho safrinha aparece dentro da rotação soja → milho de Sorriso; não há série própria começando no milho.' }
         : { id: 'hidrica', label: 'Simulação hídrica', status: 'pendente', note: 'Os contratos water-projection e field-shift só têm resposta para a rotação de soja em Sorriso. Nenhuma série é gerada para esta combinação.' },
-    mun === UBERLANDIA
-      ? { id: 'imagem', label: 'Imagem e NDVI', status: 'demo', note: 'Recorte rural demonstrativo (HLS, abr–jul 2024). Vale para a área, não para a cultura, e não comprova previsão de rendimento.' }
+    (opts.field ?? mun === UBERLANDIA)
+      ? { id: 'imagem', label: 'Imagem e NDVI', status: 'demo', note: 'Recorte rural demonstrativo publicado (HLS). Vale para o recorte, não para o município nem para a cultura, e não comprova previsão de rendimento.' }
       : { id: 'imagem', label: 'Imagem e NDVI', status: 'pendente', note: 'Depende do polígono do talhão, do período e da qualidade da imagem; não há contrato de imagem por talhão.' },
     hasDailySeries(crop, mun) || inRotation
       ? { id: 'cena3d', label: 'Representação 3D', status: 'demo', note: 'Cena ilustrativa com modelos provisórios; segue um calendário demonstrativo e não prova crescimento.' }

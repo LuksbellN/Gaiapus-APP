@@ -39,7 +39,8 @@ test('map, coverage, search and WebGL fallback keep the teammate interactions', 
   await expect(page.getByTestId('mun-detail')).toContainText('Field Shift');
   await page.getByRole('button', { name: 'Uberlândia, MG', exact: true }).click();
   await expect(page.getByTestId('mun-detail')).toContainText('NDVI');
-  await expect(page.getByTestId('mun-detail')).not.toContainText('Field Shift');
+  // Uberlândia offers no Field Shift; the panel may list it among what is still missing, never among what can be analysed.
+  await expect(page.getByTestId('mun-detail').getByRole('list', { name: 'O que dá para analisar' })).not.toContainText('Field Shift');
   await page.locator('#busca-local').fill('sorriso');
   await expect(page.locator('#busca-lista')).toContainText('Sorriso');
   await page.keyboard.press('Enter');

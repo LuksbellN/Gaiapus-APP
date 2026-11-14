@@ -84,6 +84,24 @@
       "date": "2026-11-14",
       "reason": "O4/O5 (D-14, D-27): simulador declara o que veio do plano; dia selecionado no link",
       "sha256": "028dae4efe85176943befaf040b14f76be06ae8003915a3c334bc7492ed72f82"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura vinda do catálogo da API, estados parciais, recortes de Rio Verde e Barreiras",
+      "sha256": "e41dc905b38b224dbe79bbbf239360f0532c3ad704c34d2ac118d4fce8d7a088"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura do catálogo, estados parciais, recortes de Rio Verde e Barreiras, câmera pela caixa do catálogo",
+      "sha256": "c899eb615c147e6373a6bc44232cbe8f7b11b4683f9e407df0f01fbc58f9f694"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura do catálogo, estados parciais, recortes de Rio Verde e Barreiras, câmera pela caixa do catálogo",
+      "sha256": "9851ca1e0c1c000fb766221a7c602e8478ea91a62f3918fda4f588a704413c3b"
     }
   ]
 }

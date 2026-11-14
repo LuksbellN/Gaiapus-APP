@@ -7,6 +7,7 @@ import { CROPS, type CropId } from '../catalog';
 import { dFull, n0, n1 } from '../format';
 import { ErrorState, Loading, Notice, Pill, Source, Stat, useAsync } from './index';
 import { MODEL, ModelTest } from './SealedTest';
+import { fieldOf, useCoverageIndex } from '../geo/coverageIndex';
 
 const BASIS: Record<string, string> = { hypothetical_fixed_calendar_per_state: 'calendário fixo hipotético do estado', coffee_production_year_start: 'início do ano de produção do café (não é plantio)' };
 const MILESTONE: Record<string, string> = { pre_flowering: 'pré-florada', post_flowering: 'pós-florada', grain_filling: 'enchimento de grãos' };
@@ -43,7 +44,7 @@ export function YieldCard({ r, place }: { r: Sourced<YieldEstimate>; place?: str
 
 /** Tabela de capacidades da cultura no território: cadastro, histórico, estimativa, água, imagem e 3D, cada uma com seu estado. */
 export function CapabilityTable({ crop, mun, place }: { crop: CropId; mun: string | null; place?: string }) {
-  const caps = capabilities(crop, mun);
+  const idx = useCoverageIndex(); const caps = capabilities(crop, mun, idx.index?.status === 'ok' && mun ? { field: !!fieldOf(idx.index, mun) } : {});
   return (
     <section className="card" aria-labelledby="h-caps" data-testid="capabilities" data-crop={crop}>
       <h2 id="h-caps">O que dá para fazer com {CROPS[crop].name.toLowerCase()}{place ? ` em ${place}` : ''}</h2>

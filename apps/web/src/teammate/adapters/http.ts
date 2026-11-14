@@ -26,6 +26,7 @@ export async function publishedExample<T>(id: string, signal?: AbortSignal): Pro
 export const backend = {
   coverage: (area: string, signal?: AbortSignal) => request<CoverageResult>(`/coverage?area_id=${encodeURIComponent(area)}`, { signal }),
   geography: (q: string, signal?: AbortSignal) => request<GeographyPage>(`/geography?q=${encodeURIComponent(q)}&limit=100`, { signal }),
+  geographyList: (signal?: AbortSignal) => request<GeographyPage>('/geography?limit=100', { signal }),
   me: () => request<MeResult>('/me'),
   updateName: (name: string) => request<MeResult>('/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ display_name: name }) }),
 };
