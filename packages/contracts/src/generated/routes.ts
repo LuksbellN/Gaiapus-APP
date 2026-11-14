@@ -2,6 +2,14 @@
 export const routeContracts = [
   [
     "GET",
+    "/v1/scientific-catalog",
+    null,
+    null,
+    "ScientificCatalogResponse",
+    false
+  ],
+  [
+    "GET",
     "/v1/geography",
     null,
     "GeographyQuery",

@@ -200,6 +200,18 @@ The API can reach M1 with no frontend. The frontend can complete M1–M3 screens
 
 ## 9. Change and handoff protocol
 
+### 2026-11-14 v7 delivery addition (initial contract 0.1.0)
+
+The user supplied the regional v7 integration bundle after M0. Existing four example IDs and HTTP scientific input shapes remain. Yield examples now carry the supplied national v7 Ridge metadata; original v6 files/fixture exports remain available. Publication versions distinguish these deliveries and saved outputs are never rewritten.
+
+Added `FieldShiftResponse`/`StrategyExampleInput` to the shared scientific/example/snapshot unions and published example `field-shift-sorriso`. Its raw discriminator is `field_shift_scenario`, application product is `strategy_comparison`, result basis is `hypothetical_scenario`, and `yield_effect` remains null. No writable strategy route is provided. Frontend must explicitly narrow this third payload before accessing yield/water fields; lists no longer assume four examples.
+
+Added public `GET /v1/scientific-catalog` (`ScientificCatalogResponse`), showing seven supplied artifacts and the frozen `site+mlp` regional-soy decision. Regional weights are missing, so national Ridge reproduction is not labeled regional execution. Other crop artifacts are not permission to bypass the existing soybean/maize public request schema.
+
+The v7 delivery's proposed raw error HTTP 400 codes do not replace the shared application's agreed 422 validation envelope; its raw `YieldErrorPayload` schema is preserved/exported for adapter integration. Frontend continues consuming the application's `{error,meta}` failures.
+
+Exact source hashes, integration checks and required frontend action are in [[2026-11-14-gaiapus-api-handoff]].
+
 For any contract change, record: version, affected route/type, reason, compatibility impact, updated fixture, and required frontend action. Publish schema, generated types, fixtures, and contract tests together. Keep old fixtures available until consumers migrate if a breaking transition is necessary.
 
 For each milestone, each agent reports:

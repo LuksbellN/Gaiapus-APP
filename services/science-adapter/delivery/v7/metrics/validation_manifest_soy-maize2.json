@@ -1,0 +1,67 @@
+{
+  "version": "research_v7_crop_expansion",
+  "rules": {
+    "champion": "lowest pooled temporal MAE; an MLP also needs a lower spatiotemporal MAE and >=80% of seeds below the best other model",
+    "published": "evaluable cohort, champion beats the history model in temporal MAE with a municipality-clustered 95% interval below zero, and spatiotemporal MAE <= 1.15 x temporal MAE",
+    "experimental": "evaluable cohort where the gain interval crosses zero or the spatial check fails",
+    "reference_only": "evaluable cohort where no model beats the plain history reference; serve the reference with its error",
+    "unavailable": "fewer than 30 training municipalities, fewer than 8 held-out municipalities or fewer than 2 validation years",
+    "separate_mg_mt_model": "not in this round (declared before evaluation)"
+  },
+  "cuda": {
+    "torch": "2.11.0+cu128",
+    "torch_cuda_build": "12.8",
+    "cuda_available": true,
+    "cuda_visible_devices": null,
+    "nvidia_smi_on_path": true,
+    "python": "3.13.3",
+    "device": "NVIDIA GeForce RTX 4070 Ti",
+    "total_vram_gib": 11.99,
+    "capability": "8.9",
+    "cudnn": 91900
+  },
+  "training_step_check": {
+    "forward_on_cuda": true,
+    "loss_on_cuda": true,
+    "grads_on_cuda": true,
+    "params_on_cuda": true,
+    "optimizer_state_on_cuda": true,
+    "parameters_changed": true
+  },
+  "torch_deterministic": true,
+  "inputs": {
+    "data\\processed\\training_v6\\samples.parquet": "1456e412931314c4aaf3af01e43801f09afd8dd009b17d7e775959efd42cffc1"
+  },
+  "protocol": "target Y fitted on harvests <= Y-2; held-out municipalities never fitted",
+  "validation_years": [
+    2019,
+    2020,
+    2021
+  ],
+  "test_years": [
+    2022,
+    2024
+  ],
+  "test_evaluated": false,
+  "operational_approved": false,
+  "artifacts": {
+    "maize2_hydro_mlp_2021.json": "f50f9aefc0c9c2663ab92e1866600ec999bda95ced6d46e6bd20ced47c235181",
+    "maize2_hydro_mlp_2021.pt": "71d37ceb666d436d5e466bf28bf48ab73aa20f533b27b14a7d74e7cd172369ef",
+    "maize2_hydro_ridge_2021.json": "8612a000eb14d482c48f33c103cd9fe089778dcfe2e2385b9e5147c4143d2983",
+    "maize2_site_mlp_2021.json": "b5477611a3aeb1b93f32890c67bea4fc272a01ac6905cde7d8f8c2788f96e225",
+    "maize2_site_mlp_2021.pt": "fa6c1dd7f0e4f67e6fc13053daf9bb1f256da81fa99bf15be701a5acf4a12b4d",
+    "maize2_site_ridge_2021.json": "1e173c7b2ea65e8ac8acae93f4e8d3de99a34a73478319da79f3afe20ed67316",
+    "maize2_weather_mlp_2021.json": "4f3831eac1dddbdeab846a84b2ea38aaef317ad9b5e08360174aa8d9e7d57923",
+    "maize2_weather_mlp_2021.pt": "3af762b789eecf5c69959e1f62fdf39e7269076c100ee35d89c6e7560410f7b1",
+    "maize2_weather_ridge_2021.json": "fb7eee4f325e7d223f834a52bb0f105ef54d03c43e4d1c6d13dae7ce9b70db69",
+    "soy_hydro_mlp_2021.json": "d41d412ed281cabd95b745310c3e85b4fbd827521cde1911595b4492109593aa",
+    "soy_hydro_mlp_2021.pt": "26e4b1b239c2f3ffacfd8be121c91ad4a4121623fa0425739fa159916bfeef31",
+    "soy_hydro_ridge_2021.json": "31dc655774b6b7f8b3697945cfa52283e7cc5e351b7716a272f0587a77c440c8",
+    "soy_site_mlp_2021.json": "4289085ff324fd88e1ef99d52ecd004b62d35f8715c4a78d66dca27202cc5486",
+    "soy_site_mlp_2021.pt": "b367e2bc35a7632d092a65c7d9f7fefdf3d9be1f6a606d0d829bd4b8366f3fe5",
+    "soy_site_ridge_2021.json": "4d758a6c8ec5c4297e2eb908e1b91e61eae5dadfc8352834423893a154132a68",
+    "soy_weather_mlp_2021.json": "1f2a5faf937fe34e16d984fc18e2db9613ab1538b8059ad6752d79374eba39f4",
+    "soy_weather_mlp_2021.pt": "47eb038442098a53235871bb4967c5dd1bc88171a50a277e0e90278ed9e138d5",
+    "soy_weather_ridge_2021.json": "a2cb6cfc1710e51f9689fe1de712c7d47809199a69263790b26010682b4cdd4c"
+  }
+}

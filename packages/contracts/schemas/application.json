@@ -650,6 +650,257 @@
         }
       }
     },
+    "FieldShiftPayload": {
+      "title": "Gaiapus Field Shift scenario",
+      "description": "Simulated water and soil-cover indicators for two successions in one municipality. No yield effect; the municipal yield estimate is a separate response.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "product",
+        "generated_at",
+        "municipality_code",
+        "simulated",
+        "sowing",
+        "weather",
+        "soil",
+        "producer_priority",
+        "hypotheses",
+        "scenarios",
+        "difference_brachiaria_minus_reference",
+        "sensitivity",
+        "daily_series_last_year",
+        "not_simulated",
+        "yield_effect",
+        "yield_estimate_note",
+        "evidence"
+      ],
+      "$defs": {
+        "indicators": {
+          "type": "object",
+          "required": [
+            "covered_days",
+            "off_season_water_use_mm",
+            "off_season_drainage_mm",
+            "storage_at_next_sowing_mm",
+            "soy_deficit_mm",
+            "maize_deficit_mm",
+            "maize_stress_days"
+          ],
+          "properties": {
+            "covered_days": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 366
+            },
+            "off_season_water_use_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "off_season_drainage_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "storage_at_next_sowing_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "soy_deficit_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maize_deficit_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maize_stress_days": {
+              "type": "number",
+              "minimum": 0
+            },
+            "next_soy_establishment_deficit_mm": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "day": {
+          "type": "object",
+          "required": [
+            "date",
+            "land_cover",
+            "stage",
+            "soil_covered",
+            "rain_mm",
+            "et0_mm",
+            "eta_mm",
+            "et_deficit_mm",
+            "storage_end_mm",
+            "ks"
+          ],
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "land_cover": {
+              "enum": [
+                "soy",
+                "maize2",
+                "maize2+brachiaria",
+                "brachiaria",
+                "bare"
+              ]
+            },
+            "soil_covered": {
+              "type": "boolean"
+            },
+            "storage_end_mm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ks": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      },
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "product": {
+          "const": "field_shift_scenario"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "simulated": {
+          "const": true
+        },
+        "sowing": {
+          "type": "object",
+          "required": [
+            "soy",
+            "maize",
+            "brachiaria"
+          ],
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "origin"
+            ],
+            "properties": {
+              "origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "scenarios": {
+          "type": "object",
+          "required": [
+            "reference_fallow",
+            "brachiaria"
+          ],
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "mean",
+              "by_year"
+            ],
+            "properties": {
+              "mean": {
+                "$ref": "#/$defs/FieldShiftPayload/$defs/indicators"
+              },
+              "by_year": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "agricultural_year",
+                    "soy_sowing",
+                    "maize_sowing",
+                    "next_soy_sowing"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "sensitivity": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "parameter",
+              "value"
+            ]
+          }
+        },
+        "daily_series_last_year": {
+          "type": "object",
+          "required": [
+            "reference_fallow",
+            "brachiaria"
+          ],
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 300,
+            "items": {
+              "$ref": "#/$defs/FieldShiftPayload/$defs/day"
+            }
+          }
+        },
+        "yield_effect": {
+          "type": "null"
+        }
+      }
+    },
+    "YieldErrorPayload": {
+      "title": "Gaiapus yield request error",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "product",
+        "error"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "product": {
+          "const": "yield_estimate"
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_crop",
+                "invalid_municipality_code",
+                "municipality_not_covered"
+              ]
+            }
+          }
+        }
+      }
+    },
     "ReasonCode": {
       "enum": [
         "no_published_coverage",
@@ -805,6 +1056,22 @@
         "meta"
       ]
     },
+    "FieldShiftResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/FieldShiftPayload"
+        },
+        "meta": {
+          "$ref": "#/$defs/ScientificMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
     "ScientificEnvelope": {
       "oneOf": [
         {
@@ -812,6 +1079,9 @@
         },
         {
           "$ref": "#/$defs/WaterRiskProjectionResponse"
+        },
+        {
+          "$ref": "#/$defs/FieldShiftResponse"
         }
       ]
     },
@@ -1605,6 +1875,23 @@
         "next_cursor"
       ]
     },
+    "StrategyExampleInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "municipality_code": {
+          "type": "string",
+          "pattern": "^[0-9]{7}$"
+        },
+        "scenario_id": {
+          "const": "field-shift-sorriso"
+        }
+      },
+      "required": [
+        "municipality_code",
+        "scenario_id"
+      ]
+    },
     "ExampleDetail": {
       "type": "object",
       "additionalProperties": false,
@@ -1666,6 +1953,9 @@
             },
             {
               "$ref": "#/$defs/WaterRiskProjectionRequest"
+            },
+            {
+              "$ref": "#/$defs/StrategyExampleInput"
             }
           ]
         },
@@ -1682,8 +1972,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 256
+            "maxLength": 2048
           }
         }
       },
@@ -2048,6 +2337,9 @@
             },
             {
               "$ref": "#/$defs/WaterRiskProjectionRequest"
+            },
+            {
+              "$ref": "#/$defs/StrategyExampleInput"
             }
           ]
         },
@@ -2092,6 +2384,111 @@
         "input_snapshot",
         "output_envelope",
         "source_versions"
+      ]
+    },
+    "ScientificCatalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "operational_release": {
+          "const": "not_released"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "crop": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "artifact": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "validation_status": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "public_contract_supported": {
+                "type": "boolean"
+              },
+              "smoke_cases": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "operational_release": {
+                "const": "not_released"
+              }
+            },
+            "required": [
+              "crop",
+              "artifact",
+              "validation_status",
+              "public_contract_supported",
+              "smoke_cases",
+              "operational_release"
+            ]
+          }
+        },
+        "regional_soy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "selected": {
+              "const": "site+mlp"
+            },
+            "run_available": {
+              "const": false
+            },
+            "reason_code": {
+              "const": "missing_artifacts"
+            },
+            "frozen_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "test_2022_2024_evaluated": {
+              "const": false
+            }
+          },
+          "required": [
+            "selected",
+            "run_available",
+            "reason_code",
+            "frozen_at",
+            "test_2022_2024_evaluated"
+          ]
+        },
+        "published_strategy_examples": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      },
+      "required": [
+        "bundle_sha256",
+        "source_revision",
+        "operational_release",
+        "models",
+        "regional_soy",
+        "published_strategy_examples"
       ]
     },
     "ComparisonPage": {
@@ -2705,6 +3102,22 @@
       "properties": {
         "data": {
           "$ref": "#/$defs/EvidenceReviewResult"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ]
+    },
+    "ScientificCatalogResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ScientificCatalog"
         },
         "meta": {
           "$ref": "#/$defs/ResponseMeta"

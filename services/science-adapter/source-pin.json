@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/LeandroJerse/Gaiapus_nasa",
+  "revision": "ecae8c4457c0bd152915ea16495c83ad5097cfd4",
+  "files": {
+    "data/serving/products.py": "6d398096aee76fb167e604fb751550e714091f25b0806ff4517590df000030ce",
+    "data/models/water_balance.py": "ea2516da4585b4bcca6097e72d153a93aeeee2ec8415ba63cd17bb5149435216",
+    "data/ingest/water_projection.py": "b759ff33efa4a095eea50b814cfba02d8bf9302070a39bf88285d2300f8582ee",
+    "data/ingest/water_balance_run.py": "43b80d4fde07ab651d26ee1cef102010d33a18abb9ebc0ea5c4e4bfc3040ca00"
+  }
+}

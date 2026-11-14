@@ -1,0 +1,75 @@
+import { describe, it, expect } from 'vitest';
+import { createApp } from '../app.js';
+import { testDependencies, authA, authB } from '../../tests/helpers.js';
+import { examples } from '@gaiapus/contracts/fixtures';
+import { validators } from '@gaiapus/contracts';
+const example = examples[0]!;
+const payload = { source: { kind: 'example', example_id: example.example_id }, title: 'Original evidence', notes: 'My note' };
+describe('immutable owned comparison snapshots', () => {
+  it('saves one snapshot for identical retries, and rejects conflicting reuse', async () => {
+    const app = createApp(testDependencies());
+    const save = (body = payload) => app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': 'example-save' }, payload: body });
+    const first = await save(); const second = await save();
+    expect(first.statusCode).toBe(200); expect(validators.ComparisonDetailResponse!(first.json())).toBe(true);
+    expect(first.json().data.id).toBe(second.json().data.id);
+    expect(first.json().data.output_envelope).toEqual(example.result);
+    expect((await save({ ...payload, title: 'Changed request' })).statusCode).toBe(409);
+    expect((await app.inject({ method: 'POST', url: '/v1/comparisons', headers: authA, payload })).statusCode).toBe(422);
+    expect((await app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': 'replacement' }, payload: { ...payload, output_envelope: {} } })).statusCode).toBe(422);
+    await app.close();
+  });
+  it('hides other users’ snapshots and associations', async () => {
+    const app = createApp(testDependencies());
+    const place = (await app.inject({ method: 'POST', url: '/v1/places', headers: authA, payload: { area_id: '5107925' } })).json().data;
+    const first = await app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': 'owned' }, payload: { ...payload, monitored_place_id: place.id } });
+    expect(first.statusCode).toBe(200); const id = first.json().data.id;
+    expect((await app.inject({ url: `/v1/comparisons/${id}`, headers: authB })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'PATCH', url: `/v1/comparisons/${id}`, headers: authB, payload: { title: 'stolen' } })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'DELETE', url: `/v1/comparisons/${id}`, headers: authB })).statusCode).toBe(404);
+    expect((await app.inject({ url: '/v1/comparisons', headers: authB })).json().data.items).toEqual([]);
+    expect((await app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authB, 'Idempotency-Key': 'link' }, payload: { ...payload, monitored_place_id: place.id } })).statusCode).toBe(404);
+    await app.close();
+  });
+  it('retains scientific outputs through metadata edits and monitored-place deletion', async () => {
+    const app = createApp(testDependencies());
+    const place = (await app.inject({ method: 'POST', url: '/v1/places', headers: authA, payload: { area_id: '5107925' } })).json().data;
+    const saved = (await app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': 'immutable' }, payload: { ...payload, monitored_place_id: place.id } })).json().data;
+    const id = saved.id;
+    const changed = await app.inject({ method: 'PATCH', url: `/v1/comparisons/${id}`, headers: authA, payload: { title: 'Renamed', notes: 'Updated note' } });
+    expect(changed.json().data.output_envelope).toEqual(saved.output_envelope);
+    expect((await app.inject({ method: 'PATCH', url: `/v1/comparisons/${id}`, headers: authA, payload: { input_snapshot: {} } })).statusCode).toBe(422);
+    await app.inject({ method: 'DELETE', url: `/v1/places/${place.id}`, headers: authA });
+    const reopened = (await app.inject({ url: `/v1/comparisons/${id}`, headers: authA })).json().data;
+    expect(reopened.monitored_place_id).toBeNull(); expect(reopened.output_envelope).toEqual(saved.output_envelope); expect(reopened.area_id).toBe('5107925');
+    expect((await app.inject({ method: 'DELETE', url: `/v1/comparisons/${id}`, headers: authA })).statusCode).toBe(204);
+    expect((await app.inject({ url: `/v1/comparisons/${id}`, headers: authA })).statusCode).toBe(404); await app.close();
+  });
+  it('binds fresh handles to owner, expires after 15 minutes, and retries saved results after expiry', async () => {
+    let now = Date.parse('2026-11-14T12:00:00Z'); const deps = testDependencies();
+    const app = createApp({ ...deps, now: () => now });
+    const run = await app.inject({ method: 'POST', url: '/v1/yield-estimates', headers: authA, payload: example.input_snapshot });
+    const handle = run.json().meta.save_handle.id;
+    const body = { source: { kind: 'analysis', save_handle_id: handle }, title: 'Fresh original' };
+    const save = (headers: any, key: string) => app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...headers, 'Idempotency-Key': key }, payload: body });
+    expect((await save(authB, 'stolen')).statusCode).toBe(404);
+    const first = await save(authA, 'fresh'); expect(first.statusCode).toBe(200);
+    expect(first.json().data.output_envelope.meta.save_handle).toBeUndefined();
+    now += 15 * 60 * 1000;
+    const expired = await save(authA, 'unsaved'); expect(expired.statusCode).toBe(410); expect(expired.json().error.code).toBe('result_expired');
+    const retry = await save(authA, 'fresh'); expect(retry.statusCode).toBe(200); expect(retry.json().data.id).toBe(first.json().data.id);
+    await app.close();
+    const restarted = createApp(deps);
+    const lost = await restarted.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': 'restart-unsaved' }, payload: body });
+    expect(lost.statusCode).toBe(410);
+    const reopened = await restarted.inject({ url: `/v1/comparisons/${first.json().data.id}`, headers: authA });
+    expect(reopened.json().data.output_envelope).toEqual(first.json().data.output_envelope); await restarted.close();
+  });
+  it('pages owned summaries without leaking private storage metadata', async () => {
+    const app = createApp(testDependencies());
+    for (const id of ['one', 'two']) await app.inject({ method: 'POST', url: '/v1/comparisons', headers: { ...authA, 'Idempotency-Key': id }, payload });
+    const first = (await app.inject({ url: '/v1/comparisons?limit=1', headers: authA })).json().data;
+    expect(first.items).toHaveLength(1); expect(first.items[0].idempotency_key).toBeUndefined(); expect(first.items[0].output_envelope).toBeUndefined();
+    const next = (await app.inject({ url: `/v1/comparisons?limit=1&cursor=${encodeURIComponent(first.next_cursor)}`, headers: authA })).json().data;
+    expect(next.items).toHaveLength(1); expect(next.items[0].id).not.toBe(first.items[0].id); expect(next.next_cursor).toBeNull(); await app.close();
+  });
+});

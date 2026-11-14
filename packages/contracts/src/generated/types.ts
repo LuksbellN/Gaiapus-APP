@@ -17,7 +17,7 @@ export type ReasonCode =
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "ScientificEnvelope".
  */
-export type ScientificEnvelope = YieldEstimateResponse | WaterRiskProjectionResponse;
+export type ScientificEnvelope = YieldEstimateResponse | WaterRiskProjectionResponse | FieldShiftResponse;
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "EvidenceReviewResult".
@@ -27,12 +27,15 @@ export type EvidenceReviewResult = EvidenceReview | null;
 export interface GaiapusContracts {
   YieldPayload?: YieldPayload;
   WaterRiskPayload?: WaterRiskPayload;
+  FieldShiftPayload?: GaiapusFieldShiftScenario;
+  YieldErrorPayload?: GaiapusYieldRequestError;
   ReasonCode?: ReasonCode;
   Period?: Period;
   ResponseMeta?: ResponseMeta;
   ScientificMeta?: ScientificMeta;
   YieldEstimateResponse?: YieldEstimateResponse;
   WaterRiskProjectionResponse?: WaterRiskProjectionResponse;
+  FieldShiftResponse?: FieldShiftResponse;
   ScientificEnvelope?: ScientificEnvelope;
   ExplorationContext?: ExplorationContext;
   SourceReference?: SourceReference;
@@ -47,6 +50,7 @@ export interface GaiapusContracts {
   ObservationsResult?: ObservationsResult;
   ExampleSummary?: ExampleSummary;
   ExamplePage?: ExamplePage;
+  StrategyExampleInput?: StrategyExampleInput;
   ExampleDetail?: ExampleDetail;
   YieldEstimateRequest?: YieldEstimateRequest;
   WaterRiskProjectionRequest?: WaterRiskProjectionRequest;
@@ -57,6 +61,7 @@ export interface GaiapusContracts {
   MonitoredPlacePage?: MonitoredPlacePage;
   ComparisonSummary?: ComparisonSummary;
   ComparisonDetail?: ComparisonDetail;
+  ScientificCatalog?: ScientificCatalog;
   ComparisonPage?: ComparisonPage;
   EvidenceReview?: EvidenceReview;
   EvidenceReviewResult?: EvidenceReviewResult;
@@ -87,6 +92,7 @@ export interface GaiapusContracts {
   ComparisonDetailResponse?: ComparisonDetailResponse;
   EvidenceReviewResponse?: EvidenceReviewResponse;
   EvidenceReviewResultResponse?: EvidenceReviewResultResponse;
+  ScientificCatalogResponse?: ScientificCatalogResponse;
 }
 /**
  * Municipal yield at harvest (kg/ha) from data available up to a validated cutoff after sowing. Separate product from the water-risk projection.
@@ -239,6 +245,382 @@ export interface Day {
   validated_lead: boolean;
 }
 /**
+ * Simulated water and soil-cover indicators for two successions in one municipality. No yield effect; the municipal yield estimate is a separate response.
+ *
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "FieldShiftPayload".
+ */
+export interface GaiapusFieldShiftScenario {
+  schema_version: '1.0.0';
+  product: 'field_shift_scenario';
+  generated_at: string;
+  municipality_code: string;
+  simulated: true;
+  sowing: {
+    [k: string]: {
+      origin: string;
+    };
+  };
+  scenarios: {
+    [k: string]: {
+      mean: Indicators;
+      /**
+       * @minItems 1
+       */
+      by_year: [{}, ...{}[]];
+    };
+  };
+  /**
+   * @minItems 1
+   */
+  sensitivity: [{}, ...{}[]];
+  daily_series_last_year: {
+    /**
+     * @minItems 300
+     */
+    [k: string]: [
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      Day1,
+      ...Day1[]
+    ];
+  };
+  yield_effect: null;
+}
+/**
+ * This interface was referenced by `GaiapusFieldShiftScenario`'s JSON-Schema
+ * via the `definition` "indicators".
+ */
+export interface Indicators {
+  covered_days: number;
+  off_season_water_use_mm: number;
+  off_season_drainage_mm: number;
+  storage_at_next_sowing_mm: number;
+  soy_deficit_mm: number;
+  maize_deficit_mm: number;
+  maize_stress_days: number;
+  next_soy_establishment_deficit_mm?: number | null;
+}
+/**
+ * This interface was referenced by `GaiapusFieldShiftScenario`'s JSON-Schema
+ * via the `definition` "day".
+ */
+export interface Day1 {
+  date: string;
+  land_cover: 'soy' | 'maize2' | 'maize2+brachiaria' | 'brachiaria' | 'bare';
+  soil_covered: boolean;
+  storage_end_mm: number;
+  ks: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "YieldErrorPayload".
+ */
+export interface GaiapusYieldRequestError {
+  schema_version: '1.0.0';
+  product: 'yield_estimate';
+  error: {
+    code: 'invalid_crop' | 'invalid_municipality_code' | 'municipality_not_covered';
+  };
+}
+/**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "Period".
  */
@@ -286,6 +668,14 @@ export interface YieldEstimateResponse {
  */
 export interface WaterRiskProjectionResponse {
   data: WaterRiskPayload;
+  meta: ScientificMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "FieldShiftResponse".
+ */
+export interface FieldShiftResponse {
+  data: GaiapusFieldShiftScenario;
   meta: ScientificMeta;
 }
 /**
@@ -474,6 +864,14 @@ export interface ExamplePage {
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "StrategyExampleInput".
+ */
+export interface StrategyExampleInput {
+  municipality_code: string;
+  scenario_id: 'field-shift-sorriso';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "ExampleDetail".
  */
 export interface ExampleDetail {
@@ -483,7 +881,7 @@ export interface ExampleDetail {
   product_id: 'history' | 'yield_estimate' | 'water_risk_projection' | 'strategy_comparison';
   period: Period;
   result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
-  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest;
+  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest | StrategyExampleInput;
   result: ScientificEnvelope;
   source_refs: SourceReference[];
   warnings: string[];
@@ -562,13 +960,38 @@ export interface ComparisonDetail {
   result_basis: 'observation' | 'retrospective_estimate' | 'forecast_projection' | 'hypothetical_scenario' | 'mixed';
   monitored_place_id: string | null;
   notes: string;
-  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest;
+  input_snapshot: YieldEstimateRequest | WaterRiskProjectionRequest | StrategyExampleInput;
   output_envelope: ScientificEnvelope;
   source_versions: {
     scientific_revision: string;
     publication_version: string;
     app_contract_version: '0.1.0';
   };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ScientificCatalog".
+ */
+export interface ScientificCatalog {
+  bundle_sha256: string;
+  source_revision: string;
+  operational_release: 'not_released';
+  models: {
+    crop: string;
+    artifact: string;
+    validation_status: string;
+    public_contract_supported: boolean;
+    smoke_cases: number;
+    operational_release: 'not_released';
+  }[];
+  regional_soy: {
+    selected: 'site+mlp';
+    run_available: false;
+    reason_code: 'missing_artifacts';
+    frozen_at: string;
+    test_2022_2024_evaluated: false;
+  };
+  published_strategy_examples: string[];
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -818,5 +1241,13 @@ export interface EvidenceReviewResponse {
  */
 export interface EvidenceReviewResultResponse {
   data: EvidenceReviewResult;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ScientificCatalogResponse".
+ */
+export interface ScientificCatalogResponse {
+  data: ScientificCatalog;
   meta: ResponseMeta;
 }

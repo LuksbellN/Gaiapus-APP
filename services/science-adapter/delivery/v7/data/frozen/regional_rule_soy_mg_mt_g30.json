@@ -1,0 +1,223 @@
+{
+  "frozen_at": "2026-11-14T14:42:54.015059+00:00",
+  "rule_document": "docs/superpowers/plans/gaiapus-30-regra-regional-mg-mt.md",
+  "rule_document_sha256": "f286e75d114db321625f597d4a916dd9e5cf910b1d3241015c222ddf921e3a72",
+  "code": "data/ingest/regional_rule_g30.py",
+  "code_sha256": "b0cca2a98733023acff0ac8e69926efccaf58caef32f7739135d02438824c96d",
+  "git_head_before_freeze": "27c0b9d11f3b54b805331e6a25e4636a06405d8b",
+  "crop": "soy",
+  "region": "MG (31) + MT (51)",
+  "validation_years": [
+    2019,
+    2020,
+    2021
+  ],
+  "inputs": {
+    "data\\processed\\training_v7\\predictions_soy.parquet": "0aaa90dfd6167c094b496b6810d945ba98507b9eac7d9e32a00217e27b2391cb"
+  },
+  "keys": "municipality_code, harvest_year, horizon_days",
+  "candidates": [
+    "history+history",
+    "site+ridge",
+    "weather+mlp",
+    "hydro+mlp",
+    "site+mlp"
+  ],
+  "metric": "MAE per municipal harvest (cutoffs equally weighted) -> mean per state -> 50% per state",
+  "bootstrap": {
+    "draws": 10000,
+    "seed": 42,
+    "cluster": "municipality",
+    "stratified_by": "state"
+  },
+  "sets": {
+    "temporal": {
+      "valid_set": true,
+      "municipalities": {
+        "31": 32,
+        "51": 59
+      },
+      "harvests": {
+        "31": 96,
+        "51": 177
+      },
+      "years": [
+        2019,
+        2020,
+        2021
+      ]
+    },
+    "spatiotemporal": {
+      "valid_set": true,
+      "municipalities": {
+        "31": 12,
+        "51": 19
+      },
+      "harvests": {
+        "31": 36,
+        "51": 57
+      },
+      "years": [
+        2019,
+        2020,
+        2021
+      ]
+    }
+  },
+  "table": [
+    {
+      "scope": "temporal",
+      "candidate": "history+history",
+      "coverage": 1.0,
+      "mae_mg_mt": 209.6864325353386,
+      "mae_mg": 224.48120495176053,
+      "mae_mt": 194.8916601189167
+    },
+    {
+      "scope": "temporal",
+      "candidate": "site+ridge",
+      "coverage": 1.0,
+      "mae_mg_mt": 243.8847949859049,
+      "mae_mg": 243.73022376413158,
+      "mae_mt": 244.03936620767823,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": false,
+        "spatial_not_above_history_each_state": false
+      }
+    },
+    {
+      "scope": "temporal",
+      "candidate": "weather+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 175.6989621208296,
+      "mae_mg": 215.6272072077088,
+      "mae_mt": 135.77071703395043,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    },
+    {
+      "scope": "temporal",
+      "candidate": "hydro+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 175.8129656819977,
+      "mae_mg": 213.07880315264404,
+      "mae_mt": 138.54712821135135,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    },
+    {
+      "scope": "temporal",
+      "candidate": "site+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 174.13234068733215,
+      "mae_mg": 200.8020409353521,
+      "mae_mt": 147.46264043931217,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    },
+    {
+      "scope": "spatiotemporal",
+      "candidate": "history+history",
+      "coverage": 1.0,
+      "mae_mg_mt": 244.89732528752054,
+      "mae_mg": 280.56202447153674,
+      "mae_mt": 209.23262610350434
+    },
+    {
+      "scope": "spatiotemporal",
+      "candidate": "site+ridge",
+      "coverage": 1.0,
+      "mae_mg_mt": 271.965903648059,
+      "mae_mg": 283.9351875534515,
+      "mae_mt": 259.9966197426665,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": false,
+        "spatial_not_above_history_each_state": false
+      }
+    },
+    {
+      "scope": "spatiotemporal",
+      "candidate": "weather+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 202.01939027737893,
+      "mae_mg": 251.45841817942016,
+      "mae_mt": 152.5803623753377,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    },
+    {
+      "scope": "spatiotemporal",
+      "candidate": "hydro+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 203.49610283338689,
+      "mae_mg": 250.16819450987876,
+      "mae_mt": 156.824011156895,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    },
+    {
+      "scope": "spatiotemporal",
+      "candidate": "site+mlp",
+      "coverage": 1.0,
+      "mae_mg_mt": 207.12022660317257,
+      "mae_mg": 229.16071001881969,
+      "mae_mt": 185.07974318752542,
+      "checks": {
+        "full_coverage": true,
+        "valid_sets": true,
+        "temporal_below_history_each_state": true,
+        "spatial_not_above_history_each_state": true
+      }
+    }
+  ],
+  "eligible": [
+    "weather+mlp",
+    "hydro+mlp",
+    "site+mlp"
+  ],
+  "decision": {
+    "selected": "site+mlp",
+    "winner": "site+mlp",
+    "delta_vs_history_kg_ha": -35.55409184800647,
+    "ci95": [
+      -51.1597989621608,
+      -18.842885466735193
+    ],
+    "reason": "upper bound strictly negative"
+  },
+  "maize2": "national Ridge (site+ridge), no regional selection",
+  "features": {
+    "site+ridge": "trend, lagged yields, weather, water balance, site",
+    "weather+mlp": "trend lags + weather, cutoff as input",
+    "hydro+mlp": "+ water balance",
+    "site+mlp": "+ site",
+    "history+history": "trend and lagged yields"
+  },
+  "availability": "retrospective; publication vintages unverified",
+  "test_2022_2024_evaluated": false,
+  "superseded_exploratory_rule": "contracts/catalog/regional_rule_v7.json (commit 27c0b9d) is exploratory and not active"
+}

@@ -1,0 +1,24 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      HOST: 0.0.0.0
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-}
+      APP_STORAGE_SIGNING_KEY: ${APP_STORAGE_SIGNING_KEY:-}
+      SCIENCE_MODE: ${SCIENCE_MODE:-fixture}
+      SCIENCE_ADAPTER_URL: http://science:8001
+      SCIENCE_INTERNAL_TOKEN: ${SCIENCE_INTERNAL_TOKEN:-}
+      SCIENCE_DEADLINE_MS: ${SCIENCE_DEADLINE_MS:-130000}
+  science:
+    profiles: [live]
+    build:
+      context: .
+      dockerfile: services/science-adapter/Dockerfile
+    environment:
+      SCIENCE_INTERNAL_TOKEN: ${SCIENCE_INTERNAL_TOKEN:-}
+    # Internal network only: no host port and no browser CORS.

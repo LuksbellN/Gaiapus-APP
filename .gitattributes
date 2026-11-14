@@ -1,0 +1,9 @@
+* text=auto eol=lf
+packages/contracts/upstream/** -text -whitespace
+services/science-adapter/vendor/** -text -whitespace
+services/science-adapter/delivery/** -text -whitespace
+*.joblib binary
+*.pt binary
+*.npz binary
+*.png -text
+*.jpg -text

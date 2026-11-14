@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { publication, examples } from '@gaiapus/contracts/fixtures';
+import { publication, examples, scientificCatalog } from '@gaiapus/contracts/fixtures';
 import { publishedCoverage, publishedObservations } from '@gaiapus/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { contextKey } from '@gaiapus/contracts';
+import { contextKey, canonicalJson } from '@gaiapus/contracts';
 import { ApiError, notFound } from '../../plugins/errors.js';
+import type { Capabilities } from '../analysis/capabilities.js';
 export function areaById(id: string) { return publication.areas.find(x => x.area_id === id) ?? notFound(); }
 export function exampleById(id: string) { return structuredClone(examples.find(x => x.example_id === id) ?? notFound()); }
 export function paginate<T>(items: T[], query: Record<string, any>, context: string) {
@@ -20,12 +21,13 @@ export function paginate<T>(items: T[], query: Record<string, any>, context: str
 }
 export function publicResult(request: FastifyRequest, reply: FastifyReply, kind: string, query: Record<string, any>, data: unknown) {
   const key = contextKey(kind, query);
-  const etag = createHash('sha256').update(`${publication.publication_version}:${key}`).digest('hex');
+  const etag = createHash('sha256').update(`${publication.publication_version}:${key}:${canonicalJson(data)}`).digest('hex');
   reply.header('Cache-Control', 'public, max-age=300').header('ETag', `"${etag}"`);
   return { data, meta: { app_contract_version: '0.1.0', request_id: request.id, context_key: key, publication_version: publication.publication_version } };
 }
-export function publicHandlers() {
+export function publicHandlers(options: { origin: 'fixture' | 'live'; capabilities?: Capabilities }) {
   return {
+    'GET /v1/scientific-catalog': (request: FastifyRequest, reply: FastifyReply) => publicResult(request,reply,'scientific-catalog',{},scientificCatalog),
     'GET /v1/geography': (request: FastifyRequest, reply: FastifyReply) => {
       const query = request.query as Record<string, any>;
       if (query.parent_id) areaById(query.parent_id);
@@ -35,7 +37,16 @@ export function publicHandlers() {
     },
     'GET /v1/coverage': (request: FastifyRequest, reply: FastifyReply) => {
       const query = request.query as { area_id: string }; areaById(query.area_id);
-      return publicResult(request, reply, 'coverage', query, publishedCoverage(query.area_id));
+      const coverage = publishedCoverage(query.area_id);
+      if (options.origin === 'live') for (const product of coverage.products) {
+        if (product.product_id !== 'yield_estimate' && product.product_id !== 'water_risk_projection') continue;
+        const ready = options.capabilities?.[product.product_id];
+        product.supported_inputs = product.supported_inputs.filter(x => ready?.supported_inputs.some(input => canonicalJson(input) === canonicalJson(x.input)));
+        product.execution_origin = 'live'; product.run_available = product.supported_inputs.length > 0 && ready?.ready === true;
+        if (product.availability !== 'no_data' && !product.run_available) product.reason_code = ready?.reason_code ?? 'missing_artifacts';
+      }
+      // Capability mode is part of cache identity; fixture and live catalogs must not collide.
+      return publicResult(request, reply, 'coverage', query, coverage);
     },
     'GET /v1/observations': (request: FastifyRequest, reply: FastifyReply) => {
       const query = request.query as { area_id: string; start: string; end: string }; areaById(query.area_id);

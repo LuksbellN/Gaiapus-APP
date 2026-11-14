@@ -1,0 +1,31 @@
+import { it, expect } from 'vitest';
+import { createApp } from '../app.js';
+import { testDependencies, authA } from '../../tests/helpers.js';
+import { validators } from '@gaiapus/contracts';
+it('publishes the v7 model delivery and its regional gate truthfully', async () => {
+  const app=createApp();
+  const response=await app.inject('/v1/scientific-catalog');
+  expect(response.statusCode).toBe(200);
+  expect(validators.ScientificCatalogResponse!(response.json())).toBe(true);
+  const catalog=response.json().data;
+  expect(catalog.models).toHaveLength(7);
+  expect(catalog.operational_release).toBe('not_released');
+  expect(catalog.regional_soy.selected).toBe('site+mlp'); expect(catalog.regional_soy.run_available).toBe(false);
+  const example=(await app.inject('/v1/examples/yield-soy-5107925-day75')).json().data;
+  expect(example.result.data.model.version).toBe('research_v7_national_walk_forward');
+  await app.close();
+});
+it('serves and saves the original Field Shift result without claiming yield effects or executing a new strategy', async () => {
+  const app=createApp(testDependencies());
+  const response=await app.inject('/v1/examples/field-shift-sorriso');
+  expect(response.statusCode).toBe(200); expect(validators.ExampleDetailResponse!(response.json())).toBe(true);
+  const example=response.json().data;
+  expect(example.product_id).toBe('strategy_comparison'); expect(example.result.meta.result_basis).toBe('hypothetical_scenario');
+  expect(example.result.data.product).toBe('field_shift_scenario'); expect(example.result.data.yield_effect).toBeNull();
+  expect(example.result.data.daily_series_last_year.brachiaria.length).toBeGreaterThan(300);
+  const coverage=(await app.inject('/v1/coverage?area_id=5107925')).json().data.products.find((x:any)=>x.product_id==='strategy_comparison');
+  expect(coverage.availability).toBe('available'); expect(coverage.run_available).toBe(false);
+  const saved=await app.inject({method:'POST',url:'/v1/comparisons',headers:{...authA,'Idempotency-Key':'field-shift-original'},payload:{source:{kind:'example',example_id:'field-shift-sorriso'},title:'Historical Field Shift'}});
+  expect(saved.statusCode).toBe(200); expect(saved.json().data.output_envelope).toEqual(example.result);
+  await app.close();
+});

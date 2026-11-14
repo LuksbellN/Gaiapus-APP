@@ -1,0 +1,28 @@
+@base = http://localhost:3001
+@accessToken = REPLACE_WITH_VERIFIED_SUPABASE_ACCESS_TOKEN
+### Minimal liveness
+GET {{base}}/health
+### Public catalog
+GET {{base}}/v1/geography?q=Sorriso
+### Coverage and exact supported scientific input tuples
+GET {{base}}/v1/coverage?area_id=5107925
+### Dated observations (a published rectangle, not Sorriso imagery)
+GET {{base}}/v1/observations?area_id=published-field-uberlandia&start=2024-04-01&end=2024-07-31
+### Public example
+GET {{base}}/v1/examples/yield-soy-5107925-day75
+### Verified account
+GET {{base}}/v1/me
+Authorization: Bearer {{accessToken}}
+### Exact fixture request
+POST {{base}}/v1/yield-estimates
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"municipality_code":"5107925","crop":"soy","harvest_year":2021,"days_after_sowing":75}
+### Save authoritative published example
+POST {{base}}/v1/comparisons
+Authorization: Bearer {{accessToken}}
+Idempotency-Key: replace-with-a-new-unique-save-key
+Content-Type: application/json
+
+{"source":{"kind":"example","example_id":"yield-soy-5107925-day75"},"title":"Sorriso retrospective example"}

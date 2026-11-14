@@ -47,10 +47,10 @@ describe('public publication API', () => {
     expect((await app.inject('/v1/observations?area_id=BR&start=2024-03-02&end=2024-03-01')).statusCode).toBe(422);
     await app.close();
   });
-  it('returns all four original examples without invoking science or authentication', async () => {
+  it('returns all five published examples without invoking science or authentication', async () => {
     const app = createApp();
     const list = await app.inject('/v1/examples');
-    expect(list.statusCode).toBe(200); expect(list.json().data.items).toHaveLength(4);
+    expect(list.statusCode).toBe(200); expect(list.json().data.items).toHaveLength(5);
     for (const example of list.json().data.items) {
       const response = await app.inject(`/v1/examples/${example.example_id}`);
       expect(validators.ExampleDetailResponse!(response.json()), JSON.stringify(validators.ExampleDetailResponse!.errors)).toBe(true);

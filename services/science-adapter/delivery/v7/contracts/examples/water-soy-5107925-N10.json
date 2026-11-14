@@ -1,0 +1,286 @@
+{
+  "schema_version": "1.0.0",
+  "product": "water_risk_projection",
+  "generated_at": "2026-11-14T13:44:35.835678+00:00",
+  "municipality_code": "5107925",
+  "location": {
+    "latitude": -12.69585,
+    "longitude": -55.77992
+  },
+  "crop": "soy",
+  "sowing_date": "2026-10-05",
+  "sowing_basis": "hypothetical_fixed_calendar_per_state",
+  "decision_at": "2026-11-14T13:44:33+00:00",
+  "crop_day_at_decision": 40,
+  "horizon_days_requested": 10,
+  "max_validated_lead_days": 7,
+  "soil": {
+    "cad_class": "AD4",
+    "capacity_mm": 55.0,
+    "initial_fraction_at_sowing": 0.7,
+    "basis": "fixed hypothesis, not a measured soil profile"
+  },
+  "forecast": {
+    "provider": "Open-Meteo",
+    "model": "ecmwf_ifs025",
+    "issued_at": "2026-11-14T06:00:00+00:00",
+    "available_at": "2026-11-14T13:07:57+00:00",
+    "retrieved_at": "2026-11-14T13:44:35.500852+00:00",
+    "issue_time_source": "Open-Meteo model metadata (last run initialisation)"
+  },
+  "evaluation": {
+    "method": "Open-Meteo Previous Runs API",
+    "verification": "same provider shortest-lead series, not rain gauges",
+    "reference": "day-of-year climatology 2001-2021",
+    "rule": {
+      "max_storage_mae_share_of_capacity": 0.15,
+      "must_beat_reference": true,
+      "min_coverage": 0.9,
+      "fixed_before_scoring": true
+    },
+    "by_lead": [
+      {
+        "lead_days": 1,
+        "storage_mae_mm": 2.22,
+        "reference_storage_mae_mm": 4.11,
+        "stress_accuracy": 0.977,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 2,
+        "storage_mae_mm": 3.22,
+        "reference_storage_mae_mm": 6.1,
+        "stress_accuracy": 0.973,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 3,
+        "storage_mae_mm": 3.97,
+        "reference_storage_mae_mm": 7.21,
+        "stress_accuracy": 0.957,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 4,
+        "storage_mae_mm": 4.27,
+        "reference_storage_mae_mm": 7.9,
+        "stress_accuracy": 0.959,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 5,
+        "storage_mae_mm": 4.58,
+        "reference_storage_mae_mm": 8.45,
+        "stress_accuracy": 0.954,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 6,
+        "storage_mae_mm": 4.85,
+        "reference_storage_mae_mm": 8.79,
+        "stress_accuracy": 0.943,
+        "coverage": 1.0,
+        "passed": true
+      },
+      {
+        "lead_days": 7,
+        "storage_mae_mm": 5.05,
+        "reference_storage_mae_mm": 8.88,
+        "stress_accuracy": 0.939,
+        "coverage": 1.0,
+        "passed": true
+      }
+    ]
+  },
+  "yield_effect": null,
+  "yield_effect_note": "Not evaluated; do not convert this projection into kg/ha.",
+  "warnings": [
+    "Served 6 of 10 days: forecast or crop cycle ends earlier"
+  ],
+  "status": "ready",
+  "horizon_days_served": 6,
+  "initial_state": {
+    "date": "2026-11-13",
+    "storage_mm": 25.89,
+    "available_water_fraction": 0.4708,
+    "observed_days": 40,
+    "observed_source": "Open-Meteo ecmwf_ifs025 shortest-lead series"
+  },
+  "days": [
+    {
+      "date": "2026-11-14",
+      "lead_days": 1,
+      "crop_day": 40,
+      "phase": "vegetative",
+      "rain_mm": 0.3,
+      "et0_mm": 5.88,
+      "storage_end_mm": 21.09,
+      "available_water_fraction": 0.3834,
+      "et_deficit_mm": 0.52,
+      "ks": 0.9069,
+      "stress": true,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-15",
+      "lead_days": 2,
+      "crop_day": 41,
+      "phase": "vegetative",
+      "rain_mm": 11.1,
+      "et0_mm": 5.1,
+      "storage_end_mm": 27.2,
+      "available_water_fraction": 0.4945,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-16",
+      "lead_days": 3,
+      "crop_day": 42,
+      "phase": "vegetative",
+      "rain_mm": 20.2,
+      "et0_mm": 3.79,
+      "storage_end_mm": 43.61,
+      "available_water_fraction": 0.7929,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-17",
+      "lead_days": 4,
+      "crop_day": 43,
+      "phase": "vegetative",
+      "rain_mm": 36.4,
+      "et0_mm": 3.32,
+      "storage_end_mm": 51.61,
+      "available_water_fraction": 0.9383,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-18",
+      "lead_days": 5,
+      "crop_day": 44,
+      "phase": "vegetative",
+      "rain_mm": 26.7,
+      "et0_mm": 3.25,
+      "storage_end_mm": 51.61,
+      "available_water_fraction": 0.9384,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-19",
+      "lead_days": 6,
+      "crop_day": 45,
+      "phase": "vegetative",
+      "rain_mm": 41.6,
+      "et0_mm": 2.93,
+      "storage_end_mm": 51.88,
+      "available_water_fraction": 0.9433,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    }
+  ],
+  "reference_days": [
+    {
+      "date": "2026-11-14",
+      "lead_days": 1,
+      "crop_day": 40,
+      "phase": "vegetative",
+      "rain_mm": 7.55,
+      "et0_mm": 3.81,
+      "storage_end_mm": 29.8,
+      "available_water_fraction": 0.5418,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-15",
+      "lead_days": 2,
+      "crop_day": 41,
+      "phase": "vegetative",
+      "rain_mm": 6.4,
+      "et0_mm": 3.86,
+      "storage_end_mm": 32.42,
+      "available_water_fraction": 0.5894,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-16",
+      "lead_days": 3,
+      "crop_day": 42,
+      "phase": "vegetative",
+      "rain_mm": 10.39,
+      "et0_mm": 4.04,
+      "storage_end_mm": 38.77,
+      "available_water_fraction": 0.7049,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-17",
+      "lead_days": 4,
+      "crop_day": 43,
+      "phase": "vegetative",
+      "rain_mm": 7.8,
+      "et0_mm": 3.96,
+      "storage_end_mm": 42.52,
+      "available_water_fraction": 0.7731,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-18",
+      "lead_days": 5,
+      "crop_day": 44,
+      "phase": "vegetative",
+      "rain_mm": 7.77,
+      "et0_mm": 3.84,
+      "storage_end_mm": 46.29,
+      "available_water_fraction": 0.8416,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    },
+    {
+      "date": "2026-11-19",
+      "lead_days": 6,
+      "crop_day": 45,
+      "phase": "vegetative",
+      "rain_mm": 7.5,
+      "et0_mm": 3.66,
+      "storage_end_mm": 49.89,
+      "available_water_fraction": 0.9071,
+      "et_deficit_mm": 0.0,
+      "ks": 1,
+      "stress": false,
+      "validated_lead": true
+    }
+  ]
+}

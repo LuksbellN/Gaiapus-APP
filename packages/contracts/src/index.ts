@@ -3,6 +3,9 @@ import addFormatsModule from 'ajv-formats';
 import applicationSchema from '../schemas/application.json' with { type: 'json' };
 import type { ValidateFunction } from 'ajv';
 export type * from './generated/types.js';
+export type ResultEnvelope<T> = { data: T; meta: import('./generated/types.js').ScientificMeta };
+export type ExecutionOrigin = import('./generated/types.js').ScientificMeta['execution_origin'];
+export type ResultBasis = import('./generated/types.js').ScientificMeta['result_basis'];
 export { routeContracts } from './generated/routes.js';
 export { publishedCoverage, publishedObservations } from './publication.js';
 export const APP_CONTRACT_VERSION = '0.1.0' as const;
@@ -16,6 +19,7 @@ export function validateScientific(value: unknown): boolean {
   const record = value as Record<string, unknown>;
   if (record.product === 'yield_estimate') return validators.YieldPayload!(value);
   if (record.product === 'water_risk_projection') return validators.WaterRiskPayload!(value);
+  if (record.product === 'field_shift_scenario') return validators.FieldShiftPayload!(value);
   return false;
 }
 /** Canonical JSON identity: all request parameters, stable key ordering, no private fields. */
