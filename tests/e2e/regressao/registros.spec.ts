@@ -41,7 +41,7 @@ test.describe('RT-13 rascunhos', () => {
     await expect(page.getByLabel('Cultivar ou variedade')).toHaveValue('CULTIVAR-A');
   });
 
-  test.fixme('D-06: trocar de talhão A → B → A recupera o rascunho de A sem recarregar', async ({ page }) => {
+  test('D-06: trocar de talhão A → B → A recupera o rascunho de A sem recarregar', async ({ page }) => {
     await seedFarm(page);
     await page.goto('/#/registros?novo=plantio');
     await page.getByLabel('Cultivar ou variedade').fill('CULTIVAR-A');

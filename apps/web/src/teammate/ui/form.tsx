@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { setDraft, useStore } from '../store';
+import { getState, setDraft, useStore } from '../store';
 import { parseLocaleNumber } from '../i18n/number';
 import type { Locale } from '../i18n/locale';
 // Formulário com rascunho recuperável: cada alteração é guardada neste aparelho até salvar.
 export function useDraftForm(key: string, initial: Record<string, string>) {
-  const saved = useStore((s) => s.drafts[key]); const [v, setV] = useState<Record<string, string>>(() => ({ ...initial, ...(saved ?? {}) })); const [restored] = useState(() => !!saved); const k = useRef(key);
-  useEffect(() => { if (k.current !== key) { k.current = key; setV({ ...initial }); } }, [key]); // eslint-disable-line
+  const saved = useStore((s) => s.drafts[key]); const [v, setV] = useState<Record<string, string>>(() => ({ ...initial, ...(saved ?? {}) })); const [restored, setRestored] = useState(() => !!saved); const k = useRef(key);
+  // Switching key (e.g. plot A → B → A) loads that key's own draft instead of blanking it (D-06).
+  useEffect(() => { if (k.current !== key) { k.current = key; const d = getState().drafts[key]; setV({ ...initial, ...(d ?? {}) }); setRestored(!!d); } }, [key]); // eslint-disable-line
   const set = (name: string, value: string) => setV((p) => { const n = { ...p, [name]: value }; setDraft(key, n); return n; });
   const bind = (name: string) => ({ value: v[name] ?? '', onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(name, e.target.value) });
   return { v, set, bind, restored, clear: () => { setDraft(key, null); setV({ ...initial }); }, load: (d: Record<string, string>) => setV({ ...initial, ...d }) };
