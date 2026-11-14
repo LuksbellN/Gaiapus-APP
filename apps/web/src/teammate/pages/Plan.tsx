@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { simulations } from '../adapters';
 import { useActiveContext } from '../App';
 import { SORRISO } from '../capabilities';
-import { CROPS, cropIdFromName, isCoffee, isCropId, PLANTABLE, type CropId } from '../catalog';
+import { CROPS, cropIdFromName, isCoffee, isCropId, PLANTABLE, type CropId, isPlainCrop } from '../catalog';
 import { money, n0, n1, n2, signed } from '../format';
 import { now, setState, uid, useStore } from '../store';
 import { ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, useAsync } from '../ui';
@@ -42,7 +42,7 @@ export function PlanPage() {
           <form className="card" onSubmit={(e) => { e.preventDefault(); save(false); }} aria-labelledby="h-plano"><h2 id="h-plano">Seu plano</h2>
             {pendingCrop && <Notice tone="warn" title="Complete a cultura.">Este plano foi salvo como “{v.cultura}”, sem dizer a espécie ou a safra. Escolha abaixo para continuar; o restante foi mantido.</Notice>}
             <div className="form-grid">
-              <Field label="Cultura" hint={crop && CROPS[crop].role !== 'Cultura' ? CROPS[crop].role : undefined}>{(a) => <select className="input" {...a} name="cultura" value={crop ?? ''} onChange={(e) => f.set('cultura_id', e.target.value)}>{pendingCrop && <option value="" disabled>Escolha a cultura…</option>}{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
+              <Field label="Cultura" hint={crop && !isPlainCrop(crop) ? CROPS[crop].role : undefined}>{(a) => <select className="input" {...a} name="cultura" value={crop ?? ''} onChange={(e) => f.set('cultura_id', e.target.value)}>{pendingCrop && <option value="" disabled>Escolha a cultura…</option>}{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
               <Field label="Área (ha)" error={numError(v.area)}>{(a) => <input className="input" inputMode="decimal" autoComplete="off" {...a} {...f.bind('area')} />}</Field>
               <Field label="Irrigação">{(a) => <select className="input" {...a} {...f.bind('irrigacao')}><option>Sequeiro</option><option>Irrigado</option></select>}</Field>
               <Field label="Solo">{(a) => <select className="input" {...a} {...f.bind('solo')}>{['Não sei', 'Arenoso', 'Médio', 'Argiloso'].map((o) => <option key={o}>{o}</option>)}</select>}</Field>

@@ -114,6 +114,24 @@
       "date": "2026-11-14",
       "reason": "G1/G6 (D-10, D-26): validação de links e país da posição",
       "sha256": "53b56f9c297f9209815d00c497e0a9b9ea313acb2ab438b0119753847db3cc72"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "f9d9a2500aa37ac6af2b2e65a82bd6d8b7c1dda39dc50518f58547c2c9d9149a"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "0fb82a6ee1035d6c57969e212c1f1b73b32c51b53a939a4455b9c06ad24f81d9"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "4e98870c548adb0799f114a186904d48ba9367c4b7051161dfcccbc4ea8c7255"
     }
   ]
 }

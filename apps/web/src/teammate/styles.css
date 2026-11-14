@@ -61,6 +61,14 @@ h1, h2 { text-wrap: balance; }
 .rail a[aria-current='page']::before { content: ''; position: absolute; left: -6px; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--action); }
 .rail hr { width: 24px; border: 0; border-top: 1px solid var(--border); margin: 6px auto; }
 .rail__group { display: flex; flex-direction: column; gap: 2px; }
+/* Language selector (native select). */
+.only-sm { display: none; }
+.lang-select { display: inline-flex; align-items: center; gap: 6px; min-height: var(--touch); padding: 0 4px 0 10px; border: 1px solid var(--border-strong); border-radius: var(--r-control); color: var(--text); background: var(--bg); }
+.lang-select:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lang-select svg { color: var(--text-2); flex: none; }
+.lang-select__input { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 600; padding: 8px 6px; min-height: 40px; cursor: pointer; }
+.lang-select__input:focus { outline: none; }
+.lang-select__input option { color: var(--text); background: var(--surface); }
 .rail .only-mobile { display: none; }
 .main { min-width: 0; min-height: 0; overflow: auto; position: relative; }
 .page { max-width: 1280px; margin: 0 auto; padding: var(--s6); display: grid; gap: var(--s6); }
@@ -216,7 +224,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 }
 @media (max-width: 760px) {
   .app { grid-template: 56px minmax(0, 1fr) calc(64px + env(safe-area-inset-bottom, 0px)) / minmax(0, 1fr); }
-  .header { padding: 0 var(--s3); gap: var(--s2); } .header .hide-sm { display: none; } .brand span { display: none; }
+  .header { padding: 0 var(--s3); gap: var(--s2); } .header .hide-sm { display: none; } .header .only-sm { display: inline-flex; } .brand span { display: none; }
   .rail { grid-row: 3; flex-direction: row; border-right: 0; border-top: 1px solid var(--border); padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)); overflow: visible; justify-content: space-around; }
   .rail a { flex: 1; min-height: 54px; font-size: 12px; } .rail a.more-only { display: none; } .rail hr { display: none; } .rail .only-mobile { display: flex; } .rail__group { display: contents; }
   .rail a[aria-current='page']::before { left: 20%; right: 20%; top: -4px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }

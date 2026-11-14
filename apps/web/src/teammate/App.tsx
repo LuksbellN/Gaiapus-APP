@@ -1,7 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { Bell, CalendarDays, CircleHelp, CircleUserRound, CloudRain, Droplets, Globe, Layers, MapPin, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
-import { EDITION, MODE } from './config';
+import { EDITION } from './config';
+import { useI18n, type Messages } from './i18n';
+import { LanguageSelect } from './ui/LanguageSelect';
+import { cropOptionLabel } from './catalog';
 import { useStore } from './store';
 import { setPrefs, usePrefs } from './prefs';
 import { Pill } from './ui';
@@ -26,13 +29,14 @@ const Help = lazyPage('/ajuda', () => import('./pages/Help'), 'Help');
 
 // Destinations grouped by the farmer's task (Docs/ux-preservacao/03, section 3). Routes are unchanged.
 // `mobile` items form the bottom bar; every item is also listed, by group, in "Mais".
-type NavItem = { to: string; label: string; icon: typeof Globe; mobile?: boolean };
-export const NAV_GROUPS: { id: string; label: string; items: NavItem[] }[] = [
-  { id: 'explorar', label: 'Explorar', items: [{ to: '/explorar', label: 'Explorar', icon: Globe, mobile: true }, { to: '/municipio', label: 'Município', icon: CloudRain }] },
-  { id: 'acompanhar', label: 'Acompanhar', items: [{ to: '/visao-geral', label: 'Visão geral', icon: Sprout, mobile: true }, { to: '/alertas', label: 'Alertas', icon: Bell }, { to: '/dispositivos', label: 'Sondas', icon: Droplets }] },
-  { id: 'planejar', label: 'Planejar', items: [{ to: '/planejar', label: 'Planejar', icon: CalendarDays }, { to: '/simulador', label: 'Simulador', icon: SlidersHorizontal, mobile: true }, { to: '/field-shift', label: 'Field Shift', icon: Layers }] },
-  { id: 'lavoura', label: 'Minha lavoura', items: [{ to: '/propriedades', label: 'Propriedades', icon: MapPin }, { to: '/registros', label: 'Registros', icon: Tractor, mobile: true }] },
-  { id: 'ajuda', label: 'Conta e ajuda', items: [{ to: '/ajuda', label: 'Ajuda', icon: CircleHelp }] },
+// Labels are message keys (nav.item.*, nav.group.*), translated at render time.
+type NavItem = { to: string; key: keyof Messages['nav']['item']; icon: typeof Globe; mobile?: boolean };
+export const NAV_GROUPS: { id: keyof Messages['nav']['group']; items: NavItem[] }[] = [
+  { id: 'explorar', items: [{ to: '/explorar', key: 'explorar', icon: Globe, mobile: true }, { to: '/municipio', key: 'municipio', icon: CloudRain }] },
+  { id: 'acompanhar', items: [{ to: '/visao-geral', key: 'visaoGeral', icon: Sprout, mobile: true }, { to: '/alertas', key: 'alertas', icon: Bell }, { to: '/dispositivos', key: 'sondas', icon: Droplets }] },
+  { id: 'planejar', items: [{ to: '/planejar', key: 'planejar', icon: CalendarDays }, { to: '/simulador', key: 'simulador', icon: SlidersHorizontal, mobile: true }, { to: '/field-shift', key: 'fieldShift', icon: Layers }] },
+  { id: 'lavoura', items: [{ to: '/propriedades', key: 'propriedades', icon: MapPin }, { to: '/registros', key: 'registros', icon: Tractor, mobile: true }] },
+  { id: 'ajuda', items: [{ to: '/ajuda', key: 'ajuda', icon: CircleHelp }] },
 ];
 export const NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
@@ -44,16 +48,17 @@ export function useActiveContext() {
 }
 
 export function App({ authPage }: { authPage?: ReactNode } = {}) {
-  const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext();
+  const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext(); const { t, locale, failed, retry } = useI18n();
+  useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'dark' ? '#0B1411' : '#F5F7F2'); }, [theme]);
   useEffect(() => { document.getElementById('conteudo')?.scrollTo?.(0, 0); }, [loc.pathname]);
   // Document title follows the visible h1 (and the section when they differ), so tabs and history are distinguishable (D-12).
   useEffect(() => {
     const main = document.getElementById('conteudo'); if (!main) return;
-    const section = NAV.find((n) => loc.pathname.startsWith(n.to))?.label;
+    const item = NAV.find((n) => loc.pathname.startsWith(n.to)); const section = item ? t(`nav.item.${item.key}`) : undefined;
     const apply = () => { const h = main.querySelector('h1')?.textContent?.trim(); document.title = [h, section && h && !h.startsWith(section) ? section : null, 'Gaiapus'].filter(Boolean).join(' · '); };
     apply(); const mo = new MutationObserver(apply); mo.observe(main, { subtree: true, childList: true, characterData: true }); return () => mo.disconnect();
-  }, [loc.pathname]);
+  }, [loc.pathname, locale]); // eslint-disable-line
   // After a route change (not on first load, not on query-only changes) move focus to the new screen's h1 once it settles.
   const firstRoute = useRef(true);
   useEffect(() => {
@@ -72,25 +77,27 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
   useEffect(() => { const w = window as any; let idle = 0; const t = setTimeout(() => { if (w.requestIdleCallback) idle = w.requestIdleCallback(preloadLightPages, { timeout: 4000 }); else preloadLightPages(); }, 3000); return () => { clearTimeout(t); if (idle) w.cancelIdleCallback?.(idle); }; }, []);
   return (
     <div className="app">
-      <a className="skip" href="#conteudo" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>Pular para o conteúdo</a>
+      <a className="skip" href="#conteudo" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>{t('nav.skip')}</a>
       <header className="header">
-        <Link to="/explorar" className="brand" aria-label="Gaiapus — início" translate="no"><Sprout size={26} aria-hidden /><span>Gaiapus</span></Link>
+        <Link to="/explorar" className="brand" aria-label={t('nav.home')} translate="no"><Sprout size={26} aria-hidden /><span>Gaiapus</span></Link>
         <div className="header__ctx">
-          <Link to="/registros" className="ctx-btn" title="Abrir registros"><span className="sr-only">Contexto atual: </span>
+          <Link to="/registros" className="ctx-btn" title={t('nav.ctx.openTitle')}><span className="sr-only">{t('nav.ctx.current')}</span>
             <Tractor size={18} aria-hidden />
-            {ctx.plot ? <span><b>{ctx.property?.name}</b> · {ctx.plot.name}{ctx.planting ? ` · ${ctx.planting.data.cultura} · safra ${ctx.planting.cycleId.split(':')[1]}` : ' · sem plantio registrado'}</span> : <span><b>Demonstração</b><span className="hide-sm"> · Sorriso, MT · soja · sem propriedade cadastrada</span></span>}<span className="sr-only"> — abrir registros</span>
+            {ctx.plot ? <span><b>{ctx.property?.name}</b> · {ctx.plot.name}{ctx.planting ? ` · ${cropOptionLabel(ctx.planting.data.cultura ?? '')}${t('nav.ctx.season', { season: ctx.planting.cycleId.split(':')[1] })}` : t('nav.ctx.noPlanting')}</span> : <span><b>{t('nav.ctx.demo')}</b><span className="hide-sm">{t('nav.ctx.demoDetail')}</span></span>}<span className="sr-only">{t('nav.ctx.open')}</span>
           </Link>
         </div>
         <div className="header__end">
-          <span className="hide-sm"><Pill>Edição {EDITION.year}</Pill></span>
-          <span className="hide-sm"><Pill tone="warn">{MODE.label}</Pill></span>
-          <button className="icon-btn" aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'} onClick={() => setPrefs({ theme: theme === 'dark' ? 'light' : 'dark' })}>{theme === 'dark' ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}</button>
-          <Link to="/conta" className="ctx-btn" aria-label={session ? `Conta de ${session.name}` : 'Entrar ou criar conta'}><CircleUserRound size={20} aria-hidden /><span className="hide-sm">{session ? session.name : 'Entrar'}</span></Link>
+          <span className="hide-sm"><Pill>{t('common.edition', { year: EDITION.year })}</Pill></span>
+          <span className="hide-sm"><Pill tone="warn">{t('nav.mode')}</Pill></span>
+          <span className="hide-sm"><LanguageSelect /></span><span className="only-sm"><LanguageSelect compact id="idioma-curto" /></span>
+          <button className="icon-btn" aria-label={theme === 'dark' ? t('nav.theme.toLight') : t('nav.theme.toDark')} onClick={() => setPrefs({ theme: theme === 'dark' ? 'light' : 'dark' })}>{theme === 'dark' ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}</button>
+          <Link to="/conta" className="ctx-btn" aria-label={session ? t('nav.account.of', { name: session.name }) : t('nav.account.enterOrCreate')}><CircleUserRound size={20} aria-hidden /><span className="hide-sm">{session ? session.name : t('nav.account.enter')}</span></Link>
         </div>
       </header>
-      <nav className="rail" aria-label="Principal">
-        {NAV_GROUPS.map((g, i) => <div key={g.id} className="rail__group" role="group" aria-label={g.label}>{i > 0 && <hr />}{g.items.map((n) => <NavLink key={n.to} to={n.to} className={n.mobile ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{n.label}</NavLink>)}</div>)}
-        <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />Mais</NavLink>
+      {failed && <div className="explore__toast" role="status" style={{ position: 'fixed', zIndex: 60 }}>{t('lang.loadFailed')} <button className="btn btn--sm" onClick={() => void retry()}>{t('common.retry')}</button></div>}
+      <nav className="rail" aria-label={t('nav.main')}>
+        {NAV_GROUPS.map((g, i) => <div key={g.id} className="rail__group" role="group" aria-label={t(`nav.group.${g.id}`)}>{i > 0 && <hr />}{g.items.map((n) => <NavLink key={n.to} to={n.to} className={n.mobile ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{t(`nav.item.${n.key}`)}</NavLink>)}</div>)}
+        <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />{t('nav.more')}</NavLink>
       </nav>
       <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
         {authPage ?? <Routes>
@@ -109,7 +116,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
           <Route path="/mais" element={<More />} />
           <Route path="/design-preview" element={<DesignPreview />} />
           <Route path="/ajuda" element={<Help />} />
-          <Route path="*" element={<div className="page"><h1>Página não encontrada</h1><p><Link to="/explorar">Voltar ao explorador</Link></p></div>} />
+          <Route path="*" element={<div className="page"><h1>{t('nav.notFound')}</h1><p><Link to="/explorar">{t('nav.backToExplorer')}</Link></p></div>} />
         </Routes>}
       </main>
     </div>

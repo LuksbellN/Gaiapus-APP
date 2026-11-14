@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { CloudRain, Droplets, Satellite, Sprout } from 'lucide-react';
 import { crops, imagery, simulations, weather } from '../adapters';
 import { dFull, n0, n1, pct } from '../format';
-import { CROP_IDS, CROPS, isCropId, type CropId } from '../catalog';
+import { CROP_IDS, CROPS, isCropId, type CropId, isPlainCrop } from '../catalog';
 import { CapabilityTable, ModelStatus, YieldCard } from '../ui/Crops';
 import { Empty, ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, TabPanel, Tabs, useAsync } from '../ui';
 import { DualChart } from '../ui/DualChart';
@@ -71,7 +71,7 @@ function Safra({ code }: { code: string }) {
   const [params, setParams] = useSearchParams(); const crop: CropId = isCropId(params.get('cultura')) ? (params.get('cultura') as CropId) : 'soy';
   const setCrop = (c: string) => setParams((prev) => { const p = new URLSearchParams(prev); if (c === 'soy') p.delete('cultura'); else p.set('cultura', c); return p; });
   return <>
-    <div className="row-between"><Field label="Cultura" hint={CROPS[crop].role === 'Cultura' ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{CROP_IDS.map((id) => <option key={id} value={id}>{CROPS[id].name}{CROPS[id].plantable ? '' : ' (coorte agregada)'}</option>)}</select>}</Field></div>
+    <div className="row-between"><Field label="Cultura" hint={isPlainCrop(crop) ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{CROP_IDS.map((id) => <option key={id} value={id}>{CROPS[id].name}{CROPS[id].plantable ? '' : ' (coorte agregada)'}</option>)}</select>}</Field></div>
     <SafraCrop key={code + crop} code={code} crop={crop} />
   </>;
 }

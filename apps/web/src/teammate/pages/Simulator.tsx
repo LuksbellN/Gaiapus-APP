@@ -5,7 +5,7 @@ import { dFull, LAND, n0, n1, n2, pct, signed, STAGE } from '../format';
 import { ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, Tabs, useAsync, useMedia } from '../ui';
 import { PhaseTimeline, type TimelineSeries } from '../ui/PhaseTimeline';
 import { ModelTest } from '../ui/SealedTest';
-import { CROPS, isCoffee, isCropId, PLANTABLE, type CropId } from '../catalog';
+import { CROPS, isCoffee, isCropId, PLANTABLE, type CropId, isPlainCrop } from '../catalog';
 import { hasDailySeries, SORRISO } from '../capabilities';
 import { CapabilityTable } from '../ui/Crops';
 import { useSearchParams } from 'react-router-dom';
@@ -42,7 +42,7 @@ export function Simulator() {
       <div className="cols">
         <div className="stack">
           <section className="card"><h2>Escolha o que simular</h2>
-            <div className="form-grid"><Field label="Cultura" hint={CROPS[crop].role === 'Cultura' ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
+            <div className="form-grid"><Field label="Cultura" hint={isPlainCrop(crop) ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
               <Field label="Local" hint="A série diária do pacote existe só para Sorriso, MT.">{(a) => <select className="input" {...a} name="local" value={mun} onChange={(e) => setParams((prev) => { const p = new URLSearchParams(prev); if (e.target.value === SORRISO) p.delete('mun'); else p.set('mun', e.target.value); return p; })}>{[...new Set([SORRISO, '3170206', mun])].map((m) => <option key={m} value={m}>{PLACE[m] ?? `IBGE ${m}`}</option>)}</select>}</Field></div>
             <div className="row"><a className="btn" href="#/simulador">Abrir a simulação de soja em Sorriso (demonstração)</a></div>
           </section>
