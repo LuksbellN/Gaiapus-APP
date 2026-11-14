@@ -29,6 +29,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
 
   useImperativeHandle(ref, () => ({
     zoom: (d) => { const m = mapRef.current; if (m) m.easeTo({ zoom: m.getZoom() + d, duration: reducedMotion() ? 0 : 200 }); },
+    countryAt: (lon, lat) => { const m = mapRef.current; if (!m || !ready.current) return null; const f = m.queryRenderedFeatures(m.project([lon, lat]), { layers: ['countries'] })[0]; return f?.properties?.ADM0_A3 ? String(f.properties.ADM0_A3) : null; },
     flyTo: (lon, lat) => { const m = mapRef.current; if (!m) return; here.current?.remove(); const dot = document.createElement('div'); dot.setAttribute('aria-label', 'Sua posição'); dot.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#79BDD8;border:3px solid #EAF2EB'; here.current = new maplibregl.Marker({ element: dot }).setLngLat([lon, lat]).addTo(m); m.flyTo({ center: [lon, lat], zoom: Math.max(m.getZoom(), 7), duration: reducedMotion() ? 0 : MOTION.fly }); },
   }));
 

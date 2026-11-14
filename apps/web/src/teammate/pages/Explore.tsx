@@ -4,10 +4,12 @@ import { ChevronRight, Layers, LocateFixed, MapPin, Minus, Plus, RotateCcw, Sear
 import { coverage, geography, imagery, type BBox, type Coverage, type FC, type Place, type SearchResult } from '../adapters';
 import { latestOnly, type Meta } from '../adapters/core';
 import type { MapHandle, MapLayers, Selection } from '../map/types';
-import { PRESETS } from '../config';
+import { MOTION, PRESETS } from '../config';
+const MOTION_FLY = MOTION.fly;
 import { norm } from '../format';
 import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, useAsync, useMedia } from '../ui';
 import { useLazy } from '../lazyPage';
+import { parseSelection } from '../geo/ids';
 import { centerOf, coveredMunicipalities, fieldOf, placesWithData, statesWithData, useCoverageIndex, type PlaceWithData } from '../geo/coverageIndex';
 
 const loadMap = () => import('../map/ExplorerMap');
@@ -21,7 +23,7 @@ function pointIn(geom: any, lon: number, lat: number) {
 
 export function Explore() {
   const [params, setParams] = useSearchParams(); const nav = useNavigate();
-  const sel: Selection = useMemo(() => { const mun = params.get('mun'); const uf = params.get('uf') ?? (mun ? mun.slice(0, 2) : null); const raw = (params.get('pais') ?? '').toUpperCase(); const pais = uf || mun ? 'BR' : raw === 'BRA' ? 'BR' : /^[A-Z]{2,3}$/.test(raw) ? raw : null; return { pais, uf: pais === 'BR' ? uf : null, mun: pais === 'BR' ? mun : null }; }, [params]);
+  const sel: Selection = useMemo(() => parseSelection(params), [params]);
   const select = (s: Selection) => { const p = new URLSearchParams(params); ['pais', 'uf', 'mun'].forEach((k) => p.delete(k)); if (s.pais) p.set('pais', s.pais); if (s.uf) p.set('uf', s.uf); if (s.mun) p.set('mun', s.mun); setParams(p); };
   const wide = useMedia('(min-width: 1100px)'); const mobile = useMedia('(max-width: 760px)');
   const states = useAsync((sg) => geography.states(sg), []); const world = useAsync((sg) => geography.countries(sg), []); const [worldFilter, setWorldFilter] = useState('');
@@ -57,7 +59,11 @@ export function Explore() {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const { longitude: lon, latitude: lat } = pos.coords; map.current?.flyTo(lon, lat);
       const st = states.data?.data.features.find((f) => pointIn(f.geometry, lon, lat));
-      if (!st) { setGeo('Sua posição está fora do Brasil; limites disponíveis só para o Brasil nesta edição.'); return; }
+      if (!st) {
+        // Outside Brazil: select the country under the position once the camera arrives (D-26). Regions below country level are not loaded.
+        setTimeout(() => { const c = map.current?.countryAt(lon, lat); if (c) { select({ pais: c === 'BRA' ? 'BR' : c, uf: null, mun: null }); setGeo('Selecionamos o país da sua posição. Regiões abaixo do nível de país ainda não estão carregadas nesta versão.'); } else setGeo('Não foi possível identificar o país da sua posição. Escolha na lista ou no mapa.'); }, MOTION_FLY + 300);
+        return;
+      }
       const fc = (await geography.municipalities(st.properties.code)).data; const m = fc?.features.find((f) => pointIn(f.geometry, lon, lat));
       select({ pais: 'BR', uf: st.properties.code, mun: m?.properties.code ?? null }); setGeo(m ? `Você está em ${m.properties.name}, ${st.properties.sigla}.` : `Você está em ${st.properties.name}.`);
     }, (err) => setGeo(err.code === 1 ? 'Permissão de localização negada. Use a busca ou o mapa.' : 'Não foi possível obter sua posição.'), { timeout: 8000 });

@@ -102,6 +102,18 @@
       "date": "2026-11-14",
       "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura do catálogo, estados parciais, recortes de Rio Verde e Barreiras, câmera pela caixa do catálogo",
       "sha256": "9851ca1e0c1c000fb766221a7c602e8478ea91a62f3918fda4f588a704413c3b"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "G1/G6 (D-10, D-26): validação de links e país da posição",
+      "sha256": "73c7cc9acc77cb724a1e2213e26c638d9ac6173d4e63768d8be8582a021e9fda"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G1/G6 (D-10, D-26): validação de links e país da posição",
+      "sha256": "53b56f9c297f9209815d00c497e0a9b9ea313acb2ab438b0119753847db3cc72"
     }
   ]
 }
