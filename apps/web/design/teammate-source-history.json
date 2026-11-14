@@ -36,6 +36,12 @@
       "date": "2026-11-14",
       "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
       "sha256": "58d36ac8553e03994164597155389d2f275bed7ea4ee0ae57a1dfdf244abafaf"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "B4 (D-05): todos os planos acessíveis; plano reaberto aplica o seu município",
+      "sha256": "d0b49b2a9998eb2212610cb271ec1d7353098555a7ab82b91af8d8674ba12585"
     }
   ]
 }

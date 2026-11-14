@@ -14,7 +14,7 @@ test.describe('RT-09 planos', () => {
     await expect(page).toHaveURL(/simulador\?cultura=soy&mun=5107925/);
   });
 
-  test.fixme('D-05: todos os planos acessíveis e o plano reaberto mantém o município', async ({ page }) => {
+  test('D-05: todos os planos acessíveis e o plano reaberto mantém o município', async ({ page }) => {
     await page.goto('/#/planejar?mun=3170206');
     for (let i = 1; i <= 7; i++) { await page.getByLabel('Área (ha)', { exact: true }).fill(String(i)); await page.getByRole('button', { name: 'Salvar planejamento' }).click(); }
     await page.goto('/#/planejar');

@@ -15,7 +15,7 @@ const SHIFT: Record<string, string> = { '-15': '20 de setembro (15 dias antes)',
 const PLACE: Record<string, string> = { '5107925': 'Sorriso, MT', '3170206': 'Uberlândia, MG' };
 
 export function PlanPage() {
-  const [params] = useSearchParams(); const ctx = useActiveContext(); const nav = useNavigate(); const plans = useStore((s) => s.plans); const [msg, setMsg] = useState('');
+  const [params, setParams] = useSearchParams(); const ctx = useActiveContext(); const nav = useNavigate(); const plans = useStore((s) => s.plans); const [msg, setMsg] = useState(''); const [allPlans, setAllPlans] = useState(false); const fromPlan = params.get('plano');
   // Território: o da URL, senão o da propriedade em uso, senão a demonstração de Sorriso (identificada).
   const urlMun = /^\d{7}$/.test(params.get('mun') ?? '') ? params.get('mun')! : null; const mun = urlMun ?? ctx.property?.municipalityCode ?? SORRISO; const demo = !urlMun && !ctx.property;
   const place = ctx.property?.municipalityCode === mun ? `${ctx.property.municipalityName}, ${ctx.property.uf}` : PLACE[mun] ?? `município IBGE ${mun}`;
@@ -34,7 +34,7 @@ export function PlanPage() {
   };
   return (
     <div className="page">
-      <div className="page-head"><div className="stack-2"><h1>Planejar plantio</h1><p>Cadastre o plano de qualquer cultura. As análises aparecem só onde há dados e suporte científico; onde faltar, dizemos o que falta.</p></div><Pill>{place}{demo ? ' · demonstração' : urlMun ? '' : ' · do talhão em uso'}</Pill></div>
+      <div className="page-head"><div className="stack-2"><h1>Planejar plantio</h1><p>Cadastre o plano de qualquer cultura. As análises aparecem só onde há dados e suporte científico; onde faltar, dizemos o que falta.</p></div><Pill>{place}{demo ? ' · demonstração' : fromPlan ? ' · do plano salvo' : urlMun ? '' : ' · do talhão em uso'}</Pill></div>
       <div className="cols">
         <div className="stack">
           <form className="card" onSubmit={(e) => { e.preventDefault(); save(false); }} aria-labelledby="h-plano"><h2 id="h-plano">Seu plano</h2>
@@ -75,7 +75,7 @@ export function PlanPage() {
           </section>
           {msg && <p role="status" className="notice notice--water"><span />{msg}</p>}
           <div className="row"><button className="btn btn--primary" onClick={() => save(true)}>Salvar e abrir no simulador</button><button className="btn" onClick={() => save(false)}>Salvar planejamento</button></div>
-          {plans.length > 0 && <section className="card"><h2>Planejamentos salvos</h2><ul className="list">{plans.slice(0, 5).map((p) => <li key={p.id}><button onClick={() => { f.load(p.data); setMsg(p.data.cultura_pendente && !isCropId(p.data.cultura_id) ? 'Planejamento reaberto. Complete a cultura.' : 'Planejamento reaberto.'); scrollTo(0, 0); }}><span>{isCropId(p.data.cultura_id) ? CROPS[p.data.cultura_id].name : `${p.data.cultura} (completar cultura)`} · {p.data.municipio_nome ?? 'Sorriso, MT'} · {p.data.area || '—'} ha</span><span className="meta-13">{new Date(p.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span></button></li>)}</ul></section>}
+          {plans.length > 0 && <section className="card" data-testid="plans"><h2>Planejamentos salvos ({plans.length})</h2><ul className="list">{(allPlans ? plans : plans.slice(0, 5)).map((p) => <li key={p.id}><button onClick={() => { f.load(p.data); setParams({ ...(/^\d{7}$/.test(p.data.municipio ?? '') ? { mun: p.data.municipio } : {}), plano: p.id }); setMsg(p.data.cultura_pendente && !isCropId(p.data.cultura_id) ? 'Planejamento reaberto. Complete a cultura.' : 'Planejamento reaberto.'); scrollTo(0, 0); }}><span>{isCropId(p.data.cultura_id) ? CROPS[p.data.cultura_id].name : `${p.data.cultura} (completar cultura)`} · {p.data.municipio_nome ?? 'Sorriso, MT'} · {p.data.area || '—'} ha</span><span className="meta-13">{new Date(p.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span></button></li>)}</ul>{!allPlans && plans.length > 5 && <div><button className="btn btn--sm" onClick={() => setAllPlans(true)}>Mostrar todos ({plans.length})</button></div>}</section>}
         </div>
         <div className="stack">
           {crop && <CapabilityTable crop={crop} mun={mun} place={place} />}
