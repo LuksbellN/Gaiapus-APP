@@ -78,6 +78,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
       m.addLayer({ id: 'hls', type: 'raster', source: { type: 'image', url: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', coordinates: [[-48.422, -18.893], [-48.396, -18.893], [-48.396, -18.914], [-48.422, -18.914]] } as any, layout: { visibility: 'none' } });
       m.addLayer({ id: 'field-line', type: 'line', source: 'field', layout: { visibility: 'none' }, paint: { 'line-color': '#E6B85C', 'line-width': 2.5 } });
       m.addLayer({ id: 'state-labels', type: 'symbol', source: 'labels', minzoom: 2.6, maxzoom: 5.2, layout: { 'text-field': ['get', 'sigla'], 'text-font': ['Open Sans Semibold'], 'text-size': 12 }, paint: { 'text-color': C.text, 'text-halo-color': '#0a1a21', 'text-halo-width': 1.4 } });
+      // On narrow screens the compact attribution starts collapsed so it does not sit under the map controls.
+      if (el.current && el.current.clientWidth < 760) el.current.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show');
       ready.current = true; sync(); camera(true); latest.current.onStatus?.('ready');
     });
     m.on('click', (e) => {
@@ -104,7 +106,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
   useEffect(() => {
     const m = mapRef.current; if (!m) return; markerEls.current.forEach((x) => x.remove()); markerEls.current = [];
     if (p.selection.mun) return;
-    for (const mk of p.markers) { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); }
+    // Alternate label side so nearby places (Sorriso, Uberlândia) do not overlap at world zoom.
+    p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
   }, [p.markers, p.selection.mun]);
   return <div ref={el} className="explore__map" role="application" aria-label="Mapa. Use a lista ao lado para navegar por teclado; no mapa, arraste para mover e clique em um país, estado ou município." />;
 });

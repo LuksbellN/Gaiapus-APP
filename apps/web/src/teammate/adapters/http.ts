@@ -8,7 +8,9 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   } catch (error) {
     if (error instanceof ApiError) throw new AdapterError(error.code, error.status, error.message);
     if ((error as Error).name === 'AbortError') throw error;
-    throw new AdapterError('network', 0, 'Não foi possível conectar à API.');
+    // Browser offline → network; online but the request failed → the Gaiapus service is unreachable.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new AdapterError('network', 0, 'Sem conexão.');
+    throw new AdapterError('api_unreachable', 0, 'Não foi possível falar com o servidor da Gaiapus.');
   }
 }
 

@@ -42,6 +42,24 @@
       "date": "2026-11-14",
       "reason": "B4 (D-05): todos os planos acessíveis; plano reaberto aplica o seu município",
       "sha256": "d0b49b2a9998eb2212610cb271ec1d7353098555a7ab82b91af8d8674ba12585"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "2d1f169beda6c505cee39c598c3bb698ad32ef154ecd189e58cd1fc43cdecc0c"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "f5d97e67a2f3bc7c963ccca073a1aae465afb02924019447e938306d20b71860"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "f645998edadebba5517d0e9ae3a2a1f5b0b315ace243c3eb6dc09a62951d994c"
     }
   ]
 }

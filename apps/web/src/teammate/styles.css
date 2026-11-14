@@ -183,6 +183,8 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .list--long li { content-visibility: auto; contain-intrinsic-size: auto 44px; }
 .sheet-handle { display: none; }
 .maplibregl-ctrl-attrib { font-size: 11px; }
+/* Text links that stand alone in lists or short meta lines keep a 24px target (WCAG 2.5.8). */
+.plain li > a, p.meta > a { display: inline-block; min-height: 24px; line-height: 24px; }
 .map-marker { background: var(--surface); color: var(--text); border: 2px solid var(--action); border-radius: 999px; padding: 4px 10px 4px 6px; font: 600 13px var(--font-body); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.4); min-height: 32px; }
 .map-marker[data-kind='none'] { border-color: var(--border-strong); }
 
@@ -196,7 +198,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .sim__retry { position: absolute; left: var(--s4); right: var(--s4); top: 56px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: fit-content; max-width: calc(100% - 32px); background: var(--surface); border: 1px solid var(--warn); border-radius: var(--r-control); padding: 6px 10px; font-size: 14px; }
 .sim__loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: #cfe0d6; font-size: 15px; }
 .sim__stage { position: relative; min-height: 0; min-width: 0; background: linear-gradient(#0d1a22, #12241c 70%); }
-.sim__stage canvas { outline: none; }
+.sim__stage canvas { outline: none; } .sim__stage canvas:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
 .sim__overlay { position: absolute; left: var(--s4); top: var(--s4); right: var(--s4); display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; } .sim__overlay > * { pointer-events: auto; background: var(--surface); }
 .sim__caption { position: absolute; left: var(--s4); bottom: var(--s3); right: var(--s4); font-size: 13px; color: #cfe0d6; background: rgba(8,16,12,.78); padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: calc(100% - 32px); }
 .sim__results { grid-row: 1 / 3; grid-column: 3; border-left: 1px solid var(--border); overflow-y: auto; overscroll-behavior: contain; padding: var(--s4); display: grid; gap: var(--s4); align-content: start; background: var(--bg); }

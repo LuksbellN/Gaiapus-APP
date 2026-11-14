@@ -27,3 +27,7 @@ it('uses API imagery URLs and preserves missing observations', async () => {
   expect(result.data.rainfall[0].rain_mm).toBeNull();
   expect(transport).toHaveBeenCalledWith(expect.stringContaining('area_id=published-field-uberlandia'), expect.anything());
 });
+it('servidor inalcançável com o navegador online é "api_unreachable", não falta de rede (D-22)', async () => {
+  vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
+  await expect(weather.waterProjection('5107925')).rejects.toMatchObject({ code: 'api_unreachable', status: 0 });
+});
