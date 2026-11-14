@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { Bell, CalendarDays, CircleUserRound, CloudRain, Droplets, Globe, Layers, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
 import { EDITION, MODE } from './config';
@@ -46,6 +46,23 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
   const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext();
   useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'dark' ? '#0B1411' : '#F5F7F2'); }, [theme]);
   useEffect(() => { document.getElementById('conteudo')?.scrollTo?.(0, 0); }, [loc.pathname]);
+  // Document title follows the visible h1 (and the section when they differ), so tabs and history are distinguishable (D-12).
+  useEffect(() => {
+    const main = document.getElementById('conteudo'); if (!main) return;
+    const section = NAV.find((n) => loc.pathname.startsWith(n.to))?.label;
+    const apply = () => { const h = main.querySelector('h1')?.textContent?.trim(); document.title = [h, section && h && !h.startsWith(section) ? section : null, 'Gaiapus'].filter(Boolean).join(' · '); };
+    apply(); const mo = new MutationObserver(apply); mo.observe(main, { subtree: true, childList: true, characterData: true }); return () => mo.disconnect();
+  }, [loc.pathname]);
+  // After a route change (not on first load, not on query-only changes) move focus to the new screen's h1 once it settles.
+  const firstRoute = useRef(true);
+  useEffect(() => {
+    if (firstRoute.current) { firstRoute.current = false; return; }
+    const main = document.getElementById('conteudo'); if (!main) return;
+    let timer = 0; const focusH1 = () => { const h = main.querySelector<HTMLElement>('h1'); if (!h) return; h.tabIndex = -1; h.focus({ preventScroll: true }); };
+    const settle = () => { clearTimeout(timer); timer = window.setTimeout(() => { mo.disconnect(); focusH1(); }, 150); };
+    const mo = new MutationObserver(settle); mo.observe(main, { subtree: true, childList: true }); settle();
+    const stop = setTimeout(() => mo.disconnect(), 5000); return () => { mo.disconnect(); clearTimeout(timer); clearTimeout(stop); };
+  }, [loc.pathname]);
   useEffect(() => {
     // Navigation from a native email callback must leave the pathname auth page.
     if (authPage && window.location.hash.startsWith('#/')) window.location.replace('/' + window.location.hash);

@@ -37,7 +37,7 @@ test.describe('RT-18 navegação', () => {
     await ctx.close();
   });
 
-  test.fixme('D-12: título do documento e foco acompanham a tela', async ({ page }) => {
+  test('D-12: título do documento e foco acompanham a tela', async ({ page }) => {
     await page.goto('/#/visao-geral');
     await page.locator('nav.rail a', { hasText: 'Planejar' }).click();
     await expect(page).toHaveTitle(/Planejar plantio/);

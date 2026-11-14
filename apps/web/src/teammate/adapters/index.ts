@@ -94,9 +94,9 @@ export const coverage = {
       }
       const original = COVERAGE[code];
       const products = original?.products.filter(p => available.has(p.id)) ?? [];
-      return { data: products.length ? { ...original, products } : empty, meta: { kind: 'fixture', source: 'Catálogo de cobertura da API Gaiapus', note: result.publication_version } };
+      return { data: products.length ? { ...original, products } : empty, meta: { kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus', note: result.publication_version } };
     } catch (error) {
-      if (error instanceof AdapterError && error.status === 404) return { data: empty, meta: { kind: 'fixture', source: 'Catálogo de cobertura da API Gaiapus' } };
+      if (error instanceof AdapterError && error.status === 404) return { data: empty, meta: { kind: 'publicacao', source: 'Catálogo de cobertura da API Gaiapus' } };
       throw error;
     }
   },
@@ -109,7 +109,7 @@ export const weather = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<WaterProjection>('water-soy-5107925-N10', signal);
-    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: 'Fixture do contrato water_risk_projection (pacote v7).' } };
+    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: `${result.meta.note ?? ''} · contrato water_risk_projection` } };
   },
   async dailySeries(code: string, signal?: AbortSignal): Promise<Sourced<Daily>> {
     await wait(signal);
@@ -131,7 +131,7 @@ export const imagery = {
     const rain = observed.series.find(s => s.series_id === 'rainfall');
     // Geometry and QA pixel counts remain the approved publication's presentation metadata.
     const observations = (ndvi?.points ?? []).map(point => ({ ...d.default.observations.find(o => o.date === point.date), date: point.date, ndvi: point.value, acquired_at: point.acquired_at, scene_id: point.scene_id, valid_fraction: point.valid_fraction })) as Imagery['observations'];
-    return { data: { ...d.default, image: { ...d.default.image, ...image }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })), imageUrl: image.url } as Imagery & { imageUrl: string }, meta: { kind: 'fixture', source: ndvi?.source ?? d.default.sources.imagery, note: 'Recorte demonstrativo rural; não é um talhão cadastrado.' } };
+    return { data: { ...d.default, image: { ...d.default.image, ...image }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })), imageUrl: image.url } as Imagery & { imageUrl: string }, meta: { kind: 'publicacao', source: ndvi?.source ?? d.default.sources.imagery, note: 'Recorte demonstrativo rural; não é um talhão cadastrado.' } };
   },
 };
 
@@ -149,7 +149,7 @@ const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient
 /** Nome do modelo tirado da resposta: tipo + abrangência. 1.0.0 não traz `scope`; a versão antiga era só nacional. */
 export function modelLabel(m: YieldModel) { const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null); return `${MODEL_TYPE[m.type] ?? m.type}${scope === 'national' ? ' nacional' : scope ? ` regional (${scope.replace('+', ' e ')})` : ''}`; }
 export const modelScope = (m: YieldModel) => m.scope ?? (/national/.test(m.version) ? 'national' : 'national');
-const yieldMeta = (data: YieldEstimate, example: string): Sourced<YieldEstimate>['meta'] => ({ kind: 'fixture', source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, note: 'Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.' });
+const yieldMeta = (data: YieldEstimate, example: string, kind: 'fixture' | 'publicacao' = 'fixture'): Sourced<YieldEstimate>['meta'] => ({ kind, source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, note: 'Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.' });
 const YIELD_FIXTURES: Record<string, () => Promise<{ default: unknown }>> = {
   'soy:5107925': () => import('../data/fixtures/yield-soy-5107925-day75.json'),
   'maize2:5107925': () => import('../data/fixtures/yield-maize2-5107925-day75.json'),
@@ -168,7 +168,7 @@ export const crops = {
     const load = YIELD_FIXTURES[`${req.crop}:${req.municipalityCode}`];
     if (!load) throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<YieldEstimate>(`yield-${req.crop}-${req.municipalityCode}-day${req.municipalityCode === '3170206' ? 20 : 75}`, signal);
-    return { ...result, meta: yieldMeta(result.data, 'contracts/examples (1.0.0)') };
+    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), note: `${result.meta.note ?? ''} · Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.` } };
   },
   // Todas as respostas de exemplo disponíveis para a cultura (e, se informado, para o município).
   // Sem serviço HTTP ligado, é o que o frontend consegue mostrar; lista vazia = integração pendente, não "sem cobertura".
@@ -202,7 +202,7 @@ export const simulations = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<FieldShift>('field-shift-sorriso', signal);
-    return { ...result, meta: { ...result.meta, source: result.data.weather.source, note: result.data.evidence } };
+    return { ...result, meta: { ...result.meta, source: result.data.weather.source, note: `${result.meta.note ?? ''} · ${result.data.evidence}` } };
   },
 };
 

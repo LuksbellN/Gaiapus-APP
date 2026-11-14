@@ -31,3 +31,10 @@ it('servidor inalcançável com o navegador online é "api_unreachable", não fa
   vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
   await expect(weather.waterProjection('5107925')).rejects.toMatchObject({ code: 'api_unreachable', status: 0 });
 });
+it('publicação servida pela API é rotulada como publicação, com a versão (D-13)', async () => {
+  const example = examples.find(e => e.product_id === 'water_risk_projection')!;
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ data: example, meta: {} })));
+  const result = await weather.waterProjection('5107925');
+  expect(result.meta.kind).toBe('publicacao');
+  expect(result.meta.note).toContain(example.result.meta.publication_version);
+});

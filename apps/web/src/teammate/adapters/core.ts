@@ -1,6 +1,7 @@
 // Infra comum dos adapters. Enquanto o backend não está integrado, cada adapter devolve
 // fixtures do pacote v7 ou mocks identificados, com a mesma forma assíncrona de uma chamada HTTP.
-export type Kind = 'fixture' | 'mock' | 'local' | 'sintetico';
+// fixture = bundled in this app; publicacao = publication served by the Gaiapus API (with its version).
+export type Kind = 'fixture' | 'publicacao' | 'mock' | 'local' | 'sintetico';
 export type Meta = { kind: Kind; source: string; note?: string; generatedAt?: string };
 export type Sourced<T> = { data: T; meta: Meta };
 export class AdapterError extends Error { constructor(public code: string, public status: number, message?: string) { super(message ?? code); } }

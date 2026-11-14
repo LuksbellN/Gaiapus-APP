@@ -41,7 +41,7 @@ function Clima({ code }: { code: string }) {
     {im.data && <section className="card"><div className="row-between"><h2>Chuva diária</h2><Pill tone="soil">Histórico · 1 abr a 31 jul 2024</Pill></div>
       <DualChart dates={im.data.data.rainfall.map((r) => r.date)} bars={im.data.data.rainfall.map((r) => r.rain_mm)} barsLabel="Chuva (mm/dia)" ariaLabel="Chuva diária em Uberlândia, abril a julho de 2024" />
       <Stat label="Total no período" value={n0(im.data.data.rainfall.reduce((a, r) => a + r.rain_mm, 0))} unit="mm" />
-      <Source meta={{ kind: 'fixture', source: im.data.data.sources.rain }} extra={`${im.data.data.sources.weather_scope} ${im.data.data.sources.rain_validation}`} /></section>}
+      <Source meta={{ kind: 'publicacao', source: im.data.data.sources.rain }} extra={`${im.data.data.sources.weather_scope} ${im.data.data.sources.rain_validation}`} /></section>}
     <Notice tone="warn" title="Ainda não disponível.">{GAPS}</Notice>
   </>;
 }

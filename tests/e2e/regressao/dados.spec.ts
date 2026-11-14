@@ -89,7 +89,7 @@ test.describe('RT-17 ciência', () => {
     await expect(page.locator('[data-testid=model-test][data-scope="MG+MT"]').first()).toBeVisible();
   });
 
-  test.fixme('D-13: resposta da API rotulada como publicação, não como dado do pacote', async ({ page }) => {
+  test('D-13: resposta da API rotulada como publicação, não como dado do pacote', async ({ page }) => {
     await page.goto('/#/explorar?pais=BR&uf=51&mun=5107925&semwebgl=1');
     await expect(page.getByTestId('mun-detail').locator('.source')).toContainText('Publicação da API');
   });

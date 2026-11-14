@@ -3,7 +3,7 @@ import { AlertTriangle, CircleAlert, Database, Info, WifiOff } from 'lucide-reac
 import { Link } from 'react-router-dom';
 import type { Meta } from '../adapters/core';
 
-export const KIND_LABEL: Record<string, string> = { fixture: 'Dado de exemplo do pacote', mock: 'Dado ilustrativo', local: 'Salvo neste aparelho', sintetico: 'Dado sintético' };
+export const KIND_LABEL: Record<string, string> = { publicacao: 'Publicação da API', fixture: 'Dado de exemplo do pacote', mock: 'Dado ilustrativo', local: 'Salvo neste aparelho', sintetico: 'Dado sintético' };
 export function Pill({ tone, children }: { tone?: 'water' | 'warn' | 'risk' | 'ok' | 'soil'; children: ReactNode }) { return <span className={`pill${tone ? ` pill--${tone}` : ''}`}>{children}</span>; }
 export function Source({ meta, extra }: { meta: Meta; extra?: ReactNode }) {
   return <p className="source"><Database size={14} aria-hidden /><span><b>{KIND_LABEL[meta.kind]}</b> · Fonte: {meta.source}{meta.note ? ` · ${meta.note}` : ''}{extra ? <> · {extra}</> : null}</span></p>;

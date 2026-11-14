@@ -60,6 +60,12 @@
       "date": "2026-11-14",
       "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
       "sha256": "f645998edadebba5517d0e9ae3a2a1f5b0b315ace243c3eb6dc09a62951d994c"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-14",
+      "reason": "O2 (D-13): origem 'Publicação da API' distinta de dado empacotado",
+      "sha256": "92a6df2ac1323033dcf67266d3eb8bfd0c719bb2e00cece2dc51c82036d0e2f6"
     }
   ]
 }
