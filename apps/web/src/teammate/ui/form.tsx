@@ -2,15 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { getState, setDraft, useStore } from '../store';
 import { parseLocaleNumber } from '../i18n/number';
 import type { Locale } from '../i18n/locale';
-import { translate } from '../i18n';
+import { activeLocale, translate } from '../i18n';
+import { isLocale } from '../i18n/locale';
 // Formulário com rascunho recuperável: cada alteração é guardada neste aparelho até salvar.
 export function useDraftForm(key: string, initial: Record<string, string>) {
-  const saved = useStore((s) => s.drafts[key]); const [v, setV] = useState<Record<string, string>>(() => ({ ...initial, ...(saved ?? {}) })); const [restored, setRestored] = useState(() => !!saved); const k = useRef(key);
+  // `__locale` records the language the numbers were typed in, so switching language never reinterprets them.
+  // Drafts and saved data from before languages existed were typed in Portuguese.
+  const legacy = (d: Record<string, string> | undefined) => (d ? { ...initial, ...d, __locale: d.__locale || 'pt-BR' } : { ...initial });
+  const saved = useStore((s) => s.drafts[key]); const [v, setV] = useState<Record<string, string>>(() => legacy(saved)); const [restored, setRestored] = useState(() => !!saved); const k = useRef(key);
   // Switching key (e.g. plot A → B → A) loads that key's own draft instead of blanking it (D-06).
-  useEffect(() => { if (k.current !== key) { k.current = key; const d = getState().drafts[key]; setV({ ...initial, ...(d ?? {}) }); setRestored(!!d); } }, [key]); // eslint-disable-line
-  const set = (name: string, value: string) => setV((p) => { const n = { ...p, [name]: value }; setDraft(key, n); return n; });
+  useEffect(() => { if (k.current !== key) { k.current = key; const d = getState().drafts[key]; setV(legacy(d)); setRestored(!!d); } }, [key]); // eslint-disable-line
+  const set = (name: string, value: string) => setV((p) => { const n = { ...p, [name]: value }; if (!n.__locale) n.__locale = activeLocale(); setDraft(key, n); return n; });
   const bind = (name: string) => ({ value: v[name] ?? '', onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(name, e.target.value) });
-  return { v, set, bind, restored, clear: () => { setDraft(key, null); setV({ ...initial }); }, load: (d: Record<string, string>) => setV({ ...initial, ...d }) };
+  return { v, set, bind, restored, locale: (isLocale(v.__locale) ? v.__locale : activeLocale()) as Locale, clear: () => { setDraft(key, null); setV({ ...initial }); }, load: (d: Record<string, string>) => setV(legacy(d)) };
 }
 /** Number typed in the convention of `locale`; null when empty or not readable. Never guesses magnitude. */
 export const num = (s: string | undefined, locale: Locale = 'pt-BR') => { if (s == null) return null; const r = parseLocaleNumber(s, locale); return r.ok ? r.value : null; };

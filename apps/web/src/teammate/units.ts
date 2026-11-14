@@ -1,6 +1,8 @@
+import { translate } from './i18n';
 // Unidades e economia. Nada aqui supõe saca de 60 kg: o peso da saca é sempre uma entrada.
 export type PriceUnit = 'kg' | 't' | 'saca';
-export const PRICE_UNIT_LABEL: Record<PriceUnit, string> = { saca: 'R$ por saca', kg: 'R$ por kg', t: 'R$ por tonelada' };
+/** Label of a price unit in the current language (the currency stays BRL: language never converts money). */
+export const PRICE_UNIT_LABEL: Record<PriceUnit, string> = new Proxy({} as Record<PriceUnit, string>, { get: (_, k) => (typeof k === 'string' ? translate(`plan.priceUnit.${k}`) : undefined), ownKeys: () => ['saca', 'kg', 't'], getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }) });
 export const isPriceUnit = (x: unknown): x is PriceUnit => x === 'kg' || x === 't' || x === 'saca';
 
 /** Preço na unidade informada → R$/kg. Saca exige peso declarado; sem ele devolve null. */
@@ -15,13 +17,14 @@ export type EconomicsResult = { priceKg: number | null; productionKg: number | n
 /** Receita = kg/ha × ha × R$/kg. Margem = receita − custo/ha × a mesma área. Só calcula com todas as entradas. */
 export function economics(i: EconomicsInput): EconomicsResult {
   const priceKg = pricePerKg(i.price, i.priceUnit, i.sackKg);
+  // Codes of the missing inputs (plan.missing.*), translated by the screen.
   const missing = [
-    !(i.areaHa != null && i.areaHa > 0) && 'área',
-    !(i.yieldKgHa != null && i.yieldKgHa >= 0) && 'rendimento esperado',
-    i.price == null && 'preço',
-    i.price != null && i.priceUnit === 'saca' && priceKg == null && 'peso da saca',
-    !i.priceDate && 'data do preço',
-    i.costPerHa == null && 'custo por hectare',
+    !(i.areaHa != null && i.areaHa > 0) && 'area',
+    !(i.yieldKgHa != null && i.yieldKgHa >= 0) && 'yield',
+    i.price == null && 'price',
+    i.price != null && i.priceUnit === 'saca' && priceKg == null && 'sack',
+    !i.priceDate && 'priceDate',
+    i.costPerHa == null && 'cost',
   ].filter(Boolean) as string[];
   const okBase = i.areaHa != null && i.areaHa > 0 && i.yieldKgHa != null && i.yieldKgHa >= 0;
   const productionKg = okBase ? i.yieldKgHa! * i.areaHa! : null;

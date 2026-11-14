@@ -35,7 +35,7 @@ describe('unidades e economia', () => {
   it('saca só vira R$/kg com peso declarado', () => { expect(pricePerKg(120, 'saca', null)).toBeNull(); expect(pricePerKg(120, 'saca', 60)).toBe(2); expect(pricePerKg(120, 'saca', 50)).toBe(2.4); expect(pricePerKg(2000, 't', null)).toBe(2); expect(pricePerKg(2, 'kg', null)).toBe(2); });
   it('receita = kg/ha × ha × R$/kg; margem usa a mesma área', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: 60, costPerHa: 4000, priceDate: '2026-11-01' }); expect(e.revenue).toBe(72000); expect(e.costs).toBe(40000); expect(e.margin).toBe(32000); expect(e.missing).toEqual([]); });
   it('o peso da saca muda o resultado (não há 60 kg implícito)', () => { const base = { yieldKgHa: 1500, areaHa: 2, price: 1000, priceUnit: 'saca' as const, costPerHa: 0, priceDate: '2026-11-01' }; expect(economics({ ...base, sackKg: 60 }).revenue).toBe(50000); expect(economics({ ...base, sackKg: 50 }).revenue).toBe(60000); });
-  it('sem peso da saca, data do preço ou custo não calcula e diz o que falta', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: null, costPerHa: null, priceDate: '' }); expect(e.revenue).toBeNull(); expect(e.margin).toBeNull(); expect(e.missing).toEqual(['peso da saca', 'data do preço', 'custo por hectare']); });
+  it('sem peso da saca, data do preço ou custo não calcula e diz o que falta', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: null, costPerHa: null, priceDate: '' }); expect(e.revenue).toBeNull(); expect(e.margin).toBeNull(); expect(e.missing).toEqual(['sack', 'priceDate', 'cost']); });
 });
 
 describe('capacidades por cultura e território', () => {

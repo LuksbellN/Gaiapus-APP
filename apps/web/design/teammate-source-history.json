@@ -150,6 +150,12 @@
       "date": "2026-11-14",
       "reason": "I5/I7/G5: Visão geral e Explorador traduzíveis; países em cinco línguas; busca multilíngue",
       "sha256": "fb5476034cbdebabe021f4f05bbc486377559a537c66db4afdb34f3c9067c799"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I3: Município, componentes científicos e Planejar traduzíveis; opções gravadas como códigos",
+      "sha256": "aa4669d10c4ed1424c3f9e2c5d8e7dfe8a84a383f7f88f01bd1c206bbd0dc852"
     }
   ]
 }
