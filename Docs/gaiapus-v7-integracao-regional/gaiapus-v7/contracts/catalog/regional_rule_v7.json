@@ -1,0 +1,112 @@
+{
+  "status": "exploratory",
+  "active_for_serving": false,
+  "superseded_by": "data/frozen/regional_rule_soy_mg_mt_g30.json",
+  "frozen_at": "2026-11-14T14:39:09.815908+00:00",
+  "rule": "Pre-registered regional model choice for the MVP region (MG + MT), frozen before the 2022-2024 test.\n\nRule (declared before computing it, written to regional_rule.json with the input hashes):\n1. Scope: municipalities in MG (31) and MT (51); crops soy and maize2.\n2. Candidates: every model already fitted on the national cohort in the v7 run\n   (references, history, Ridge, HGB and CUDA MLP per source set). No refit.\n3. Evidence: walk-forward validation 2019-2021 only, rows of the region.\n4. Switch from the national choice to a regional one only if, in the region,\n   (a) the regional candidate has the lowest temporal MAE (municipalities used in training),\n   (b) its paired gain against the national choice has a municipality-clustered 95% interval below zero,\n   (c) there are at least 100 temporal validation harvests in the region, and\n   (d) on held-out municipalities of the region its MAE is not above the national choice.\n5. Otherwise keep the national choice. The 2022-2024 test is scored once, after this file is committed.\n",
+  "region": {
+    "states": [
+      "31",
+      "51"
+    ],
+    "name": "MG + MT (MVP)"
+  },
+  "min_validation_harvests": 100,
+  "inputs": {
+    "data\\processed\\training_v7\\predictions_soy.parquet": "0aaa90dfd6167c094b496b6810d945ba98507b9eac7d9e32a00217e27b2391cb",
+    "data\\processed\\training_v7\\predictions_maize2.parquet": "5a46992e43a9da8da0b736d1886717cf276b387f6c2dc714e2bc40944431cc00"
+  },
+  "decisions": {
+    "soy": {
+      "national_choice": "site+ridge",
+      "regional_best": "weather+mlp",
+      "validation_harvests_region": 273,
+      "mae_region_temporal": {
+        "weather+mlp": 163.9,
+        "hydro+mlp": 164.8,
+        "site+mlp": 166.2,
+        "hydro+hgb": 197.7,
+        "site+hgb": 199.3,
+        "history+history": 205.3,
+        "weather+hgb": 213.7,
+        "ref_lag_mean+reference": 236.3,
+        "site+ridge": 243.9,
+        "hydro+ridge": 246.7,
+        "weather+ridge": 256.8
+      },
+      "mae_region_spatiotemporal": {
+        "history+history": 236.8,
+        "hydro+hgb": 227.4,
+        "hydro+mlp": 193.0,
+        "hydro+ridge": 261.3,
+        "ref_lag_mean+reference": 250.7,
+        "site+hgb": 236.3,
+        "site+mlp": 202.1,
+        "site+ridge": 269.3,
+        "weather+hgb": 241.1,
+        "weather+mlp": 190.9,
+        "weather+ridge": 269.5
+      },
+      "held_out_harvests_region": 93,
+      "paired_delta_kg_ha": -80.1,
+      "ci95": [
+        -100.7,
+        -59.3
+      ],
+      "checks": {
+        "interval_below_zero": true,
+        "enough_harvests": true,
+        "not_worse_out_of_training": true
+      },
+      "regional_choice": "weather+mlp",
+      "switched": true,
+      "reason": "all conditions met"
+    },
+    "maize2": {
+      "national_choice": "site+ridge",
+      "regional_best": "site+mlp",
+      "validation_harvests_region": 177,
+      "mae_region_temporal": {
+        "site+mlp": 927.9,
+        "hydro+ridge": 937.5,
+        "site+ridge": 982.3,
+        "weather+ridge": 986.1,
+        "history+history": 1012.1,
+        "site+hgb": 1065.4,
+        "weather+hgb": 1071.4,
+        "hydro+hgb": 1098.2,
+        "ref_lag_mean+reference": 1137.0,
+        "hydro+mlp": 1166.4,
+        "weather+mlp": 1237.6
+      },
+      "mae_region_spatiotemporal": {
+        "history+history": 1024.1,
+        "hydro+hgb": 1073.2,
+        "hydro+mlp": 1147.4,
+        "hydro+ridge": 915.3,
+        "ref_lag_mean+reference": 1154.7,
+        "site+hgb": 1071.2,
+        "site+mlp": 904.7,
+        "site+ridge": 987.8,
+        "weather+hgb": 1067.9,
+        "weather+mlp": 1210.5,
+        "weather+ridge": 975.7
+      },
+      "held_out_harvests_region": 66,
+      "paired_delta_kg_ha": -54.4,
+      "ci95": [
+        -83.9,
+        -26.8
+      ],
+      "checks": {
+        "interval_below_zero": true,
+        "enough_harvests": true,
+        "not_worse_out_of_training": true
+      },
+      "regional_choice": "site+mlp",
+      "switched": true,
+      "reason": "all conditions met"
+    }
+  },
+  "test_2022_2024_evaluated": false
+}

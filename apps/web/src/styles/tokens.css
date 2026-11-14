@@ -1,0 +1,14 @@
+:root {
+  --background: #050c20;
+  --surface1: #0a1b3b;
+  --surface2: #0e2447;
+  --border: #294e86;
+  --text1: #edf4ff;
+  --text2: #9cb7df;
+  --accent: #69d2ff;
+  --success: #79d88d;
+  --warning: #f2c16a;
+  --font-display: "Manrope", sans-serif;
+  --font-body: "Source Sans 3", sans-serif;
+  --rail-width: 188px;
+}

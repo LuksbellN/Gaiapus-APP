@@ -1,0 +1,134 @@
+[
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 30,
+    "features": {
+      "dry_days": 14.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 9.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 633.0,
+      "rain_sum_mm": 212.83,
+      "rh_mean_pct": 70.438,
+      "t_max_mean_c": 33.68533333333333,
+      "t_min_mean_c": 23.041999999999998,
+      "wind_mean_m_s": 0.04666666666666666,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3808.423963277149
+  },
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 45,
+    "features": {
+      "dry_days": 19.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 12.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 928.41,
+      "rain_sum_mm": 355.6,
+      "rh_mean_pct": 72.43266666666666,
+      "t_max_mean_c": 33.099555555555554,
+      "t_min_mean_c": 22.825555555555557,
+      "wind_mean_m_s": 0.05644444444444444,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3734.744679481939
+  },
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 60,
+    "features": {
+      "dry_days": 23.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 14.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 1261.02,
+      "rain_sum_mm": 396.25,
+      "rh_mean_pct": 72.09083333333334,
+      "t_max_mean_c": 33.30683333333334,
+      "t_min_mean_c": 22.722666666666665,
+      "wind_mean_m_s": 0.058333333333333334,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3780.2471488026335
+  },
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 75,
+    "features": {
+      "dry_days": 26.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 14.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 1556.9,
+      "rain_sum_mm": 612.67,
+      "rh_mean_pct": 73.8116,
+      "t_max_mean_c": 32.67613333333333,
+      "t_min_mean_c": 22.593466666666668,
+      "wind_mean_m_s": 0.06413333333333333,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3787.9356723285136
+  },
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 90,
+    "features": {
+      "dry_days": 30.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 15.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 1868.68,
+      "rain_sum_mm": 928.18,
+      "rh_mean_pct": 74.15277777777777,
+      "t_max_mean_c": 32.57877777777778,
+      "t_min_mean_c": 22.608777777777778,
+      "wind_mean_m_s": 0.06166666666666666,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3724.340959633354
+  },
+  {
+    "municipality_code": "5107925",
+    "horizon_days": 105,
+    "features": {
+      "dry_days": 31.0,
+      "elevation_m": 370.59,
+      "harvest_year": 2021.0,
+      "heat_days": 15.0,
+      "latitude": -12.69585,
+      "longitude": -55.77992,
+      "max_dry_spell": 7.0,
+      "radiation_sum_mj_m2": 2115.62,
+      "rain_sum_mm": 1121.85,
+      "rh_mean_pct": 76.60361904761905,
+      "t_max_mean_c": 31.888285714285715,
+      "t_min_mean_c": 22.53161904761905,
+      "wind_mean_m_s": 0.06152380952380952,
+      "yield_lag2to4_mean_kg_ha": 3659.3333333333335,
+      "yield_lag_count": 3.0
+    },
+    "expected_kg_ha": 3707.788802190073
+  }
+]

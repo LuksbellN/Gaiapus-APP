@@ -1,0 +1,10 @@
+parameter,value,difference_covered_days,difference_off_season_water_use_mm,difference_off_season_drainage_mm,difference_storage_at_next_sowing_mm,difference_soy_deficit_mm,difference_maize_deficit_mm,difference_maize_stress_days,difference_next_soy_establishment_deficit_mm,reference_storage_at_next_sowing_mm,brachiaria_storage_at_next_sowing_mm
+cover_kc,0.75,115.33,8.12,-7.78,-0.35,-0.36,0.0,0.0,-0.35,44.22,43.87
+cover_kc,0.85,115.33,9.52,-9.13,-0.39,-0.36,0.0,0.0,-0.35,44.22,43.83
+straw_factor,0.7,115.33,8.83,-8.47,-0.37,-0.53,0.0,0.0,-0.52,44.22,43.85
+straw_factor,0.9,115.33,8.83,-8.47,-0.37,-0.18,0.0,0.0,-0.18,44.22,43.85
+straw_factor,1.0,115.33,8.83,-8.47,-0.37,0.0,0.0,0.0,0.0,44.22,43.85
+cad_class,AD2,115.33,8.22,-8.22,-0.01,-0.31,0.0,0.0,-0.28,25.48,25.47
+cad_class,AD6,115.33,9.66,-6.83,-2.83,-0.53,0.0,0.0,-0.47,63.5,60.67
+soy_shift_days,-15,115.33,6.54,-5.09,-1.46,-1.25,0.0,0.0,-1.0,13.92,12.46
+soy_shift_days,15,115.33,26.66,-26.6,-0.07,-0.28,0.0,0.0,0.0,48.79,48.72
