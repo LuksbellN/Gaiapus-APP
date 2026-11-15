@@ -1,6 +1,12 @@
 {
-  "name": "gaiapus", "version": "0.1.0", "private": true, "type": "module",
-  "packageManager": "pnpm@10.14.0", "engines": { "node": ">=22.23.4 <23" },
+  "name": "gaiapus",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=22.23.4 <23"
+  },
   "scripts": {
     "dev:api": "pnpm --filter @gaiapus/api dev",
     "build": "pnpm -r --if-present build",
@@ -8,7 +14,14 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "contracts:generate": "pnpm --filter @gaiapus/contracts generate",
     "contracts:check": "pnpm --filter @gaiapus/contracts generate:check",
-    "test:database": "pnpm --filter @gaiapus/api test:database"
+    "test:database": "pnpm --filter @gaiapus/api test:database",
+    "test:publication-tool": "node --test scripts/simulations/publication-tool.test.mjs",
+    "simulations:publication": "node scripts/simulations/publication-tool.mjs"
   },
-  "devDependencies": { "@types/node": "22.18.10", "typescript": "5.9.3", "vitest": "3.2.4", "tsx": "4.20.6" }
+  "devDependencies": {
+    "@types/node": "22.18.10",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4",
+    "tsx": "4.20.6"
+  }
 }

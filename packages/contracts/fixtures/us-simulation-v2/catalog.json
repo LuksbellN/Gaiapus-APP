@@ -1,0 +1,221 @@
+{
+ "as_of": "2026-11-14T23:59:00+00:00",
+ "contract": "future-simulation-capabilities.v1",
+ "harvest_years": [
+  2026,
+  2027,
+  2028
+ ],
+ "inputs": {
+  "product_manifest": "data/processed/us_training_v2/product/us_scenarios_manifest_2026-11-15.json",
+  "product_manifest_sha256": "64756148258071a8dcf020fef410ae1a5e75dc062351e262ebb399f01e640df6",
+  "publication_revision": 2,
+  "revision_note": "revision 2 adds yield-only capabilities (2026 post-harvest, KS 2027 in-season) with yield_result; run and series bytes are unchanged from revision 1",
+  "seed": 42,
+  "subset": [
+   "19169",
+   "20191"
+  ],
+  "yield_only_capabilities": 4
+ },
+ "places": [
+  {
+   "capabilities": [
+    {
+     "crop_id": "soy",
+     "harvest_year": 2026,
+     "reason_code": "post_harvest_no_daily_series",
+     "run_ids": [],
+     "status": "missing_data",
+     "yield": "research",
+     "yield_result": {
+      "conditional_on_scenario": false,
+      "exposure_flags": [
+       "IA_2025_partial_snippet_exposure"
+      ],
+      "history_horizon_years": 1,
+      "label_release_rule": "NASS county estimates: corn/soy crop year Y released in May of Y+1 (2024-2025 confirmed/planned; earlier estimated)",
+      "last_label_year": 2025,
+      "method": "us_v2 in_season mlp:32x16 with observed season weather to the feature cutoff",
+      "model_version": "research_us_v2/product/IA_soy_in_season",
+      "position_vs_season": "post_harvest_pre_release",
+      "predictive_range": {
+       "interval_method": "p50_plus_development_residual_quantiles",
+       "p10": 3989.1942498336807,
+       "p50": 4384.777830026265,
+       "p90": 4816.663559660675
+      },
+      "research_status": "gain_not_confirmed",
+      "scale": "county",
+      "scenario_range": null,
+      "status": "research",
+      "value_kg_ha": 4384.777830026265
+     }
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_398456425c79190084246453"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "research"
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_cfba00f1f99db69aa12e4200"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "research"
+    },
+    {
+     "crop_id": "maize",
+     "harvest_year": 2026,
+     "reason_code": "post_harvest_no_daily_series",
+     "run_ids": [],
+     "status": "missing_data",
+     "yield": "research",
+     "yield_result": {
+      "conditional_on_scenario": false,
+      "exposure_flags": [
+       "IA_2025_partial_snippet_exposure"
+      ],
+      "history_horizon_years": 1,
+      "label_release_rule": "NASS county estimates: corn/soy crop year Y released in May of Y+1 (2024-2025 confirmed/planned; earlier estimated)",
+      "last_label_year": 2025,
+      "method": "us_v2 in_season hgb:7 with observed season weather to the feature cutoff",
+      "model_version": "research_us_v2/product/IA_maize_in_season",
+      "position_vs_season": "post_harvest_pre_release",
+      "predictive_range": {
+       "interval_method": "p50_plus_development_residual_quantiles",
+       "p10": 12664.5145217031,
+       "p50": 13544.694645190726,
+       "p90": 15270.83155829817
+      },
+      "research_status": "gain_not_confirmed",
+      "scale": "county",
+      "scenario_range": null,
+      "status": "research",
+      "value_kg_ha": 13544.694645190726
+     }
+    },
+    {
+     "crop_id": "maize",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_deca98ea3d3c46ef31d6b948"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "research"
+    },
+    {
+     "crop_id": "maize",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_6015936f9630486537116c8f"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "research"
+    }
+   ],
+   "history_years": 25,
+   "location_id": "US:fips:19169",
+   "name": "Story County",
+   "observed_until": "2026-11-14",
+   "state_code": "IA"
+  },
+  {
+   "capabilities": [
+    {
+     "crop_id": "wheat_winter",
+     "harvest_year": 2026,
+     "reason_code": "post_harvest_no_daily_series",
+     "run_ids": [],
+     "status": "missing_data",
+     "yield": "research",
+     "yield_result": {
+      "conditional_on_scenario": false,
+      "exposure_flags": [],
+      "history_horizon_years": 1,
+      "label_release_rule": "NASS county estimates: winter wheat crop year Y released in December of Y (2024 not published; 2025 released 2026-03-05)",
+      "last_label_year": 2025,
+      "method": "us_v2 in_season mlp:32x16 with observed season weather to the feature cutoff",
+      "model_version": "research_us_v2/product/KS_wheat_winter_in_season",
+      "position_vs_season": "post_harvest_pre_release",
+      "predictive_range": {
+       "interval_method": "p50_plus_development_residual_quantiles",
+       "p10": 2577.0807423833808,
+       "p50": 3438.7987174737164,
+       "p90": 4610.688301955847
+      },
+      "research_status": "research_confirmed",
+      "scale": "county",
+      "scenario_range": null,
+      "status": "research",
+      "value_kg_ha": 3438.7987174737164
+     }
+    },
+    {
+     "crop_id": "wheat_winter",
+     "harvest_year": 2027,
+     "reason_code": "source_unavailable",
+     "run_ids": [],
+     "status": "missing_data",
+     "yield": "research",
+     "yield_result": {
+      "conditional_on_scenario": true,
+      "exposure_flags": [],
+      "history_horizon_years": 2,
+      "label_release_rule": "NASS county estimates: winter wheat crop year Y released in December of Y (2024 not published; 2025 released 2026-03-05)",
+      "last_label_year": 2025,
+      "method": "us_v2 shared hgb:15 over climatological members",
+      "model_version": "research_us_v2/product/KS_wheat_winter_shared",
+      "position_vs_season": "in_season_partial",
+      "predictive_range": {
+       "interval_method": "p50_plus_development_residual_quantiles",
+       "p10": 2823.0125364244595,
+       "p50": 3792.85428510452,
+       "p90": 4747.365015813622
+      },
+      "research_status": "research_confirmed",
+      "scale": "county",
+      "scenario_range": {
+       "method": "ensemble_spread_uncalibrated",
+       "p10": 3273.246761730158,
+       "p50": 3792.85428510452,
+       "p90": 4000.765831835328
+      },
+      "status": "research",
+      "value_kg_ha": 3792.85428510452
+     }
+    },
+    {
+     "crop_id": "wheat_winter",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_058579a503ee56335a086db1"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "research"
+    }
+   ],
+   "history_years": 25,
+   "location_id": "US:fips:20191",
+   "name": "Sumner County",
+   "observed_until": "2026-11-14",
+   "state_code": "KS"
+  }
+ ]
+}

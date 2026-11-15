@@ -38,3 +38,30 @@ describe('planning-model', () => {
     expect(dayInfo(series, 3)).toEqual({ kind: 'climatological_scenario', simDay: 4, simDays: 5 });
   });
 });
+
+// One publication per place × plan × harvest year (US) next to publications that group years (Brazil).
+import { coverageOf, selectPublication } from './planning-model';
+describe('publication selection and coverage per product', () => {
+  const pub = (run_id: string, crops: string[], harvest_years: number[]) => ({ run_id, crops, harvest_years }) as any;
+  const us = [pub('sim_27', ['soy'], [2027]), pub('sim_28', ['soy'], [2028]), pub('sim_m28', ['maize'], [2028])];
+  const br = [pub('sim_rot', ['soy', 'maize2'], [2027, 2028]), pub('sim_soy', ['soy'], [2027, 2028])];
+  it('picks the run of the requested harvest year, never another year of the same place', () => {
+    expect(selectPublication(us, 'soy', 2027)?.run_id).toBe('sim_27');
+    expect(selectPublication(us, 'soy', 2028)?.run_id).toBe('sim_28');
+    expect(selectPublication(us, 'maize', 2027)).toBeNull();
+    expect(selectPublication([], 'soy', 2027)).toBeNull();
+  });
+  it('keeps the Brazilian rule: the plan whose last crop is the requested one, for either year', () => {
+    expect(selectPublication(br, 'maize2', 2028)?.run_id).toBe('sim_rot');
+    expect(selectPublication(br, 'soy', 2027)?.run_id).toBe('sim_soy');
+  });
+  it('separates the daily series from the yield result', () => {
+    const y = { status: 'research', value_kg_ha: 4385, position_vs_season: 'post_harvest_pre_release' } as any;
+    expect(coverageOf({ crop_id: 'soy', harvest_year: 2028, status: 'ready', reason_code: null, run_ids: ['sim_28'] } as any)).toEqual({ state: 'daily_series', dailySeries: true, yieldResult: null, reason: null });
+    expect(coverageOf({ crop_id: 'soy', harvest_year: 2026, status: 'missing_data', reason_code: 'post_harvest_no_daily_series', run_ids: [], yield_result: y } as any))
+      .toEqual({ state: 'yield_only', dailySeries: false, yieldResult: y, reason: 'post_harvest_no_daily_series' });
+    expect(coverageOf({ crop_id: 'coffee', harvest_year: 2027, status: 'unsupported', reason_code: 'perennial_engine_missing', run_ids: [] } as any))
+      .toEqual({ state: 'unavailable', dailySeries: false, yieldResult: null, reason: 'perennial_engine_missing' });
+    expect(coverageOf(undefined)).toEqual({ state: 'not_published', dailySeries: false, yieldResult: null, reason: null });
+  });
+});

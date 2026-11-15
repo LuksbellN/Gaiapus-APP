@@ -1,7 +1,7 @@
 // Future-simulation persistence: RLS, immutability, publication rules and the job lease, on a dedicated isolated Postgres.
 // Run: node supabase/tests/simulations.policies.test.mjs   (needs Docker; creates/reuses only the labelled container below)
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const container = 'gaiapus-sim-policy-test-20261115';
@@ -26,7 +26,7 @@ create table auth.users(id uuid primary key, email_confirmed_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$ select jsonb_build_object('email_verified',true) $$;
 insert into auth.users values ('00000000-0000-4000-8000-000000000001',now()), ('00000000-0000-4000-8000-000000000002',now());`);
-for (const m of ['202611140001_personal.sql', '202611150001_future_simulations.sql']) sql(readFileSync(new URL(`../migrations/${m}`, import.meta.url), 'utf8'));
+for (const m of readdirSync(new URL('../migrations/', import.meta.url)).filter(f => f.endsWith('.sql')).sort()) sql(readFileSync(new URL(`../migrations/${m}`, import.meta.url), 'utf8'));
 
 const a = '00000000-0000-4000-8000-000000000001', b = '00000000-0000-4000-8000-000000000002';
 // The first output line is set_config's value (possibly empty): split the raw output before trimming.
@@ -67,7 +67,7 @@ denied(() => sql(`insert into public.regional_simulation_publications(run_id,loc
 denied(() => sql(`insert into public.simulation_runs(run_key,kind,owner_id,location_id,plan_id,crops,harvest_years,as_of,issued_at,identity_sha256,contract,execution_status,summary) values ('sim_eeeeeeeeeeeeeeeeeeeeeeee','regional','${a}','BR:ibge:5107925','soy','{soy}','{2027}',now(),now(),'${sha('e')}','x','succeeded','{}')`));
 // Immutable once succeeded, even for the backend.
 denied(() => sql(`update public.simulation_runs set summary='{"changed":true}' where run_key='sim_aaaaaaaaaaaaaaaaaaaaaaaa'`));
-// One current publication per place × plan.
+// One current publication per place × plan: harvest years of current publications never overlap.
 denied(() => sql(`insert into public.regional_simulation_publications(run_id,location_id,plan_id,harvest_years,publication_version,is_current,sanitized) values ('10000000-0000-4000-8000-000000000002','BR:ibge:5107925','soy','{2027}','v2',true,true)`));
 
 // Jobs: a verified user enqueues own job only; cannot change status; cannot read others'.

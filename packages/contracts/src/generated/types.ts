@@ -76,6 +76,7 @@ export type SimulationReason =
   | 'flooded_system_not_represented'
   | 'perennial_engine_missing'
   | 'season_already_started_without_observations'
+  | 'post_harvest_no_daily_series'
   | 'unsupported';
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -244,6 +245,7 @@ export interface GaiapusContracts {
   SimulationQuery?: SimulationQuery;
   SimulationCapability?: SimulationCapability;
   SimulationPlaceCapabilities?: SimulationPlaceCapabilities;
+  SimulationSourceStatus?: SimulationSourceStatus;
   SimulationCatalog?: SimulationCatalog;
   SimulationArtifact?: SimulationArtifact;
   SimulationPublication?: SimulationPublication;
@@ -1629,6 +1631,7 @@ export interface SimulationCapability {
   run_ids: SimulationRunKey[];
   water_balance?: 'physical_experimental';
   yield?: string;
+  yield_result?: SimulationYield;
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -1644,6 +1647,15 @@ export interface SimulationPlaceCapabilities {
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSourceStatus".
+ */
+export interface SimulationSourceStatus {
+  source: string;
+  status: 'ok' | 'unavailable';
+  shadowed_places?: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "SimulationCatalog".
  */
 export interface SimulationCatalog {
@@ -1655,6 +1667,7 @@ export interface SimulationCatalog {
    * Reproduction inputs of the publication (places, seed, member limit)
    */
   inputs: {};
+  source_status?: SimulationSourceStatus[];
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -1685,8 +1698,8 @@ export interface SimulationPublication {
   current: boolean;
   artifacts: SimulationArtifact[];
   measured: {
-    seconds: number;
-    peak_python_mib: number;
+    seconds: number | null;
+    peak_python_mib: number | null;
     series_bytes_raw: number;
     series_bytes_gzip: number;
     members: number;
@@ -1701,6 +1714,7 @@ export interface SimulationPublication {
 export interface SimulationPublicationList {
   as_of: string;
   items: SimulationPublication[];
+  source_status?: SimulationSourceStatus[];
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema

@@ -1,0 +1,216 @@
+{
+ "as_of": "2026-11-14T23:59:00+00:00",
+ "contract": "future-simulation-publications.v1",
+ "publications": [
+  {
+   "artifacts": [
+    {
+     "bytes": 9840,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_deca98ea3d3c46ef31d6b948/run.json",
+     "sha256": "9b2f59e05af979c5034e421a51d638d25319e233a4a05d3263e654f1b55668e2"
+    },
+    {
+     "bytes": 195896,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_deca98ea3d3c46ef31d6b948/series.json.gz",
+     "sha256": "b9855dd3d68add52ec9013da8a2cc3a48fc6c6931999550b3a8a1a171a8d6969"
+    }
+   ],
+   "as_of": "2026-11-14T23:59:00+00:00",
+   "crops": [
+    "maize"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027
+   ],
+   "issued_at": "2026-11-15T15:27:55.895820+00:00",
+   "location_id": "US:fips:19169",
+   "measured": {
+    "days": 170,
+    "members": 26,
+    "note": "product runtime and peak RSS in the product manifest",
+    "peak_python_mib": null,
+    "seconds": null,
+    "series_bytes_gzip": 195896,
+    "series_bytes_raw": 606114
+   },
+   "place_name": "Story County",
+   "plan_id": "us_maize",
+   "publication_version": "sim_deca98ea3d3c46ef31d6b948",
+   "run_id": "sim_deca98ea3d3c46ef31d6b948",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 9839,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_6015936f9630486537116c8f/run.json",
+     "sha256": "d63576cd9d43d3e7f61a99dd88b320679aab8d059ea5b3324893b0b8dbcfa55c"
+    },
+    {
+     "bytes": 195896,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_6015936f9630486537116c8f/series.json.gz",
+     "sha256": "e51c249cd4ad51e484d20bb876350bb85929ba06f0387c51206282eb7f9d144a"
+    }
+   ],
+   "as_of": "2026-11-14T23:59:00+00:00",
+   "crops": [
+    "maize"
+   ],
+   "current": true,
+   "harvest_years": [
+    2028
+   ],
+   "issued_at": "2026-11-15T15:27:55.895820+00:00",
+   "location_id": "US:fips:19169",
+   "measured": {
+    "days": 170,
+    "members": 26,
+    "note": "product runtime and peak RSS in the product manifest",
+    "peak_python_mib": null,
+    "seconds": null,
+    "series_bytes_gzip": 195896,
+    "series_bytes_raw": 606114
+   },
+   "place_name": "Story County",
+   "plan_id": "us_maize",
+   "publication_version": "sim_6015936f9630486537116c8f",
+   "run_id": "sim_6015936f9630486537116c8f",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 9788,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_398456425c79190084246453/run.json",
+     "sha256": "0b6e4286da223cbb1a76b5575a850e7eab9d15c8b426586843de6b42a074f4ed"
+    },
+    {
+     "bytes": 169618,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_398456425c79190084246453/series.json.gz",
+     "sha256": "c25655a9ae8b3e451c97f40e218e1a9d574e4f33e0b4dd0501b6a6a7d6edad1c"
+    }
+   ],
+   "as_of": "2026-11-14T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027
+   ],
+   "issued_at": "2026-11-15T15:27:55.895820+00:00",
+   "location_id": "US:fips:19169",
+   "measured": {
+    "days": 140,
+    "members": 26,
+    "note": "product runtime and peak RSS in the product manifest",
+    "peak_python_mib": null,
+    "seconds": null,
+    "series_bytes_gzip": 169618,
+    "series_bytes_raw": 500958
+   },
+   "place_name": "Story County",
+   "plan_id": "us_soy",
+   "publication_version": "sim_398456425c79190084246453",
+   "run_id": "sim_398456425c79190084246453",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 9788,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_cfba00f1f99db69aa12e4200/run.json",
+     "sha256": "8561b2998b7194d7a96db3231e392941003aa6954576e299aff7d3352021ba94"
+    },
+    {
+     "bytes": 169618,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_cfba00f1f99db69aa12e4200/series.json.gz",
+     "sha256": "53725f57098913d7ff6427c705773c2abc754814d773e3adeddab0308a3a780f"
+    }
+   ],
+   "as_of": "2026-11-14T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2028
+   ],
+   "issued_at": "2026-11-15T15:27:55.895820+00:00",
+   "location_id": "US:fips:19169",
+   "measured": {
+    "days": 140,
+    "members": 26,
+    "note": "product runtime and peak RSS in the product manifest",
+    "peak_python_mib": null,
+    "seconds": null,
+    "series_bytes_gzip": 169618,
+    "series_bytes_raw": 500958
+   },
+   "place_name": "Story County",
+   "plan_id": "us_soy",
+   "publication_version": "sim_cfba00f1f99db69aa12e4200",
+   "run_id": "sim_cfba00f1f99db69aa12e4200",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 9831,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_058579a503ee56335a086db1/run.json",
+     "sha256": "af2e5ff32d15a546bd9150a97b15772f93c6e86c908efa6e1b4ef00221f3018b"
+    },
+    {
+     "bytes": 293415,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_058579a503ee56335a086db1/series.json.gz",
+     "sha256": "599a7aefc32b7cc1820e7efef3a04149dc74fd59d4c93a71893ed8f65bb60e71"
+    }
+   ],
+   "as_of": "2026-11-14T23:59:00+00:00",
+   "crops": [
+    "wheat_winter"
+   ],
+   "current": true,
+   "harvest_years": [
+    2028
+   ],
+   "issued_at": "2026-11-15T15:27:55.895820+00:00",
+   "location_id": "US:fips:20191",
+   "measured": {
+    "days": 260,
+    "members": 26,
+    "note": "product runtime and peak RSS in the product manifest",
+    "peak_python_mib": null,
+    "seconds": null,
+    "series_bytes_gzip": 293415,
+    "series_bytes_raw": 965135
+   },
+   "place_name": "Sumner County",
+   "plan_id": "us_wheat_winter",
+   "publication_version": "sim_058579a503ee56335a086db1",
+   "run_id": "sim_058579a503ee56335a086db1",
+   "visibility": "public_regional"
+  }
+ ]
+}
