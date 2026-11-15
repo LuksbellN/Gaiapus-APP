@@ -276,6 +276,18 @@
       "date": "2026-11-15",
       "reason": "season planning 2027/2028 entry (modo=planejamento) routed to the calculated published runs",
       "sha256": "8ca4ff7699a21ec3b7784fac94b77c236103863b9c02ecb50304dc215bfadf69"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "Unified frontend: preserve US state navigation alongside Lara and future planning",
+      "sha256": "e12a030252667391e9dfdfd7bdf0260de580f8bd067691c2c8f3a174cfcf7310"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Unified frontend: preserve US state navigation alongside Lara and future planning",
+      "sha256": "b1736c44329369cadadd72aba652a24dc7612aa505b1f038672a64aa0aa36436"
     }
   ]
 }
