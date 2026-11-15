@@ -18,12 +18,12 @@ test.describe('Simulador · perfil do solo', () => {
     expect(errors).toEqual([]);
   });
 
-  test('sem WebGL o perfil 2D mostra o mesmo dia, sem raízes nem sondas', async ({ page }) => {
+  test('sem WebGL o perfil 2D mostra o mesmo dia, raízes ilustrativas e nenhuma sonda virtual', async ({ page }) => {
     await page.goto('/#/simulador?vista=perfil&dia=60&semwebgl=1');
     const p = page.getByTestId('profile-2d');
     await expect(p).toBeVisible();
     await expect(p).toHaveAttribute('data-date', '2020-12-03');
-    await expect(p.getByTestId('roots')).toHaveCount(0);
+    await expect(p.getByTestId('roots')).toHaveAttribute('data-root-source', 'illustrative');
     await expect(p.getByTestId('probe')).toHaveCount(0);
   });
 
@@ -52,5 +52,19 @@ test.describe('Simulador · estaca Gaiapus', () => {
   test('LED apagado no pousio de solo exposto (sem cultura, sem estresse de planta)', async ({ page }) => {
     await page.goto('/#/simulador?vista=perfil&dia=273&semwebgl=1');
     await expect(page.getByTestId('led')).toHaveAttribute('data-led', '0');
+  });
+});
+
+test.describe('Simulador · raízes', () => {
+  test('raízes crescem com a timeline, voltam iguais e podem ser ocultadas; 3D carrega sem erros', async ({ page, errors }) => {
+    const count = async (dia: number) => { await page.goto(`/#/simulador?vista=perfil&dia=${dia}&semwebgl=1`); await page.reload(); return Number(await page.getByTestId('roots').getAttribute('data-segments')); };
+    const d20 = await count(20), d70 = await count(70), back = await count(20);
+    expect(d70).toBeGreaterThan(d20); expect(back).toBe(d20);
+    await page.getByRole('checkbox', { name: 'Mostrar raízes' }).uncheck();
+    await expect(page).toHaveURL(/raizes=0/);
+    await expect(page.getByTestId('roots')).toHaveCount(0);
+    await page.goto('/#/simulador?vista=perfil&dia=181'); await page.reload();
+    await expect(page.locator('.sim__stage canvas')).toBeVisible();
+    expect(errors).toEqual([]);
   });
 });

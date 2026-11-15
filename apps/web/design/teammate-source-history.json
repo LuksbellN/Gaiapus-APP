@@ -264,6 +264,12 @@
       "date": "2026-11-15",
       "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
       "sha256": "eeb43702cbc6c300a5256f77b77d276b6007915fdf8cb12a816db25dcb3de054"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "soil-profile roots: show/hide roots and cutaway toggles; illustrative root architectures (no calculated depth in the current engine)",
+      "sha256": "0f64538ae8070ebdc87569b6f25be0c9197733a0a31d756ceab6afa580917196"
     }
   ]
 }

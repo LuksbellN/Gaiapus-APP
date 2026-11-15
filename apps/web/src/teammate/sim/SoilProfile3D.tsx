@@ -5,6 +5,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { DeviceText } from './Profile2D';
+import { RootSystem3D } from './RootSystem3D';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DRAINAGE_COLOR, IRRIGATION_COLOR, mulberry32, LED_COLORS, lerpHex, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
@@ -17,15 +18,17 @@ const slots = (() => { const r = mulberry32(42); const out: { x: number; z: numb
 /** Pauses continuous redraws while the tab is hidden and asks for a frame when it is shown again (frameloop is "demand"). */
 function useVisible() { const v = useRef(typeof document === 'undefined' || !document.hidden); const { invalidate } = useThree(); useEffect(() => { const on = () => { v.current = !document.hidden; if (v.current) invalidate(); }; document.addEventListener('visibilitychange', on); return () => document.removeEventListener('visibilitychange', on); }, [invalidate]); return v; }
 
-function Soil({ layers }: { layers: ProfileLayers }) {
+/** Cutaway: translucent soil (no depth write) so roots inside the block stay visible. */
+function SoilMat({ color, cutaway }: { color: string; cutaway: boolean }) { return <meshLambertMaterial color={color} flatShading transparent={cutaway} opacity={cutaway ? 0.35 : 1} depthWrite={!cutaway} />; }
+function Soil({ layers, cutaway }: { layers: ProfileLayers; cutaway: boolean }) {
   const zone = layers.roots ? layers.roots.depthM : PROFILE_DEPTH_M * 0.55; const below = PROFILE_DEPTH_M - zone;
   // Without a root depth there is no known lower limit of the zone: fade in thin slices instead of a colour step.
   const FADE = 6; const slice = below / FADE;
   return <group>
-    <mesh position={[0, -zone / 2, 0]}><boxGeometry args={[BLOCK.width, zone, BLOCK.depth]} /><meshLambertMaterial color={layers.soilColor} flatShading /></mesh>
+    <mesh position={[0, -zone / 2, 0]}><boxGeometry args={[BLOCK.width, zone, BLOCK.depth]} /><SoilMat color={layers.soilColor} cutaway={cutaway} /></mesh>
     {layers.roots
-      ? <><mesh position={[0, -zone - below / 2, 0]}><boxGeometry args={[BLOCK.width, below, BLOCK.depth]} /><meshLambertMaterial color={SOIL_BELOW} flatShading /></mesh><mesh position={[0, -zone, FRONT_Z + 0.004]}><boxGeometry args={[BLOCK.width, 0.012, 0.004]} /><meshBasicMaterial color="#f5efe0" /></mesh></>
-      : Array.from({ length: FADE }, (_, i) => <mesh key={i} position={[0, -zone - slice * (i + 0.5), 0]}><boxGeometry args={[BLOCK.width, slice, BLOCK.depth]} /><meshLambertMaterial color={lerpHex(layers.soilColor, SOIL_BELOW, (i + 1) / FADE)} flatShading /></mesh>)}
+      ? <><mesh position={[0, -zone - below / 2, 0]}><boxGeometry args={[BLOCK.width, below, BLOCK.depth]} /><SoilMat color={SOIL_BELOW} cutaway={cutaway} /></mesh><mesh position={[0, -zone, FRONT_Z + 0.004]}><boxGeometry args={[BLOCK.width, 0.012, 0.004]} /><meshBasicMaterial color="#f5efe0" /></mesh></>
+      : Array.from({ length: FADE }, (_, i) => <mesh key={i} position={[0, -zone - slice * (i + 0.5), 0]}><boxGeometry args={[BLOCK.width, slice, BLOCK.depth]} /><SoilMat color={lerpHex(layers.soilColor, SOIL_BELOW, (i + 1) / FADE)} cutaway={cutaway} /></mesh>)}
   </group>;
 }
 
@@ -46,12 +49,6 @@ function Plants({ layers }: { layers: ProfileLayers }) {
   return <instancedMesh ref={leaves} args={[geom, undefined, slots.length]} frustumCulled={false}><meshLambertMaterial flatShading /></instancedMesh>;
 }
 
-function Roots({ depth }: { depth: number }) {
-  const ref = useRef<THREE.InstancedMesh>(null); const front = useMemo(() => slots.filter((s) => s.front), []); const { invalidate } = useThree();
-  const geom = useMemo(() => new THREE.ConeGeometry(1, 1, 4).rotateX(Math.PI), []); useEffect(() => () => geom.dispose(), [geom]);
-  useLayoutEffect(() => { front.forEach((p, i) => { const d = depth * (0.85 + (p.s - 0.88) * 0.6); tmp.rotation.set(0, 0, 0); tmp.position.set(p.x, -d / 2, FRONT_Z + 0.006); tmp.scale.set(0.014, d, 0.002); tmp.updateMatrix(); ref.current!.setMatrixAt(i, tmp.matrix); }); ref.current!.instanceMatrix.needsUpdate = true; invalidate(); }, [depth, front, invalidate]);
-  return <instancedMesh ref={ref} args={[geom, undefined, front.length]} frustumCulled={false}><meshBasicMaterial color="#efe3c4" /></instancedMesh>;
-}
 
 function Particles({ count, color, ymin, ymax, speed, still, size }: { count: number; color: string; ymin: number; ymax: number; speed: number; still: boolean; size: number }) {
   const ref = useRef<THREE.Points>(null); const { invalidate } = useThree(); const visible = useVisible();
@@ -125,20 +122,29 @@ function Controls({ label }: { label: string }) {
   return null;
 }
 
-export default function SoilProfile3D({ layers, label, reducedMotion, deviceText }: { layers: ProfileLayers; label: string; reducedMotion: boolean; deviceText: DeviceText }) {
+const ROOT_Z = (ROWS - 1) * ROW_SPACING / 2; // front plant row
+export default function SoilProfile3D({ layers, label, reducedMotion, deviceText, cutaway = true }: { layers: ProfileLayers; label: string; reducedMotion: boolean; deviceText: DeviceText; cutaway?: boolean }) {
   const zoneBottom = layers.roots ? layers.roots.depthM : PROFILE_DEPTH_M * 0.55;
   const refs = useRef(new Map<string, HTMLDivElement>()); const layer = useRef<HTMLDivElement | null>(null);
   const labels = useMemo<Label[]>(() => [
     ...layers.rulerTicksM.map((d): Label => ({ id: `r${d}`, pos: [RULER_X + 0.14, -d, FRONT_Z + 0.01], text: `${Math.round(d * 100)} cm`, align: 'left' })),
     ...(layers.device ? [...layers.device.electrodesM.map((d): Label => ({ id: `e${d}`, pos: [STAKE_X - 0.06, -d, STAKE_Z], text: deviceText.electrode(Math.round(d * 100)), align: 'right' })),
       { id: 'led', pos: [STAKE_X - 0.09, 0.33, STAKE_Z], text: deviceText.led, align: 'right' } as Label] : []),
-  ], [layers.rulerTicksM, layers.device, deviceText]);
+    ...(layers.rootSystem ? (() => {
+      const r = layers.rootSystem;
+      const out: Label[] = [r.depthLabelM != null && r.source !== 'illustrative'
+        ? { id: 'root', pos: [-1.95, -r.drawDepthM, ROOT_Z], text: deviceText.roots.depth(Math.round(r.depthLabelM * 100), r.source), align: 'left' }
+        : { id: 'root', pos: [-1.6, -1.42, ROOT_Z], text: deviceText.roots.illustrative, align: 'left' }];
+      if (r.continuesBelow) out.push({ id: 'root-more', pos: [0.1, -r.drawDepthM - 0.08, ROOT_Z], text: deviceText.roots.continues(Math.round(r.drawDepthM * 100)), align: 'left' });
+      return out;
+    })() : []),
+  ], [layers.rulerTicksM, layers.device, layers.rootSystem, deviceText]);
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <Canvas frameloop="demand" dpr={[1, 1.75]} camera={{ position: [4.3, 1.9, 5.7], fov: 38 }} gl={{ antialias: true, preserveDrawingBuffer: true }} onCreated={({ gl }) => { (window as unknown as { __gaiapusProfile?: THREE.WebGLRenderer }).__gaiapusProfile = gl; }}>
       <hemisphereLight args={['#ffffff', '#806040', 1.1]} /><directionalLight position={[3, 5, 4]} intensity={1.4} />
-      <Soil layers={layers} />
-      {layers.roots && <Roots depth={layers.roots.depthM} />}
+      <Soil layers={layers} cutaway={cutaway} />
+      {layers.rootSystem && <RootSystem3D layer={layers.rootSystem} z={ROOT_Z} />}
       <Plants layers={layers} />
       <Particles count={layers.rainCount} color={RAIN_COLOR} ymin={0.05} ymax={2.6} speed={3.2} still={reducedMotion} size={0.055} />
       <Particles count={layers.irrigationCount} color={IRRIGATION_COLOR} ymin={0} ymax={0.22} speed={0.35} still={reducedMotion} size={0.04} />

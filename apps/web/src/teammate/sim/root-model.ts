@@ -11,7 +11,7 @@
 // Geometry is deterministic: one fixed skeleton per architecture and plant (seeded), revealed by growth — going back to a
 // day reproduces exactly the same root. Visual idea from the Lara simulator (LaraLLC/Hackathon-Nasa-SpaceApps @ 76aaf46,
 // one cone per plant); that repository has no licence, so this is an independent implementation.
-import { mulberry32, PROFILE_DEPTH_M } from './profile-model';
+import { mulberry32, PROFILE_DEPTH_M } from './scene-math';
 
 export type RootArchitecture = 'taproot' | 'fibrous' | 'perennial';
 export type RootSource = 'illustrative' | 'modelled' | 'observed';

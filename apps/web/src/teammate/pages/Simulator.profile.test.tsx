@@ -37,7 +37,8 @@ it('field view stays the default; the profile view is an alternative over the sa
 it('the published bucket has no root depth: profile shows the root-zone mean and says why there are no roots', async () => {
   open('?vista=perfil');
   const profile = await screen.findByTestId('profile-2d');
-  expect(within(profile).queryByTestId('roots')).toBeNull();
+  // The bucket gives no root depth: roots are illustrative (no centimetres), probes stay absent.
+  expect(within(profile).getByTestId('roots')).toHaveAttribute('data-root-source', 'illustrative');
   expect(within(profile).queryByTestId('probe')).toBeNull();
   expect(screen.getByText(/único reservatório/)).toBeInTheDocument();
   expect(screen.getAllByText(/Ilustração do cenário/).length).toBeGreaterThan(0);
@@ -58,4 +59,22 @@ it('the Gaiapus stake can be shown or hidden; its electrodes carry no per-depth 
   expect(within(screen.getByTestId('profile-2d')).queryByTestId('device')).toBeNull();
   expect(within(screen.getByTestId('profile-2d')).queryAllByTestId('ruler-tick')).toHaveLength(0);
   expect(within(panel()).getByText('Água no dia').closest('.card')!.textContent).toBe(before);
+});
+
+it('roots grow along the timeline, come back identical, can be hidden, and are absent on bare fallow', async () => {
+  const segs = async (dia: number) => { const v = open(`?vista=perfil&dia=${dia}&semwebgl=1`); const n = Number((await screen.findByTestId('roots')).getAttribute('data-segments')); v.unmount(); return n; };
+  const d20 = await segs(20), d70 = await segs(70), back = await segs(20);
+  expect(d70).toBeGreaterThan(d20);
+  expect(back).toBe(d20);
+  const v = open('?vista=perfil&dia=70');
+  const roots = await screen.findByTestId('roots');
+  expect(roots).toHaveAttribute('data-root-architecture', 'taproot');
+  expect(within(screen.getByTestId('profile-2d')).queryByText(/cm · modelada/)).toBeNull();
+  expect(screen.getByRole('checkbox', { name: 'Solo em corte' })).toBeChecked();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Mostrar raízes' }));
+  expect(screen.queryByTestId('roots')).toBeNull();
+  v.unmount();
+  open('?vista=perfil&dia=300');
+  await screen.findByTestId('profile-2d');
+  expect(screen.queryByTestId('roots')).toBeNull(); // 2021-07-31: bare fallow after the maize harvest
 });

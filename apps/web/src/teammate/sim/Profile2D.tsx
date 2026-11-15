@@ -3,10 +3,11 @@
 import { useMemo } from 'react';
 import { DRAINAGE_COLOR, IRRIGATION_COLOR, mulberry32, LED_COLORS, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
 import type { CropSceneState } from './scene-adapter';
+import { RootSystem2D, type RootText } from './RootSystem2D';
 
 const W = 600, GROUND = 120, SOIL_H = 165, PX_PER_M = SOIL_H / PROFILE_DEPTH_M, STAKE_X = W - 46;
 
-export type DeviceText = { electrode: (depthCm: number) => string; led: string };
+export type DeviceText = { electrode: (depthCm: number) => string; led: string; roots: RootText };
 
 export function Profile2D({ scene, layers, label, zoneLabel, deviceText }: { scene: CropSceneState; layers: ProfileLayers; label: string; zoneLabel: string; deviceText: DeviceText }) {
   const drops = useMemo(() => { const r = mulberry32(17); return Array.from({ length: 60 }, () => ({ x: 20 + r() * (W - 40), y: 8 + r() * (GROUND - 24) })); }, []);
@@ -21,7 +22,7 @@ export function Profile2D({ scene, layers, label, zoneLabel, deviceText }: { sce
       {layers.roots
         ? <><rect x="0" y={GROUND} width={W} height={zoneBottom - GROUND} fill={layers.soilColor} /><rect x="0" y={zoneBottom} width={W} height={GROUND + SOIL_H - zoneBottom} fill={SOIL_BELOW} /><line x1="0" x2={W} y1={zoneBottom} y2={zoneBottom} stroke="#f5efe0" strokeWidth="1.5" strokeDasharray="6 4" /></>
         : <rect x="0" y={GROUND} width={W} height={SOIL_H} fill={layers.zone === 'root_zone_mean' ? `url(#${gid})` : layers.soilColor} />}
-      {layers.roots && <g data-testid="roots" stroke="#efe3c4" strokeWidth="1.4">{Array.from({ length: plants }, (_, i) => { const x = 30 + i * 41; return <path key={i} d={`M${x},${GROUND} l-6,${layers.roots!.depthM * PX_PER_M * 0.6} M${x},${GROUND} l0,${layers.roots!.depthM * PX_PER_M} M${x},${GROUND} l7,${layers.roots!.depthM * PX_PER_M * 0.7}`} fill="none" />; })}</g>}
+      {layers.rootSystem && <RootSystem2D layer={layers.rootSystem} groundY={GROUND} pxPerM={PX_PER_M} centerX={W / 2} text={deviceText.roots} />}
       {layers.rulerTicksM.map((d) => <g key={d} data-testid="ruler-tick"><line x1="4" x2="16" y1={GROUND + d * PX_PER_M} y2={GROUND + d * PX_PER_M} stroke="#EAF2EB" /><text x="20" y={GROUND + d * PX_PER_M + 4} fill="#EAF2EB" fontSize="11">{Math.round(d * 100)} cm</text></g>)}
       {layers.probesM.map((d) => <circle key={d} data-testid="probe" cx={W - 40} cy={GROUND + d * PX_PER_M} r="5" fill="#b98d2c" />)}
       {Array.from({ length: plants }, (_, i) => { const x = 30 + i * 41; return h > 0 ? <path key={i} d={layers.maize ? `M${x},${GROUND} l-5,-${h} l10,0 z` : `M${x - 12},${GROUND} q12,-${h * 2} 24,0 z`} fill={layers.leafColor} /> : null; })}
