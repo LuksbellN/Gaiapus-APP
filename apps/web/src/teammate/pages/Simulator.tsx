@@ -11,17 +11,21 @@ import { hasDailySeries, SORRISO } from '../capabilities';
 import { CapabilityTable } from '../ui/Crops';
 import { useSearchParams } from 'react-router-dom';
 import { Field2D, webglAvailable, type FieldState } from '../sim/field-state';
+import { LEGACY_SCENE_CAPS, rowsFromDailyScenario, rowsFromProjection, toSceneState, type SceneDailyRow } from '../sim/scene-adapter';
+import { profileLayers } from '../sim/profile-model';
+import { Profile2D } from '../sim/Profile2D';
 import { useLazy } from '../lazyPage';
 import { useStore } from '../store';
 import { useActiveContext } from '../App';
 import { isKnownPlace, placeName, plotElsewhere } from '../context';
 const loadField3D = () => import('../sim/Field3D');
+const loadProfile3D = () => import('../sim/SoilProfile3D');
 
 type Mode = 'historico' | 'cenario' | 'previsao' | 'climatologia';
 const MODE: Record<Mode, { tone: 'soil' | 'warn' | 'water' | undefined }> = { historico: { tone: 'soil' }, cenario: { tone: 'warn' }, previsao: { tone: 'water' }, climatologia: { tone: undefined } };
 const YEARS = ['2015/2016', '2016/2017', '2017/2018', '2018/2019', '2019/2020', '2020/2021'];
 type Row = { etc: number | null; eta: number | null; et0: number; ks: number; drainage: number | null; awf: number };
-function slice(d: Daily['scenarios']['brachiaria'], year: string) { const a = d.agricultural_year.indexOf(year), b = d.agricultural_year.lastIndexOf(year) + 1; const s = <T,>(x: T[]) => x.slice(a, b); return { dates: s(d.date), rain: s(d.rain_mm), storage: s(d.storage_end_mm), stage: s(d.stage), land: s(d.land_cover), deficit: s(d.et_deficit_mm), covered: s(d.soil_covered), rows: s(d.date).map((_, i): Row => ({ etc: d.etc_mm[a + i], eta: d.eta_mm[a + i], et0: d.et0_mm[a + i], ks: d.ks[a + i], drainage: d.drainage_mm[a + i], awf: d.available_water_fraction[a + i] })) }; }
+function slice(d: Daily['scenarios']['brachiaria'], year: string, capacity: number) { const a = d.agricultural_year.indexOf(year), b = d.agricultural_year.lastIndexOf(year) + 1; const s = <T,>(x: T[]) => x.slice(a, b); return { scene: rowsFromDailyScenario({ date: s(d.date), land_cover: s(d.land_cover), stage: s(d.stage), rain_mm: s(d.rain_mm), et0_mm: s(d.et0_mm), etc_mm: s(d.etc_mm), eta_mm: s(d.eta_mm), drainage_mm: s(d.drainage_mm), storage_end_mm: s(d.storage_end_mm), available_water_fraction: s(d.available_water_fraction), ks: s(d.ks) }, capacity) as SceneDailyRow[], dates: s(d.date), rain: s(d.rain_mm), storage: s(d.storage_end_mm), stage: s(d.stage), land: s(d.land_cover), deficit: s(d.et_deficit_mm), covered: s(d.soil_covered), rows: s(d.date).map((_, i): Row => ({ etc: d.etc_mm[a + i], eta: d.eta_mm[a + i], et0: d.et0_mm[a + i], ks: d.ks[a + i], drainage: d.drainage_mm[a + i], awf: d.available_water_fraction[a + i] })) }; }
 
 // A cultura e o município escolhidos decidem os dados. Só a rotação de soja em Sorriso tem série diária no pacote;
 // para qualquer outra combinação mostramos o que existe e o que falta, sem curva, fase ou planta inventada.
@@ -66,17 +70,17 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
   const mode: Mode = (Object.keys(MODE) as Mode[]).find((m) => m === params.get('modo')) ?? 'historico'; const setMode = (m: Mode) => put({ modo: m === 'historico' ? null : m });
   const year = YEARS.find((y) => y.replace('/', '-') === params.get('ano')) ?? '2020/2021'; const setYear = (y: string) => put({ ano: y === '2020/2021' ? null : y.replace('/', '-') });
   const compare = params.get('ab') === '1'; const setCompare = (v: boolean) => put({ ab: v ? '1' : null }); const [cursor, setCursor] = useState(() => Math.max(0, (Number(params.get('dia')) || 1) - 1)); const [playing, setPlaying] = useState(false); const [speed, setSpeed] = useState(14);
-  const [collapsed, setCollapsed] = useState(false); const tab = (['campo', 'indicadores', 'configurar'] as const).find((t) => t === params.get('secao')) ?? 'campo'; const setTab = (t: 'campo' | 'indicadores' | 'configurar') => put({ secao: t === 'campo' ? null : t }); const mobile = useMedia('(max-width: 760px)'); const [gl] = useState(webglAvailable); const field3d = useLazy(loadField3D, gl);
+  const [collapsed, setCollapsed] = useState(false); const tab = (['campo', 'indicadores', 'configurar'] as const).find((t) => t === params.get('secao')) ?? 'campo'; const setTab = (t: 'campo' | 'indicadores' | 'configurar') => put({ secao: t === 'campo' ? null : t }); const mobile = useMedia('(max-width: 760px)'); const [gl] = useState(webglAvailable); const view = params.get('vista') === 'perfil' ? 'perfil' : 'talhao'; const setView = (v: 'talhao' | 'perfil') => put({ vista: v === 'talhao' ? null : v }); const field3d = useLazy(loadField3D, gl && view === 'talhao'); const profile3d = useLazy(loadProfile3D, gl && view === 'perfil'); const reduced = useMedia('(prefers-reduced-motion: reduce)');
   const seed = useMemo(() => Number(new URLSearchParams(location.hash.split('?')[1] ?? '').get('seed') ?? 7), []);
 
   const model = useMemo(() => {
     if (!daily.data || !proj.data) return null; const cap = daily.data.data.capacity_mm;
     if (mode === 'historico' || mode === 'cenario') {
-      const A = slice(daily.data.data.scenarios[mode === 'historico' ? 'reference_fallow' : 'brachiaria'], year), B = slice(daily.data.data.scenarios[mode === 'historico' ? 'brachiaria' : 'reference_fallow'], year);
+      const A = slice(daily.data.data.scenarios[mode === 'historico' ? 'reference_fallow' : 'brachiaria'], year, cap), B = slice(daily.data.data.scenarios[mode === 'historico' ? 'brachiaria' : 'reference_fallow'], year, cap);
       const series: TimelineSeries = { dates: A.dates, rain: A.rain, storage: A.storage, stage: A.stage, land: A.land, deficit: A.deficit, capacity: cap, ...(compare ? { storageB: B.storage, landB: B.land } : {}) };
       return { series, A, B: compare ? B : null, names: mode === 'historico' ? [`A · ${t('sim.names.fallow')}`, `B · ${t('sim.names.brachiaria')}`] : [`A · ${t('sim.names.brachiaria')}`, `B · ${t('sim.names.fallow')}`] };
     }
-    const p = proj.data.data; const mk = (days: typeof p.days) => ({ dates: days.map((d) => d.date), rain: days.map((d) => d.rain_mm), storage: days.map((d) => d.storage_end_mm), stage: days.map((d) => d.phase), land: days.map(() => 'soy'), deficit: days.map((d) => d.et_deficit_mm), covered: days.map(() => 1), rows: days.map((d): Row => ({ etc: null, eta: null, et0: d.et0_mm, ks: d.ks, drainage: null, awf: d.available_water_fraction })) });
+    const p = proj.data.data; const mk = (days: typeof p.days) => ({ scene: rowsFromProjection(days, p.soil.capacity_mm), dates: days.map((d) => d.date), rain: days.map((d) => d.rain_mm), storage: days.map((d) => d.storage_end_mm), stage: days.map((d) => d.phase), land: days.map(() => 'soy'), deficit: days.map((d) => d.et_deficit_mm), covered: days.map(() => 1), rows: days.map((d): Row => ({ etc: null, eta: null, et0: d.et0_mm, ks: d.ks, drainage: null, awf: d.available_water_fraction })) });
     const A = mk(mode === 'previsao' ? p.days : p.reference_days), B = mk(mode === 'previsao' ? p.reference_days : p.days);
     return { series: { dates: A.dates, rain: A.rain, storage: A.storage, stage: A.stage, land: A.land, deficit: A.deficit, capacity: p.soil.capacity_mm, ...(compare ? { storageB: B.storage } : {}) } as TimelineSeries, A, B: compare ? B : null, names: mode === 'previsao' ? [`A · ${t('kind.forecast')}`, `B · ${t('sim.mode.climatologia')}`] : [`A · ${t('sim.mode.climatologia')}`, `B · ${t('kind.forecast')}`] };
   }, [daily.data, proj.data, mode, year, compare, t]); // eslint-disable-line
@@ -94,6 +98,10 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
   const { A, B } = model; const row = A.rows[c]; const start = [...phaseStarts].reverse().find((i) => i <= c) ?? 0; const end = (phaseStarts.find((i) => i > c) ?? n) - 1;
   const fs: FieldState = { land: A.land[c], stage: A.stage[c], progress: end > start ? (c - start) / (end - start) : 1, awf: row.awf, rain: A.rain[c], covered: !!A.covered[c] };
   const cum = (arr: number[]) => arr.slice(0, c + 1).reduce((a, b) => a + b, 0); const stressDays = A.rows.slice(0, c + 1).filter((r) => r.ks < 1).length;
+  // Same day, same row: the profile view reads the published row through the scene adapter, never recomputing.
+  const scene = toSceneState(A.scene[c], LEGACY_SCENE_CAPS); const layers = profileLayers(scene, fs.progress); const capacity = A.scene[c].capacity_mm;
+  const profileLabel = `${t('sim.profile.label', { date: dFull(A.dates[c]), land: LAND[fs.land], stage: STAGE[fs.stage], reserve: scene.waterFraction == null ? t('sim.profile.unknownWater') : pct(scene.waterFraction) })}${gl && profile3d.mod ? ` ${t('sim.fieldKeys')}` : ''}`;
+  const active = view === 'perfil' ? profile3d : field3d;
   const label = `${t('sim.fieldLabel', { date: dFull(A.dates[c]), land: LAND[fs.land], stage: STAGE[fs.stage], reserve: pct(fs.awf) })}${gl && field3d.mod ? ` ${t('sim.fieldKeys')}` : ''}`;
   const pd = proj.data?.data.days; const modeDesc = mode === 'previsao' && pd ? t('sim.modeDesc.previsao', { from: dShort(pd[0].date), to: dFull(pd[pd.length - 1].date) }) : t(`sim.modeDesc.${mode}`);
   const jump = (dir: 1 | -1) => setCursor(dir === 1 ? (phaseStarts.find((i) => i > c) ?? n - 1) : ([...phaseStarts].reverse().find((i) => i < c) ?? 0));
@@ -118,10 +126,12 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
         </>}
       </aside>
       <div className="sim__stage" id="panel-campo">
-        {gl && field3d.mod ? <field3d.mod.default state={fs} seed={seed} label={label} /> : gl && !field3d.failed ? <div className="sim__loading" role="status"><span className="spinner" aria-hidden /><span>{t('sim.loading3d')}</span></div> : <Field2D state={fs} label={label} />}
-        {gl && field3d.failed && <div className="sim__retry"><span>{t('sim.no3d')}</span><button className="btn btn--sm" onClick={field3d.retry}>{t('common.retry')}</button></div>}
-        <div className="sim__overlay"><Pill tone={MODE[mode].tone}>{t(`sim.mode.${mode}`)}</Pill><Pill>{dFull(A.dates[c])}</Pill><Pill>{LAND[fs.land]} · {STAGE[fs.stage]}</Pill></div>
-        <p className="sim__caption">{t('sim.caption')}</p>
+        {view === 'talhao'
+          ? (gl && field3d.mod ? <field3d.mod.default state={fs} seed={seed} label={label} /> : gl && !field3d.failed ? <div className="sim__loading" role="status"><span className="spinner" aria-hidden /><span>{t('sim.loading3d')}</span></div> : <Field2D state={fs} label={label} />)
+          : (gl && profile3d.mod ? <profile3d.mod.default layers={layers} label={profileLabel} reducedMotion={reduced} /> : gl && !profile3d.failed ? <div className="sim__loading" role="status"><span className="spinner" aria-hidden /><span>{t('sim.profile.loading')}</span></div> : <Profile2D scene={scene} layers={layers} label={profileLabel} zoneLabel={t('sim.profile.zoneMean')} />)}
+        {gl && active.failed && <div className="sim__retry"><span>{t('sim.no3d')}</span><button className="btn btn--sm" onClick={active.retry}>{t('common.retry')}</button></div>}
+        <div className="sim__overlay"><div className="sim__views" data-testid="sim-views"><Seg legend={t('sim.view.legend')} name="vista" value={view} onChange={setView} options={[{ value: 'talhao', label: t('sim.view.field') }, { value: 'perfil', label: t('sim.view.profile') }]} /></div><Pill tone={MODE[mode].tone}>{t(`sim.mode.${mode}`)}</Pill><Pill>{dFull(A.dates[c])}</Pill><Pill>{LAND[fs.land]} · {STAGE[fs.stage]}</Pill></div>
+        <p className="sim__caption">{view === 'perfil' ? t('sim.profile.caption') : t('sim.caption')}</p>
       </div>
       <div className="sim__timeline">
         <div className="transport" role="group" aria-label={t('sim.transport.label')}>
@@ -143,6 +153,7 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
           <dt>{t('sim.day.deficit')}</dt><dd>{n2(A.deficit[c])} mm</dd><dt>{t('timeline.reserve')}</dt><dd>{n1(A.storage[c])} mm · {pct(row.awf)}</dd>
           {row.drainage != null && <><dt>{t('sim.day.drainage')}</dt><dd>{n1(row.drainage)} mm</dd></>}
         </dl><div>{row.ks < 1 ? <Pill tone="warn">{t('water.belowIdealLong')}</Pill> : <Pill tone="ok">{t('water.enoughLong')}</Pill>}</div></div>
+        {view === 'perfil' && <div className="card" data-testid="profile-notes"><h3>{t('sim.view.profile')}</h3><p className="meta-13">{t('sim.profile.noDepth', { capacity: n0(capacity ?? 0) })}</p><p className="meta-13">{t('sim.profile.stressLegend')}</p></div>}
         <div className="card"><h3>{t('sim.cum.title')}</h3><div className="grid-2"><Stat label={t('sim.day.rain')} value={n0(cum(A.rain))} unit="mm" /><Stat label={t('sim.day.deficit')} value={n1(cum(A.deficit))} unit="mm" /><Stat label={t('sim.cum.stressDays')} value={stressDays} /><Stat label={t('sim.cum.days')} value={c + 1} /></div></div>
         {B && <div className="card"><h3>{t('sim.diff.title', { b: model.names[1].slice(0, 1), a: model.names[0].slice(0, 1) })}</h3><dl className="kv"><dt>{t('timeline.reserve')}</dt><dd>{signed(B.storage[c] - A.storage[c])} mm</dd><dt>{t('sim.diff.deficit')}</dt><dd>{signed(cum(B.deficit) - cum(A.deficit))} mm</dd><dt>{t('sim.diff.coverB')}</dt><dd>{LAND[B.land[c]]}</dd></dl></div>}
         <div className="card" data-tour="sim-limits"><div className="row-between"><h3>{t('sim.yield.title')}</h3><Pill tone="soil">{t('kind.retrospective')}</Pill></div>

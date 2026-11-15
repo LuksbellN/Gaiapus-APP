@@ -63,11 +63,18 @@ E2E (`pnpm --filter @gaiapus/web test:e2e`) exige servidor em `:5174`; não exec
 | Etapa | Estado | Arquivos | Testes |
 |---|---|---|---|
 | 1 Inventário | concluída | este arquivo | baseline acima |
+| 8 Visualização sem recálculo | concluída | `sim/scene-adapter.ts`, `sim/profile-model.ts`, `sim/Profile2D.tsx`, `sim/SoilProfile3D.tsx` (novos); `pages/Simulator.tsx`, `styles.css`, 5 catálogos i18n, `design/teammate-source-history.json` (alterados); testes `sim/scene-adapter.test.ts`, `sim/profile-model.test.ts`, `pages/Simulator.profile.test.tsx`, `tests/e2e/regressao/simulador-perfil.spec.ts` | web 207/207 (188 + 19 novos); typecheck ok; E2E completo 94/94 contra API + Vite locais |
 
 ## 3. Capacidades disponíveis ao usuário
 
-Sem mudança em relação ao baseline.
+- **Simulador › Vista “Perfil do solo”** (soja/Sorriso, todos os modos): alternância Talhão/Perfil no topo da cena, guardada no link (`?vista=perfil`). Corte de solo com cor = fração da água disponível na zona radicular, gotas proporcionais à chuva do dia, seta de drenagem quando há drenagem, folhas coloridas por ks (verde ≥ 1; amarelo < 1; marrom < 0,5). Mesmo cursor, mesmo dia e mesmos números do painel e do gráfico. Fallback 2D (`?semwebgl=1`/sem WebGL), partículas paradas com movimento reduzido, pausa de animação com aba oculta, teclado (setas, + e −).
+- O que **não** aparece, por falta de suporte do dado publicado (bucket único AD4 55 mm, sequeiro): raízes, régua de profundidade, sondas virtuais 15/40 cm, escoamento, irrigação. O card “Perfil do solo” explica isso; o adaptador já aceita esses campos quando um método futuro os sustentar (`SceneCapabilities`).
+- Talhão 3D, rendimento, modos e A/B continuam como antes.
 
 ## 4. Limitações conhecidas
 
 - Toda a simulação exibida continua sendo fixture publicada de Sorriso; não há cálculo arbitrário.
+- O perfil é ilustrativo: altura das plantas segue o calendário demonstrativo de fases; o limite inferior da zona radicular é desconhecido e aparece como degradê, não como linha.
+- Chrome headless com WebGL por software emite avisos de desempenho de leitura de buffer durante a animação; sem efeito funcional. Desempenho em aparelho de referência não foi medido.
+- O spec E2E do perfil foi escrito após a implementação (os testes unitários foram escritos e vistos falhando antes).
+- `design/teammate-source-history.json` recebeu entradas novas; a sessão concorrente (estados dos EUA) pode acrescentar entradas no mesmo arquivo — conflito trivial de JSON na fusão.

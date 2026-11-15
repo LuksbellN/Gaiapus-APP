@@ -240,6 +240,18 @@
       "date": "2026-11-15",
       "reason": "unified place screen with country/state/place picker; NDVI daily axis",
       "sha256": "023b68252dc97ca6509828ff72fbb15d7bfd45f2de9d85eb8cb7103259b422c4"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "bfd14b090dc543414c5bb4434c7dc15b29f726c4b56ddcf333e8fbbf594bc35c"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "442480613a0455219a8a225a2dab12022fe80e521025e1e792479f2c2a27188c"
     }
   ]
 }
