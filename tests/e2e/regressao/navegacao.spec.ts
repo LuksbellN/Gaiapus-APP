@@ -1,5 +1,6 @@
 // RT-16, RT-18, RT-19, RT-24: falhas, navegação, acessibilidade e carregamento.
 import { test, expect, MOBILE, seriousViolations } from '../helpers';
+import { NO_FIRST_RUN } from '../helpers';
 
 const ROUTES = ['/explorar?semwebgl=1', '/visao-geral', '/municipio', '/planejar', '/simulador', '/field-shift', '/propriedades', '/registros', '/dispositivos', '/alertas', '/conta', '/mais', '/design-preview'];
 
@@ -31,7 +32,7 @@ test.describe('RT-18 navegação', () => {
   });
 
   test('celular: Mais leva aos destinos fora da barra', async ({ browser }) => {
-    const ctx = await browser.newContext(MOBILE); const page = await ctx.newPage();
+    const ctx = await browser.newContext(MOBILE); await ctx.addInitScript(NO_FIRST_RUN); const page = await ctx.newPage();
     await page.goto('/#/mais');
     for (const n of ['Município', 'Planejar', 'Field Shift', 'Sondas', 'Alertas', 'Propriedades e talhões', 'Conta']) await expect(page.getByRole('link', { name: new RegExp(n) })).toBeVisible();
     await ctx.close();

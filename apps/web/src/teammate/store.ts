@@ -9,7 +9,7 @@ export type RecordKind = 'plantio' | 'evento' | 'colheita' | 'venda';
 // Todo registro guarda: quando ocorreu, quando foi registrado/atualizado, origem e versão do esquema.
 export type FieldRecord = { id: string; kind: RecordKind; plotId: string; cycleId: string; event_at: string; recorded_at: string; updated_at: string; origin: 'informado' | 'observado' | 'estimado' | 'sintetico'; schema: 1; revision: number; data: Record<string, string> };
 export type Plan = { id: string; createdAt: string; data: Record<string, string> };
-export type Session = { userId: string; name: string; email: string; researchConsent: boolean; consentAt: string | null } | null;
+export type Session = { userId: string; name: string; email: string; researchConsent: boolean; consentAt: string | null; createdAt?: string } | null;
 export type State = { session: Session; properties: Property[]; plots: Plot[]; records: FieldRecord[]; plans: Plan[]; drafts: Record<string, Record<string, string>>; activePlotId: string | null };
 
 const KEY = 'gaiapus.v1';

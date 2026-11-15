@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 // Screenshots go to test-results, never over the versioned evidence in design/verification.
 const evidence = path.resolve(process.cwd(), 'test-results/screens');
+// The automatic first-opening tutorial is covered in regressao/tutoriais.spec.ts; here it is marked as already shown.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { if (!localStorage.getItem('gaiapus.tours')) localStorage.setItem('gaiapus.tours', JSON.stringify({ v: 1, tours: {}, auto: { device: 'test' } })); }); });
 
 test('approved visual sources are unchanged or their change is recorded', async () => {
   const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'design/teammate-source-manifest.json'), 'utf8'));

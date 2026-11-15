@@ -1,5 +1,6 @@
 // RT-01 a RT-05: navegação geográfica, cobertura, mapa indisponível e busca.
 import { test, expect, MOBILE } from '../helpers';
+import { NO_FIRST_RUN } from '../helpers';
 
 const crumb = (page) => page.locator('.crumbs [aria-current]');
 const title = (page) => page.locator('.explore__panel h1');
@@ -48,7 +49,7 @@ test.describe('RT-01 navegação geográfica', () => {
   });
 
   test('D-26: minha posição fora do Brasil seleciona o país', async ({ browser }) => {
-    const ctx = await browser.newContext({ geolocation: { latitude: -34.6, longitude: -58.4 }, permissions: ['geolocation'], viewport: { width: 1440, height: 900 } }); const page = await ctx.newPage();
+    const ctx = await browser.newContext({ geolocation: { latitude: -34.6, longitude: -58.4 }, permissions: ['geolocation'], viewport: { width: 1440, height: 900 } }); await ctx.addInitScript(NO_FIRST_RUN); const page = await ctx.newPage();
     await page.goto('/#/explorar');
     await page.waitForFunction(() => (window as any).__gaiapusMap?.loaded(), null, { timeout: 30000 });
     await page.getByRole('button', { name: 'Usar minha localização' }).click();
@@ -58,7 +59,7 @@ test.describe('RT-01 navegação geográfica', () => {
   });
 
   test('celular sem rolagem horizontal', async ({ browser }) => {
-    const ctx = await browser.newContext(MOBILE); const page = await ctx.newPage();
+    const ctx = await browser.newContext(MOBILE); await ctx.addInitScript(NO_FIRST_RUN); const page = await ctx.newPage();
     await page.goto('/#/explorar?pais=BR&uf=51&mun=5107925&semwebgl=1');
     await expect(page.getByTestId('mun-detail')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);

@@ -6,7 +6,7 @@ Não existe hoje nenhum sistema de tutorial, ajuda ou glossário no código [C].
 
 | Regra | Detalhe |
 |---|---|
-| Nunca começa sozinho | Na primeira visita a uma tela com roteiro aparece um convite discreto abaixo do título: "Conhecer esta tela · Agora não". Sem sobreposição, sem modal |
+| Abre sozinho só duas vezes | **Decisão do Leandro, 14/11/2026, substitui "nunca começa sozinho":** o roteiro da tela abre sozinho (1) na primeira abertura do app neste navegador e (2) na primeira visita depois de criar uma conta (conta com `created_at` do Supabase há menos de 7 dias, uma vez por conta neste navegador). Se a tela de entrada não tiver roteiro, abre na próxima que tiver. "Pular" pula **todos** os roteiros: nenhum abre sozinho de novo e os convites viram o botão "Como usar esta tela". Fora disso, aparece um convite discreto "Conhecer esta tela · Agora não", sem modal |
 | Sempre reabrível | Botão "Como usar esta tela" (ícone `CircleHelp`) ao lado do título; página "Ajuda" lista todos os roteiros e o glossário |
 | Curto | 3 a 5 passos por roteiro; assunto longo vira dois roteiros |
 | Controles | Voltar, Avançar, Pular, Fechar (×); `Esc` fecha; contador "2 de 4" |

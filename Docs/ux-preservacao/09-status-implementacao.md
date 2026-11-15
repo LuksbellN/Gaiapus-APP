@@ -18,6 +18,7 @@ Data: 14/11/2026. Branch local `ux-preservacao`, sem push e sem deploy. Escopo t
 | I8 revisão e cobertura | parcial | RT-21 (`i18n/coverage.test.ts`) e RT-25 (de/fr a 320, 768 e 1440 px) passam. Catálogos en/es/fr/de gerados pelo Codex a partir do pt-BR com a terminologia do `08`. **Falta revisão por falante nativo**, prioridade em `help.glossary.*`, `account.research.*`, `account.del.*`, `auth.*`, `errors.*`, `tour.sim.s5`, `tour.fs.s4` |
 | H1 motor e Ajuda | feito | `teammate/tours/{storage,scripts,TourProvider,TourPopover}`; painel carregado sob demanda |
 | H2 roteiros | feito | 10 roteiros (9 + simulador sem série), 41 âncoras `data-tour` |
+| Abertura automática | feito | Pedido do Leandro (14/11/2026): o tutorial abre sozinho na primeira abertura do app e na primeira visita após criar a conta; "Pular" pula todos. "Apagar todos os dados" limpa o progresso, mas não faz o tutorial reabrir sozinho |
 
 ## Desvios em relação ao plano (decisões minhas)
 
@@ -34,13 +35,13 @@ Data: 14/11/2026. Branch local `ux-preservacao`, sem push e sem deploy. Escopo t
 
 ## Testes
 
-- Unitários (Vitest): 179 passando (início: 64).
-- E2E: 77 passando (início: 6).
+- Unitários (Vitest): 184 passando (início: 64).
+- E2E: 79 passando (início: 6).
 - E2E (Playwright, Chrome instalado): `frontend.spec.ts` + `regressao/{explorar,dados,planejar,registros,navegacao,idiomas,tutoriais}.spec.ts`.
 - Rodar: API (`pnpm dev:api`), web (`pnpm --filter @gaiapus/web dev`), depois `GAIAPUS_WEB_URL=http://127.0.0.1:5173 npx playwright test` em `apps/web`.
 
 ## Pendências fora desta máquina
 
-1. Supabase real: entrar, cadastrar, confirmar e-mail, recuperar senha com o idioma trocado (RT-22 cobre só as rotas sem Supabase).
+1. Supabase real: entrar, cadastrar, confirmar e-mail, recuperar senha com o idioma trocado (RT-22 cobre só as rotas sem Supabase); conferir que o tutorial abre na primeira entrada de uma conta recém-criada e não abre para conta antiga.
 2. Aparelhos reais: iOS Safari e Android Chrome, zoom de 200 %, leitor de tela (NVDA/VoiceOver) no painel do tutorial.
 3. Revisão linguística nativa (ver I8).

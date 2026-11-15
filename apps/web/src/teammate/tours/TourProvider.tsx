@@ -1,11 +1,16 @@
-// Optional tutorials (Docs/ux-preservacao/04). Never start by themselves: a discreet invite on first visit and
-// a "How to use this screen" button afterwards. The panel itself is loaded only when a tour starts.
+// Tutorials (Docs/ux-preservacao/04). The screen's tutorial opens by itself only on the first opening in this
+// browser and on the first visit after creating an account; "Skip" skips all of them (Leandro, 14/11/2026).
+// Otherwise: a discreet invite, then a "How to use this screen" button. The panel is loaded only when a tour starts.
 import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircleHelp } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { tourById, tourForPath, TOURS } from './scripts';
-import { setTour, tourRecord, useTourRecords, type TourState } from './storage';
+import { autoTourDue, dismissAll, markAutoTour, setTour, tourRecord, useTourRecords, type TourState } from './storage';
+import { useStore } from '../store';
+
+/** Time for the screen to render its anchors before deciding which tutorial applies. */
+const AUTO_DELAY_MS = 800;
 
 const TourPopover = lazy(() => import('./TourPopover'));
 
@@ -14,8 +19,8 @@ type Ctx = { start: (id: string, opener?: HTMLElement | null) => void; active: s
 const TourCtx = createContext<Ctx>({ start: () => {}, active: null });
 export const useTours = () => useContext(TourCtx);
 
-export function TourProvider({ children }: { children: ReactNode }) {
-  const loc = useLocation(); const nav = useNavigate();
+export function TourProvider({ children, auto = true }: { children: ReactNode; auto?: boolean }) {
+  const loc = useLocation(); const nav = useNavigate(); const session = useStore((s) => s.session);
   const [active, setActive] = useState<Active | null>(null);
   // Screen the tour itself is opening: that route change must not close it.
   const internal = useRef<string | null>(null);
@@ -46,6 +51,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const close = useCallback((state: TourState) => {
     const a = current.current; if (!a) return;
     setTour(a.id, state, state === 'in_progress' ? a.step : undefined);
+    if (state === 'dismissed') dismissAll(TOURS.map((x) => x.id));
     setActive(null);
     const back = a.opener?.isConnected ? a.opener : document.querySelector<HTMLElement>('main h1');
     requestAnimationFrame(() => back?.focus({ preventScroll: true }));
@@ -55,6 +61,18 @@ export function TourProvider({ children }: { children: ReactNode }) {
     const a = current.current; if (!a) return;
     setTour(a.id, 'in_progress', step); setActive({ ...a, step });
   }, []);
+  // First opening / new account: open this screen's tutorial once. Screens without a tutorial wait for the next one.
+  useEffect(() => {
+    if (!auto || active || !autoTourDue(session)) return;
+    const timer = window.setTimeout(() => {
+      if (current.current || !autoTourDue(session)) return;
+      const tour = tourForPath(loc.pathname); if (!tour) return;
+      markAutoTour(session?.userId ?? null);
+      start(tour.id);
+    }, AUTO_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [auto, active, session, loc.pathname, start]);
+
   const value = useMemo(() => ({ start, active: active?.id ?? null }), [start, active]);
   const tour = active ? tourById(active.id) : undefined;
 

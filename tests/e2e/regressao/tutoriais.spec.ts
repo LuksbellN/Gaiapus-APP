@@ -3,6 +3,48 @@ import { test, expect, seedFarm, localState } from '../helpers';
 
 const tours = (page: import('@playwright/test').Page) => page.evaluate(() => JSON.parse(localStorage.getItem('gaiapus.tours') ?? '{"tours":{}}').tours);
 
+test.describe('RT-23 primeira abertura', () => {
+  test('abre sozinho na primeira vez; "Pular" pula todos e não volta', async ({ browser }) => {
+    const ctx = await browser.newContext({ locale: 'pt-BR' }); const page = await ctx.newPage();
+    await page.goto('/#/visao-geral');
+    const pop = page.getByTestId('tour-pop');
+    await expect(pop).toBeVisible();
+    await expect(pop.getByText('Passo 1 de 4', { exact: true })).toBeVisible();
+    await pop.getByRole('button', { name: 'Pular' }).click();
+    await expect(pop).toHaveCount(0);
+    const t = await tours(page);
+    expect(t['overview@1'].state).toBe('dismissed');
+    expect(t['plan@1'].state).toBe('dismissed');
+    for (const r of ['/planejar', '/visao-geral']) {
+      await page.goto('/#' + r); await page.reload();
+      await expect(page.getByRole('button', { name: 'Como usar esta tela' })).toBeVisible();
+      await page.waitForTimeout(1200);
+      await expect(pop).toHaveCount(0);
+    }
+    await ctx.close();
+  });
+
+  test('tela sem tutorial espera a próxima; concluído não reabre', async ({ browser }) => {
+    const ctx = await browser.newContext({ locale: 'pt-BR' }); const page = await ctx.newPage();
+    await page.goto('/#/mais');
+    await page.waitForTimeout(1200);
+    await expect(page.getByTestId('tour-pop')).toHaveCount(0);
+    await page.goto('/#/field-shift');
+    const pop = page.getByTestId('tour-pop');
+    await expect(pop).toBeVisible();
+    for (let i = 0; i < 3; i++) await pop.getByRole('button', { name: 'Avançar' }).click();
+    await pop.getByRole('button', { name: 'Concluir' }).click();
+    await page.reload(); await page.waitForTimeout(1200);
+    await expect(pop).toHaveCount(0);
+    // Other screens keep the discreet invite.
+    await page.goto('/#/planejar');
+    await expect(page.getByRole('button', { name: 'Conhecer esta tela' })).toBeVisible();
+    await page.waitForTimeout(1200);
+    await expect(pop).toHaveCount(0);
+    await ctx.close();
+  });
+});
+
 test.describe('RT-23 tutoriais', () => {
   test('convite discreto, nunca abre sozinho; "Agora não" vira botão de ajuda', async ({ page }) => {
     await page.goto('/#/visao-geral');

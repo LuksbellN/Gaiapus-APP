@@ -5,8 +5,12 @@ import AxeBuilder from '../../apps/web/node_modules/@axe-core/playwright/dist/in
 export { expect };
 export type { Page };
 
+/** Marks the automatic first-opening tutorial as already shown, so it does not cover screens under test. */
+export const NO_FIRST_RUN = () => { if (!localStorage.getItem('gaiapus.tours')) localStorage.setItem('gaiapus.tours', JSON.stringify({ v: 1, tours: {}, auto: { device: 'test' } })); };
+
 /** Console errors and page errors collected per test; asserted empty where noted. */
 export const test = base.extend<{ errors: string[] }>({
+  page: async ({ page }, use) => { await page.addInitScript(NO_FIRST_RUN); await use(page); },
   errors: async ({ page }, use) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));

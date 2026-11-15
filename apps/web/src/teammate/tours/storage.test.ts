@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearTours, reloadToursForTest, setTour, tourRecord, TOURS_KEY } from './storage';
+import { autoTourDue, clearTours, dismissAll, markAutoTour, NEW_ACCOUNT_MS, reloadToursForTest, setTour, tourRecord, TOURS_KEY } from './storage';
 import { resetAll } from '../store';
 import { TOURS, tourForPath } from './scripts';
 import { catalogFor } from '../i18n';
@@ -28,6 +28,46 @@ describe('tour storage', () => {
     expect(localStorage.getItem(TOURS_KEY)).toBeNull();
     expect(tourRecord('overview@1').state).toBe('new');
     clearTours();
+  });
+});
+
+describe('automatic presentation', () => {
+  beforeEach(() => { localStorage.clear(); reloadToursForTest(); });
+  const now = Date.parse('2026-11-14T12:00:00Z');
+  const fresh = { userId: 'u1', createdAt: '2026-11-14T10:00:00Z' };
+
+  it('first opening in this browser, once', () => {
+    expect(autoTourDue(null, now)).toBe(true);
+    markAutoTour(null);
+    expect(autoTourDue(null, now)).toBe(false);
+  });
+
+  it('first visit after creating an account, once per account', () => {
+    markAutoTour(null);
+    expect(autoTourDue(fresh, now)).toBe(true);
+    markAutoTour('u1');
+    expect(autoTourDue(fresh, now)).toBe(false);
+    expect(autoTourDue({ userId: 'u2', createdAt: fresh.createdAt }, now)).toBe(true);
+  });
+
+  it('an old account signing in is not a new account', () => {
+    expect(autoTourDue({ userId: 'u3', createdAt: new Date(now - NEW_ACCOUNT_MS - 1).toISOString() }, now)).toBe(false);
+    expect(autoTourDue({ userId: 'u4' }, now)).toBe(false);
+  });
+
+  it('skip dismisses every tutorial that is not done', () => {
+    setTour('plan@1', 'done');
+    dismissAll(['plan@1', 'overview@1', 'explore@1']);
+    expect(tourRecord('plan@1').state).toBe('done');
+    expect(tourRecord('overview@1').state).toBe('dismissed');
+  });
+
+  it('deleting local data keeps the record that tutorials were already presented', () => {
+    markAutoTour('u1'); setTour('plan@1', 'done');
+    clearTours(); reloadToursForTest();
+    expect(tourRecord('plan@1').state).toBe('new');
+    expect(autoTourDue(null, now)).toBe(false);
+    expect(autoTourDue(fresh, now)).toBe(false);
   });
 });
 

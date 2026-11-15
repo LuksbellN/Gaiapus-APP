@@ -101,7 +101,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />{t('nav.more')}</NavLink>
       </nav>
       <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
-        <TourProvider>{authPage ?? <><TourBar /><Routes>
+        <TourProvider auto={!authPage}>{authPage ?? <><TourBar /><Routes>
           <Route path="/" element={<Navigate to="/explorar" replace />} />
           <Route path="/explorar" element={<Explore />} />
           <Route path="/visao-geral" element={<Overview />} />

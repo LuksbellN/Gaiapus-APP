@@ -1,5 +1,6 @@
 // RT-20, RT-22, RT-25: language switch keeps route and data, persists, works on auth routes and long texts fit.
 import { test, expect, seedFarm, localState, type Page } from '../helpers';
+import { NO_FIRST_RUN } from '../helpers';
 
 const pick = (page: Page) => page.locator('[data-testid="language-select"]:visible').first();
 const prefsWith = (locale: string) => `localStorage.setItem('gaiapus.prefs', JSON.stringify({ v: 1, locale: ${JSON.stringify(locale)} }))`;
@@ -28,7 +29,7 @@ test.describe('RT-20 troca de idioma', () => {
   });
 
   test('sem preferência, o idioma vem do navegador; preferência salva vence', async ({ browser }) => {
-    const ctx = await browser.newContext({ locale: 'fr-FR' });
+    const ctx = await browser.newContext({ locale: 'fr-FR' }); await ctx.addInitScript(NO_FIRST_RUN);
     const page = await ctx.newPage();
     await page.goto('/#/conta');
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');

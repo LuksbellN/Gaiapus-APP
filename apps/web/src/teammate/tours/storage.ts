@@ -5,7 +5,15 @@ import { useSyncExternalStore } from 'react';
 export const TOURS_KEY = 'gaiapus.tours';
 export type TourState = 'new' | 'dismissed' | 'in_progress' | 'done';
 export type TourRecord = { state: TourState; step?: number; at: string };
-type Stored = { v: 1; tours: Record<string, TourRecord> };
+/**
+ * `auto` remembers when a tutorial was presented automatically (Leandro, 14/11/2026):
+ * once on the first opening in this browser (`device`) and once after each account is created (`users`).
+ */
+type Auto = { device?: string; users?: Record<string, string> };
+type Stored = { v: 1; tours: Record<string, TourRecord>; auto?: Auto };
+
+/** An account counts as newly created for this long after Supabase's created_at. */
+export const NEW_ACCOUNT_MS = 7 * 24 * 3600 * 1000;
 
 const subs = new Set<() => void>();
 let cache: Stored | null = null;
@@ -18,21 +26,47 @@ function read(): Stored {
   } catch { cache = { v: 1, tours: {} }; }
   return cache;
 }
-
-export function tourRecord(id: string): TourRecord { return read().tours[id] ?? { state: 'new', at: '' }; }
-
-export function setTour(id: string, state: TourState, step?: number) {
-  const next: Stored = { v: 1, tours: { ...read().tours, [id]: { state, ...(step === undefined ? {} : { step }), at: new Date().toISOString() } } };
+function write(next: Stored) {
   cache = next;
   try { localStorage.setItem(TOURS_KEY, JSON.stringify(next)); } catch { /* no storage: progress lives for this page only */ }
   subs.forEach((f) => f());
 }
 
-/** Used by "delete all data on this device". */
+export function tourRecord(id: string): TourRecord { return read().tours[id] ?? { state: 'new', at: '' }; }
+
+export function setTour(id: string, state: TourState, step?: number) {
+  const s = read();
+  write({ ...s, tours: { ...s.tours, [id]: { state, ...(step === undefined ? {} : { step }), at: new Date().toISOString() } } });
+}
+
+/** "Skip" skips every tutorial: none is offered or opened by itself again (still reachable from Help). */
+export function dismissAll(ids: string[]) {
+  const s = read(); const at = new Date().toISOString(); const tours = { ...s.tours };
+  for (const id of ids) if (tours[id]?.state !== 'done') tours[id] = { state: 'dismissed', at };
+  write({ ...s, tours });
+}
+
+/** True when a tutorial should open by itself now: first opening in this browser, or first visit after creating this account. */
+export function autoTourDue(session: { userId: string; createdAt?: string } | null, now = Date.now()): boolean {
+  const auto = read().auto ?? {};
+  if (!session) return !auto.device;
+  if (auto.users?.[session.userId]) return false;
+  const created = session.createdAt ? Date.parse(session.createdAt) : NaN;
+  return Number.isFinite(created) && now - created < NEW_ACCOUNT_MS;
+}
+
+export function markAutoTour(userId: string | null) {
+  const s = read(); const at = new Date().toISOString(); const auto = { ...(s.auto ?? {}) };
+  auto.device = auto.device ?? at;
+  if (userId) auto.users = { ...(auto.users ?? {}), [userId]: at };
+  write({ ...s, auto });
+}
+
+/** Used by "delete all data on this device": clears progress but keeps the record of automatic presentations. */
 export function clearTours() {
-  cache = { v: 1, tours: {} };
-  try { localStorage.removeItem(TOURS_KEY); } catch { /* no storage */ }
-  subs.forEach((f) => f());
+  const auto = read().auto;
+  if (auto) write({ v: 1, tours: {}, auto });
+  else { cache = { v: 1, tours: {} }; try { localStorage.removeItem(TOURS_KEY); } catch { /* no storage */ } subs.forEach((f) => f()); }
 }
 
 export function useTourRecords() {
