@@ -23,3 +23,13 @@ describe('toApiAreaId', () => {
   it('país estrangeiro nunca vai para a API', () => { expect(toApiAreaId({ pais: 'ARG', uf: null, mun: null })).toBeNull(); });
   it('município do IBGE vai como está', () => { expect(toApiAreaId({ pais: 'BR', uf: '51', mun: '5107925' })).toBe('5107925'); });
 });
+
+
+describe('US county selection', () => {
+  it('keeps a county of the selected state, rejects others', () => {
+    expect(parseSelection(new URLSearchParams('pais=USA&uf=US-IA&mun=US:fips:19169'))).toEqual({ pais: 'USA', uf: 'US-IA', mun: 'US:fips:19169' });
+    expect(parseSelection(new URLSearchParams('pais=USA&uf=US-KS&mun=US:fips:19169'))).toEqual({ pais: 'USA', uf: 'US-KS', mun: null });
+    expect(parseSelection(new URLSearchParams('pais=USA&mun=US:fips:19169'))).toEqual({ pais: 'USA', uf: 'US-IA', mun: 'US:fips:19169' });
+    expect(parseSelection(new URLSearchParams('pais=USA&uf=US-IA&mun=19169'))).toEqual({ pais: 'USA', uf: 'US-IA', mun: null });
+  });
+});

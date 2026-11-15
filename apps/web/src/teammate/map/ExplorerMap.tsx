@@ -15,7 +15,7 @@ const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
 const C = { ocean: '#0a1a21', land: '#1a2c24', landLine: '#3d5648', brazil: '#28503a', line: '#7d9a89', munLine: '#4f6a5b', action: '#87C98F', text: '#EAF2EB', water: '#79BDD8' };
 const style: StyleSpecification = {
   version: 8, projection: { type: 'globe' } as any, glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE / Natural Earth Admin 1' } },
+  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE / Natural Earth Admin 1 · Condados EUA: U.S. Census Bureau 2017 (us-atlas 3.0.1)' } },
   sky: { 'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 5, 0] } as any,
   layers: [
     { id: 'bg', type: 'background', paint: { 'background-color': C.ocean } },
@@ -89,7 +89,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     });
     m.on('click', (e) => {
       const f = m.queryRenderedFeatures(e.point, { layers: ['mun-fill', 'states-fill', 'countries'] }); const mun = f.find((x) => x.layer.id === 'mun-fill'); const st = f.find((x) => x.layer.id === 'states-fill'); const ct = f.find((x) => x.layer.id === 'countries');
-      if (mun) latest.current.onPick({ pais: 'BR', uf: String(mun.properties.code).slice(0, 2), mun: String(mun.properties.code) });
+      // Brazilian municipalities (IBGE code) and US counties (US:fips:…, with their state) share the same layer.
+      if (mun) latest.current.onPick(mun.properties.country === 'US' ? { pais: 'USA', uf: String(mun.properties.state), mun: String(mun.properties.code) } : { pais: 'BR', uf: String(mun.properties.code).slice(0, 2), mun: String(mun.properties.code) });
       else if (st) latest.current.onPick(stateSelection(String(st.properties.code)));
       else if (ct?.properties?.ADM0_A3) latest.current.onPick({ pais: ct.properties.ADM0_A3 === 'BRA' ? 'BR' : String(ct.properties.ADM0_A3), uf: null, mun: null }); // qualquer país do globo é selecionável
     });
