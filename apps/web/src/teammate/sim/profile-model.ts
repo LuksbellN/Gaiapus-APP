@@ -4,6 +4,7 @@ import { development } from './field-state';
 import type { CropSceneState, StressLevel } from './scene-adapter';
 import { rootLayer, type RootLayer } from './root-model';
 import { PROFILE_DEPTH_M } from './scene-math';
+import { resolveFieldVisual, type FieldVisual } from './visual-state';
 // Re-exported for existing imports; defined in scene-math to keep root-model free of an import cycle.
 export { mulberry32, PROFILE_DEPTH_M } from './scene-math';
 
@@ -52,7 +53,11 @@ export type ProfileLayers = {
   device: DeviceLayer | null;
   /** Root architecture to draw (calculated depth when the method provides it, otherwise illustrative). */
   rootSystem: RootLayer | null;
+  /** Colour of the stress indicator (a band at the soil line), from the modelled ks. Plants are not recoloured by stress. */
   leafColor: string;
+  /** Plant and living cover to draw: the same organ-level state as the field view (see visual-state.ts). */
+  plant: FieldVisual['crop'];
+  cover: FieldVisual['cover'];
   /** Illustrative development 0–1 from the phase calendar, scaled by crop. Not a measured plant height. */
   plantHeight: number;
   maize: boolean;
@@ -73,6 +78,8 @@ export function profileLayers(s: CropSceneState, progress: number, opts: { devic
   // The ruler measures the drawn true-scale block; it is shown when something on it has an interpretable depth
   // (the stake's electrodes or a sustained root depth), never to suggest a measured water profile.
   const ticks = roots || opts.device ? [...new Set([...(opts.device ? [0] : []), 0.15, 0.4, 1, 1.5, ...(roots ? [Math.round(roots.depthM * 100) / 100] : [])])].sort((a, b) => a - b) : [];
+  // `progress` is already conservative (a fixed value when the phase borders are not proven), so it is used as is.
+  const visual = resolveFieldVisual(s.land, s.phase, { source: 'full-phase', fraction: progress, day: null, length: null });
   const device: DeviceLayer | null = opts.device ? { electrodesM: ELECTRODES_M, led: s.stress ? LED_FROM_STRESS[s.stress] : 0, ledSource: 'model', readings: s.virtualProbes ? 'model_layers' : 'unavailable' } : null;
   return {
     zone: roots ? 'root_zone_depth' : 'root_zone_mean',
@@ -84,6 +91,7 @@ export function profileLayers(s: CropSceneState, progress: number, opts: { devic
     device,
     rootSystem: opts.roots ? rootLayer({ land: s.land, phase: s.phase, progress, rootDepthM: s.rootDepthM, rootDepthSource: s.rootDepthSource, ageYears: opts.ageYears ?? null }) : null,
     leafColor: LEAF[s.stress ?? 'unknown'],
+    plant: visual.crop, cover: visual.cover,
     plantHeight: crop ? dev * (maize ? 2.2 : 0.95) : 0,
     maize,
     rainCount: s.rainParticles,

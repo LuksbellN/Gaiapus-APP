@@ -23,13 +23,13 @@ export const SCENE_THEME: Record<Theme, SceneTheme> = {
   light: {
     soilDry: '#B4936A', soilWet: '#5B4331', soilCoveredDry: '#B9A57C', sideShade: 0.72, furrowShade: 0.84,
     ambient: 0.75, sun: { color: '#FFF4E0', intensity: 2.1, position: [9, 15, 7] }, hemisphere: { sky: '#DDEEF3', ground: '#8C7657', intensity: 1.15 },
-    contact: { color: '#3B2C1E', opacity: 0.2 },
+    contact: { color: '#2E2116', opacity: 0.38 },
   },
   // Night panel: organs must stay readable without turning the plants into emissive objects.
   dark: {
     soilDry: '#A98A63', soilWet: '#4A3A2A', soilCoveredDry: '#B3A27A', sideShade: 0.62, furrowShade: 0.8,
     ambient: 0.95, sun: { color: '#FFFFFF', intensity: 1.75, position: [8, 14, 6] }, hemisphere: { sky: '#BCD9E6', ground: '#3B2F22', intensity: 0.7 },
-    contact: { color: '#1A120B', opacity: 0.28 },
+    contact: { color: '#120C07', opacity: 0.45 },
   },
 };
 export const sceneTheme = (theme: Theme): SceneTheme => SCENE_THEME[theme];

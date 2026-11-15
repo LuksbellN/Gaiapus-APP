@@ -45,9 +45,12 @@ if (what === 'screens') {
     ['minha-area', '/#/minha-area?demo=1', async (p) => { await p.waitForSelector('[data-testid="area-map"][data-ready="true"]', { timeout: 30000 }).catch(() => {}); await p.waitForTimeout(3000); }],
     ['visao-geral', '/#/visao-geral', async (p) => { await p.waitForTimeout(2500); }],
     ['design-preview', '/#/design-preview', async (p) => { await p.waitForTimeout(2500); }],
+    ['simulador-talhao-2d', '/#/simulador?modo=historico&dia=200&semwebgl=1', async (p) => { await p.waitForTimeout(2000); }],
+    ['simulador-perfil-2d', '/#/simulador?modo=cenario&vista=perfil&dia=200&semwebgl=1', async (p) => { await p.waitForTimeout(2000); }],
   ];
   for (const theme of ['light', 'dark']) for (const [size, opts] of SIZES) for (const [name, url, wait] of SCREENS) {
     if (theme === 'dark' && !['explorar', 'simulador-talhao', 'simulador-perfil', 'field-shift', 'minha-area', 'design-preview'].includes(name)) continue;
+    if (process.argv[4] && !name.includes(process.argv[4])) continue;
     const { ctx, page, errors } = await open(opts, url, theme);
     try { await wait(page); } catch (e) { errors.push(String(e)); }
     await shot(page, `${name}-${theme === 'light' ? 'claro' : 'escuro'}-${size}-${suffix}`);
@@ -94,7 +97,9 @@ if (what === 'crops') {
 }
 
 if (what === 'board') {
-  for (const theme of ['light', 'dark']) for (const [size, opts] of SIZES) {
+  // The app scrolls inside .main, so a tall viewport is used to get the whole sheet in one image.
+  const TALL = [['desktop', { viewport: { width: 1440, height: 5200 } }], ['celular', { viewport: { width: 390, height: 9800 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 }]];
+  for (const theme of ['light', 'dark']) for (const [size, opts] of TALL) {
     const { ctx, page, errors } = await open(opts, '/#/design-preview', theme);
     await page.waitForTimeout(1500);
     await page.waitForFunction(() => window.__gaiapusBoard === 'ready' || window.__gaiapusBoard === 'failed', null, { timeout: 60000 }).catch(() => {});

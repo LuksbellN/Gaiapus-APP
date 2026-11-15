@@ -414,6 +414,36 @@
       "date": "2026-11-15",
       "reason": "Merge of main (bottom sheet, phone sweep, logo, regions with data) into the sensors and plots branch: combined content of the pinned sources",
       "sha256": "b09480a771ca6d371324e4a904d296a1958b73a56081b7440cd76271a1b6d519"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
+      "sha256": "20d14d416a945f1240cf08cd62ff96f03ac78fea91fb8960834f693096f2d77b"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
+      "sha256": "3accae3d5c235c51ba8fae35746adbd0678f2cba91f9176f8960782ae86d96f5"
+    },
+    {
+      "file": "sim/Field3D.tsx",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
+      "sha256": "fb55b8e2ad9902c8eaa25ec9bdce30b7766b8d06f7c481cb48d12a87a9239de5"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
+      "sha256": "42af8e74d7af95932f47620cde8f3be8c7242bd91ae0e0c08ab531ed407906df"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
+      "sha256": "2be54fe0a0598766c4b255e30e25bc2a0f216f3c5591004d16f14130b48f07fd"
     }
   ]
 }
