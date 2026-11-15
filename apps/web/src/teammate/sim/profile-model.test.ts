@@ -77,3 +77,28 @@ describe('profileLayers (shared by the 3D profile and its 2D fallback)', () => {
     expect(profileLayers(toSceneState({ ...row, land_cover: 'bare', phase_code: 'off_season_bare' }, LEGACY_SCENE_CAPS), 0.5).plantHeight).toBe(0);
   });
 });
+
+describe('profileLayers — root system', () => {
+  it('is off unless requested, illustrative on published bucket data, calculated only when the method provides depth', () => {
+    expect(profileLayers(toSceneState(row, LEGACY_SCENE_CAPS), 0.5).rootSystem).toBeNull();
+    const ill = profileLayers(toSceneState(row, LEGACY_SCENE_CAPS), 0.5, { roots: true }).rootSystem!;
+    expect(ill.source).toBe('illustrative');
+    expect(ill.depthLabelM).toBeNull();
+    const calc = profileLayers(toSceneState({ ...row, root_depth_m: 0.6, root_depth_source: 'modelled' }, { ...LEGACY_SCENE_CAPS, rootDepth: true }), 0.5, { roots: true }).rootSystem!;
+    expect([calc.source, calc.depthLabelM]).toEqual(['modelled', 0.6]);
+    // A depth present in the row but not sustained by the method stays ignored: still illustrative.
+    expect(profileLayers(toSceneState({ ...row, root_depth_m: 0.6, root_depth_source: 'modelled' }, LEGACY_SCENE_CAPS), 0.5, { roots: true }).rootSystem!.source).toBe('illustrative');
+  });
+  it('bare fallow has no root system', () => {
+    expect(profileLayers(toSceneState({ ...row, land_cover: 'bare', phase_code: 'off_season_bare' }, LEGACY_SCENE_CAPS), 0.5, { roots: true }).rootSystem).toBeNull();
+  });
+});
+
+describe('profileLayers — module graph as loaded by the app (profile-model first)', () => {
+  it('a calculated depth beyond the profile is drawn to a finite edge and flagged', () => {
+    const r = profileLayers(toSceneState({ ...row, root_depth_m: 2.4, root_depth_source: 'modelled' }, { ...LEGACY_SCENE_CAPS, rootDepth: true }), 0.5, { roots: true }).rootSystem!;
+    expect(Number.isFinite(r.drawDepthM)).toBe(true);
+    expect(r.drawDepthM).toBeLessThanOrEqual(1.5);
+    expect(r.continuesBelow).toBe(true);
+  });
+});

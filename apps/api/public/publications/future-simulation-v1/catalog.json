@@ -1,0 +1,502 @@
+{
+ "as_of": "2026-08-31T23:59:00+00:00",
+ "contract": "future-simulation-capabilities.v1",
+ "harvest_years": [
+  2027,
+  2028
+ ],
+ "inputs": {
+  "max_members": null,
+  "places": [
+   {
+    "crops": [
+     "soy",
+     "maize2",
+     "rice",
+     "bean1",
+     "bean2"
+    ],
+    "location_id": "BR:ibge:5107925",
+    "name": "Sorriso",
+    "plans": [
+     "soy",
+     "soy>maize2"
+    ],
+    "state_code": "51"
+   },
+   {
+    "crops": [
+     "soy",
+     "maize2",
+     "maize1",
+     "wheat",
+     "bean1",
+     "bean2",
+     "coffee_arabica",
+     "coffee_total_mg"
+    ],
+    "location_id": "BR:ibge:3170206",
+    "name": "Uberlândia",
+    "plans": [
+     "soy",
+     "soy>maize2"
+    ],
+    "state_code": "31"
+   },
+   {
+    "crops": [
+     "soy",
+     "maize2",
+     "maize1",
+     "wheat",
+     "rice",
+     "bean1",
+     "bean2"
+    ],
+    "location_id": "BR:ibge:5218805",
+    "name": "Rio Verde",
+    "plans": [
+     "soy",
+     "soy>maize2"
+    ],
+    "state_code": "52"
+   },
+   {
+    "crops": [
+     "soy",
+     "maize1",
+     "wheat"
+    ],
+    "location_id": "BR:ibge:2903201",
+    "name": "Barreiras",
+    "plans": [
+     "soy"
+    ],
+    "state_code": "29"
+   }
+  ],
+  "seed": 42
+ },
+ "places": [
+  {
+   "capabilities": [
+    {
+     "crop_id": "soy",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_0ef0f2562258c91c5a13ffff",
+      "sim_9ddd1c9949dbe442b92e9ac5"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_0ef0f2562258c91c5a13ffff",
+      "sim_9ddd1c9949dbe442b92e9ac5"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_9ddd1c9949dbe442b92e9ac5"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_9ddd1c9949dbe442b92e9ac5"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "rice",
+     "harvest_year": 2027,
+     "reason_code": "flooded_system_not_represented",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "rice",
+     "harvest_year": 2028,
+     "reason_code": "flooded_system_not_represented",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    }
+   ],
+   "history_years": 24,
+   "location_id": "BR:ibge:5107925",
+   "name": "Sorriso",
+   "observed_until": "2026-08-31",
+   "state_code": "51"
+  },
+  {
+   "capabilities": [
+    {
+     "crop_id": "soy",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_88fd3ea122a8ad02ced3f899",
+      "sim_fd61ab4118a4e32398a12156"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_88fd3ea122a8ad02ced3f899",
+      "sim_fd61ab4118a4e32398a12156"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_fd61ab4118a4e32398a12156"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_fd61ab4118a4e32398a12156"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "coffee_arabica",
+     "harvest_year": 2027,
+     "reason_code": "perennial_engine_missing",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "coffee_arabica",
+     "harvest_year": 2028,
+     "reason_code": "perennial_engine_missing",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "coffee_total_mg",
+     "harvest_year": 2027,
+     "reason_code": "unsupported",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "coffee_total_mg",
+     "harvest_year": 2028,
+     "reason_code": "unsupported",
+     "run_ids": [],
+     "status": "unsupported"
+    }
+   ],
+   "history_years": 24,
+   "location_id": "BR:ibge:3170206",
+   "name": "Uberlândia",
+   "observed_until": "2026-08-31",
+   "state_code": "31"
+  },
+  {
+   "capabilities": [
+    {
+     "crop_id": "soy",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_33af8558ac1ce3bd53f064ec",
+      "sim_e269df77be6e76cb588194fc"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_33af8558ac1ce3bd53f064ec",
+      "sim_e269df77be6e76cb588194fc"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_e269df77be6e76cb588194fc"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize2",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_e269df77be6e76cb588194fc"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "rice",
+     "harvest_year": 2027,
+     "reason_code": "flooded_system_not_represented",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "rice",
+     "harvest_year": 2028,
+     "reason_code": "flooded_system_not_represented",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "bean2",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    }
+   ],
+   "history_years": 24,
+   "location_id": "BR:ibge:5218805",
+   "name": "Rio Verde",
+   "observed_until": "2026-08-31",
+   "state_code": "52"
+  },
+  {
+   "capabilities": [
+    {
+     "crop_id": "soy",
+     "harvest_year": 2027,
+     "reason_code": null,
+     "run_ids": [
+      "sim_9cd555885306ffcd15715546"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "soy",
+     "harvest_year": 2028,
+     "reason_code": null,
+     "run_ids": [
+      "sim_9cd555885306ffcd15715546"
+     ],
+     "status": "ready",
+     "water_balance": "physical_experimental",
+     "yield": "reference_or_unavailable"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "maize1",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2027,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    },
+    {
+     "crop_id": "wheat",
+     "harvest_year": 2028,
+     "reason_code": "unsupported_crop_engine",
+     "run_ids": [],
+     "status": "unsupported"
+    }
+   ],
+   "history_years": 24,
+   "location_id": "BR:ibge:2903201",
+   "name": "Barreiras",
+   "observed_until": "2026-08-31",
+   "state_code": "29"
+  }
+ ]
+}

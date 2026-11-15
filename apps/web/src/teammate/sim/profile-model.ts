@@ -2,6 +2,10 @@
 // so they cannot disagree. No three.js import.
 import { development } from './field-state';
 import type { CropSceneState, StressLevel } from './scene-adapter';
+import { rootLayer, type RootLayer } from './root-model';
+import { PROFILE_DEPTH_M } from './scene-math';
+// Re-exported for existing imports; defined in scene-math to keep root-model free of an import cycle.
+export { mulberry32, PROFILE_DEPTH_M } from './scene-math';
 
 export const SOIL_DRY = '#c9a97a';
 export const SOIL_WET = '#4a3323';
@@ -15,11 +19,7 @@ export const IRRIGATION_COLOR = '#7a68ee';
 export const DRAINAGE_COLOR = '#3d8bd6';
 export const RUNOFF_COLOR = '#c27a2c';
 
-/** Profile block depth in metres (true scale, no vertical exaggeration). */
-export const PROFILE_DEPTH_M = 1.5;
 
-/** Deterministic PRNG: the same day always draws the same decoration. */
-export function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 export function lerpHex(a: string, b: string, t: number): string {
   const k = Math.min(1, Math.max(0, t));
@@ -50,6 +50,8 @@ export type ProfileLayers = {
   rulerTicksM: number[];
   probesM: number[];
   device: DeviceLayer | null;
+  /** Root architecture to draw (calculated depth when the method provides it, otherwise illustrative). */
+  rootSystem: RootLayer | null;
   leafColor: string;
   /** Illustrative development 0–1 from the phase calendar, scaled by crop. Not a measured plant height. */
   plantHeight: number;
@@ -64,7 +66,7 @@ const arrow = (mm: number | null, scale: number): Arrow | null => (mm != null &&
 
 const LED_FROM_STRESS = { none: 1, moderate: 2, severe: 3 } as const;
 
-export function profileLayers(s: CropSceneState, progress: number, opts: { device?: boolean } = {}): ProfileLayers {
+export function profileLayers(s: CropSceneState, progress: number, opts: { device?: boolean; roots?: boolean; ageYears?: number | null } = {}): ProfileLayers {
   const maize = s.land.startsWith('maize2'); const crop = s.land === 'soy' || maize;
   const dev = development({ land: s.land, stage: s.phase, progress, awf: s.waterFraction ?? 0, rain: s.rainMm ?? 0, covered: false });
   const roots = s.rootDepthM != null ? { depthM: Math.min(s.rootDepthM, PROFILE_DEPTH_M - 0.01) } : null;
@@ -80,6 +82,7 @@ export function profileLayers(s: CropSceneState, progress: number, opts: { devic
     rulerTicksM: ticks,
     probesM: s.virtualProbes ? [0.15, 0.4] : [],
     device,
+    rootSystem: opts.roots ? rootLayer({ land: s.land, phase: s.phase, progress, rootDepthM: s.rootDepthM, rootDepthSource: s.rootDepthSource, ageYears: opts.ageYears ?? null }) : null,
     leafColor: LEAF[s.stress ?? 'unknown'],
     plantHeight: crop ? dev * (maize ? 2.2 : 0.95) : 0,
     maize,

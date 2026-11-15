@@ -402,6 +402,194 @@
         }
       }
     },
+    "/v1/simulations/capabilities": {
+      "get": {
+        "operationId": "get__v1_simulations_capabilities",
+        "security": [],
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/LocationId"
+            }
+          },
+          {
+            "name": "crop_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{2,32}$"
+            }
+          },
+          {
+            "name": "harvest_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationCatalogResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/simulations/regional": {
+      "get": {
+        "operationId": "get__v1_simulations_regional",
+        "security": [],
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/LocationId"
+            }
+          },
+          {
+            "name": "crop_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{2,32}$"
+            }
+          },
+          {
+            "name": "harvest_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationPublicationListResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/simulations/{id}": {
+      "get": {
+        "operationId": "get__v1_simulations__id",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SimulationRunKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationRunResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/simulations/{id}/series": {
+      "get": {
+        "operationId": "get__v1_simulations__id_series",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SimulationRunKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationSeriesResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "get__v1_me",
@@ -4992,6 +5180,1600 @@
         "required": [
           "items",
           "next_cursor"
+        ]
+      },
+      "SimulationRunKey": {
+        "type": "string",
+        "pattern": "^sim_[0-9a-f]{24}$"
+      },
+      "SimulationIdParams": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "SimulationCapabilityStatus": {
+        "enum": [
+          "ready",
+          "research",
+          "needs_input",
+          "queued",
+          "missing_data",
+          "out_of_domain",
+          "unsupported"
+        ]
+      },
+      "SimulationReason": {
+        "enum": [
+          "insufficient_history",
+          "unsupported_crop_engine",
+          "unknown_yield_lag",
+          "model_out_of_domain",
+          "model_not_validated_for_planning",
+          "source_unavailable",
+          "invalid_calendar",
+          "insufficient_soil_inputs",
+          "flooded_system_not_represented",
+          "perennial_engine_missing",
+          "season_already_started_without_observations",
+          "unsupported"
+        ]
+      },
+      "SimulationResearchStatus": {
+        "enum": [
+          "research_confirmed",
+          "gain_not_confirmed",
+          "reference_selected",
+          "underpowered",
+          "not_executed",
+          "not_evaluated"
+        ]
+      },
+      "SimulationSeasonPosition": {
+        "enum": [
+          "pre_season",
+          "in_season_partial",
+          "post_cutoff",
+          "post_harvest_pre_release"
+        ]
+      },
+      "SimulationOutputMode": {
+        "enum": [
+          "simulation_conditional_on_historical_weather",
+          "in_season_forecast"
+        ]
+      },
+      "SimulationScientificStatus": {
+        "enum": [
+          "physical_experimental",
+          "reference",
+          "research",
+          "unavailable"
+        ]
+      },
+      "SimulationWeatherKind": {
+        "enum": [
+          "observed",
+          "short_forecast",
+          "seasonal_forecast",
+          "climatological_scenario"
+        ]
+      },
+      "SimulationQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "location_id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "crop_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{2,32}$"
+          },
+          "harvest_year": {
+            "type": "string",
+            "pattern": "^20[0-9]{2}$"
+          }
+        },
+        "required": []
+      },
+      "SimulationCapability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "crop_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "harvest_year": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2100
+          },
+          "status": {
+            "$ref": "#/components/schemas/SimulationCapabilityStatus"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SimulationReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationRunKey"
+            }
+          },
+          "water_balance": {
+            "const": "physical_experimental"
+          },
+          "yield": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "crop_id",
+          "harvest_year",
+          "status",
+          "reason_code",
+          "run_ids"
+        ]
+      },
+      "SimulationPlaceCapabilities": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "location_id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "state_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "history_years": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "observed_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationCapability"
+            }
+          }
+        },
+        "required": [
+          "location_id",
+          "name",
+          "state_code",
+          "history_years",
+          "observed_until",
+          "capabilities"
+        ]
+      },
+      "SimulationCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract": {
+            "const": "future-simulation-capabilities.v1"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "harvest_years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          },
+          "places": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationPlaceCapabilities"
+            }
+          },
+          "inputs": {
+            "type": "object",
+            "description": "Reproduction inputs of the publication (places, seed, member limit)"
+          }
+        },
+        "required": [
+          "contract",
+          "as_of",
+          "harvest_years",
+          "places",
+          "inputs"
+        ]
+      },
+      "SimulationArtifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "run",
+              "series",
+              "members"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "compression": {
+            "anyOf": [
+              {
+                "enum": [
+                  "gzip"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "sha256",
+          "bytes",
+          "compression"
+        ]
+      },
+      "SimulationPublication": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          },
+          "location_id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "place_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "plan_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "harvest_years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "visibility": {
+            "enum": [
+              "public_regional",
+              "private"
+            ]
+          },
+          "publication_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationArtifact"
+            }
+          },
+          "measured": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "seconds": {
+                "type": "number"
+              },
+              "peak_python_mib": {
+                "type": "number"
+              },
+              "series_bytes_raw": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "series_bytes_gzip": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "members": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "days": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "seconds",
+              "peak_python_mib",
+              "series_bytes_raw",
+              "series_bytes_gzip",
+              "members",
+              "days",
+              "note"
+            ]
+          }
+        },
+        "required": [
+          "run_id",
+          "location_id",
+          "place_name",
+          "plan_id",
+          "crops",
+          "harvest_years",
+          "as_of",
+          "issued_at",
+          "visibility",
+          "publication_version",
+          "current",
+          "artifacts",
+          "measured"
+        ]
+      },
+      "SimulationPublicationList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationPublication"
+            }
+          }
+        },
+        "required": [
+          "as_of",
+          "items"
+        ]
+      },
+      "SimulationYield": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "const": "unavailable"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/SimulationReason"
+              },
+              "value_kg_ha": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "status",
+              "reason_code",
+              "value_kg_ha"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "const": "reference"
+              },
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "value_kg_ha": {
+                "type": "number"
+              },
+              "years_used": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "last_label_year": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              "history_horizon_years": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "label_release_rule": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "research_status": {
+                "$ref": "#/components/schemas/SimulationResearchStatus"
+              },
+              "exposure_flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "conditional_on_scenario": {
+                "const": false
+              },
+              "interval_method": {
+                "type": "null"
+              },
+              "scale": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "status",
+              "method",
+              "value_kg_ha",
+              "years_used",
+              "last_label_year",
+              "history_horizon_years",
+              "label_release_rule",
+              "research_status",
+              "exposure_flags",
+              "conditional_on_scenario",
+              "interval_method",
+              "scale"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "research",
+                  "reference"
+                ]
+              },
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "model_version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "value_kg_ha": {
+                "type": "number"
+              },
+              "scenario_range": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p10": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p90": {
+                        "type": "number"
+                      },
+                      "method": {
+                        "const": "ensemble_spread_uncalibrated"
+                      }
+                    },
+                    "required": [
+                      "p10",
+                      "p50",
+                      "p90",
+                      "method"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "predictive_range": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p10": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p90": {
+                        "type": "number"
+                      },
+                      "interval_method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "p10",
+                      "p50",
+                      "p90",
+                      "interval_method"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "position_vs_season": {
+                "$ref": "#/components/schemas/SimulationSeasonPosition"
+              },
+              "last_label_year": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              "history_horizon_years": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "label_release_rule": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "research_status": {
+                "$ref": "#/components/schemas/SimulationResearchStatus"
+              },
+              "exposure_flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "conditional_on_scenario": {
+                "type": "boolean"
+              },
+              "scale": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "status",
+              "method",
+              "model_version",
+              "value_kg_ha",
+              "scenario_range",
+              "predictive_range",
+              "position_vs_season",
+              "last_label_year",
+              "history_horizon_years",
+              "label_release_rule",
+              "research_status",
+              "exposure_flags",
+              "conditional_on_scenario",
+              "scale"
+            ]
+          }
+        ]
+      },
+      "SimulationSeason": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "crop_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "harvest_year": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2100
+          },
+          "season_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "sowing_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expected_harvest_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "cycle_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1500
+          },
+          "calendar_source": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "quantiles": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "p10": {
+                  "type": "number"
+                },
+                "p50": {
+                  "type": "number"
+                },
+                "p90": {
+                  "type": "number"
+                },
+                "n": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "p10",
+                "p50",
+                "p90",
+                "n"
+              ]
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "event_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "share_of_members": {
+                  "type": "number"
+                },
+                "members": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "event_id",
+                "share_of_members",
+                "members"
+              ]
+            }
+          },
+          "interval_method": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "members": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          },
+          "yield": {
+            "$ref": "#/components/schemas/SimulationYield"
+          }
+        },
+        "required": [
+          "crop_id",
+          "harvest_year",
+          "season_label",
+          "sowing_date",
+          "expected_harvest_date",
+          "cycle_days",
+          "calendar_source",
+          "quantiles",
+          "events",
+          "interval_method",
+          "members",
+          "yield"
+        ]
+      },
+      "SimulationRun": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          },
+          "contract": {
+            "const": "future-simulation-run.v1"
+          },
+          "protocol_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "execution_status": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "output_mode": {
+            "$ref": "#/components/schemas/SimulationOutputMode"
+          },
+          "scientific_status": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "weather": {
+                "enum": [
+                  "climatological_scenario",
+                  "observed",
+                  "seasonal_forecast",
+                  "mixed"
+                ]
+              },
+              "water_balance": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              },
+              "phenology": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              },
+              "yield": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              }
+            },
+            "required": [
+              "weather",
+              "water_balance",
+              "phenology",
+              "yield"
+            ]
+          },
+          "location_id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "place_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "state_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "plan_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "harvest_years": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "simulation_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "simulation_end": {
+            "type": "string",
+            "format": "date"
+          },
+          "weather_segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "$ref": "#/components/schemas/SimulationWeatherKind"
+                },
+                "start": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "end": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "origin": {
+                  "type": "string",
+                  "maxLength": 1000
+                }
+              },
+              "required": [
+                "kind",
+                "start",
+                "end",
+                "origin"
+              ]
+            }
+          },
+          "ensemble": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "members": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "effective_source_years": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "analog_years": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "eligible_years": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "excluded_years": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "coverage_class": {
+                "enum": [
+                  "standard",
+                  "limited"
+                ]
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "analog_years_requested": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 2000,
+                      "maximum": 2100
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "calendar_mapping": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "max_month_day_drift_days": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "method",
+                  "max_month_day_drift_days",
+                  "note"
+                ]
+              }
+            },
+            "required": [
+              "method",
+              "members",
+              "effective_source_years",
+              "analog_years",
+              "eligible_years",
+              "excluded_years",
+              "coverage_class",
+              "seed",
+              "analog_years_requested",
+              "calendar_mapping"
+            ]
+          },
+          "sources": {
+            "type": "object",
+            "description": "Provenance of history, observed prefix and ET0 method (files, checksums, periods)"
+          },
+          "engine": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "parameter_set_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "daily_order": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              }
+            },
+            "required": [
+              "version",
+              "parameter_set_id",
+              "daily_order"
+            ]
+          },
+          "soil": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "capacity_mm": {
+                "type": "number"
+              },
+              "profile_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "is_hypothesis": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "capacity_mm",
+              "profile_id",
+              "is_hypothesis"
+            ]
+          },
+          "calendar_rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "rule": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "harvest_year": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                },
+                "state_calendar": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "used": {
+                  "type": "string",
+                  "format": "date"
+                }
+              },
+              "required": [
+                "rule",
+                "harvest_year",
+                "state_calendar",
+                "used"
+              ]
+            }
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationSeason"
+            }
+          },
+          "representative": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "central": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "dry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "wet": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "rule": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "central",
+              "dry",
+              "wet",
+              "rule"
+            ]
+          },
+          "initial_condition": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "storage_fraction": {
+                "type": "number"
+              },
+              "is_hypothesis": {
+                "type": "boolean"
+              },
+              "warm_up": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end",
+                      "source"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sensitivity": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }
+              },
+              "sensitivity_metric": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "storage_fraction",
+              "is_hypothesis",
+              "warm_up",
+              "sensitivity",
+              "sensitivity_metric"
+            ]
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "identity": {
+            "type": "object",
+            "description": "Canonical scientific identity hashed into run_id"
+          },
+          "checksums": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "series_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "identity_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "series_sha256",
+              "identity_sha256"
+            ]
+          }
+        },
+        "required": [
+          "run_id",
+          "contract",
+          "protocol_id",
+          "execution_status",
+          "output_mode",
+          "scientific_status",
+          "location_id",
+          "place_name",
+          "state_code",
+          "plan_id",
+          "harvest_years",
+          "as_of",
+          "issued_at",
+          "simulation_start",
+          "simulation_end",
+          "weather_segments",
+          "ensemble",
+          "sources",
+          "engine",
+          "soil",
+          "calendar_rules",
+          "seasons",
+          "representative",
+          "initial_condition",
+          "limitations",
+          "identity",
+          "checksums"
+        ]
+      },
+      "SimulationSeriesMember": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "analog_year": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              "central",
+              "dry",
+              "wet"
+            ]
+          },
+          "crop_id": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "phase_code": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "precipitation_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "et0_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "etc_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "eta_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "et_deficit_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "storage_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "drainage_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "stress_coefficient": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "mass_balance_residual_mm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "member_id",
+          "analog_year",
+          "role",
+          "crop_id",
+          "phase_code",
+          "precipitation_mm",
+          "et0_mm",
+          "etc_mm",
+          "eta_mm",
+          "et_deficit_mm",
+          "storage_mm",
+          "drainage_mm",
+          "stress_coefficient",
+          "mass_balance_residual_mm"
+        ]
+      },
+      "SimulationSeries": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          },
+          "dates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "capacity_mm": {
+            "type": "number"
+          },
+          "day_kind": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationWeatherKind"
+            }
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationSeriesMember"
+            }
+          },
+          "bands": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "storage_mm": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "p10": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p50": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p90": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "p10",
+                  "p50",
+                  "p90"
+                ]
+              },
+              "precipitation_mm": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "p10": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p50": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p90": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "p10",
+                  "p50",
+                  "p90"
+                ]
+              },
+              "et_deficit_mm": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "p10": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p50": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "p90": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "p10",
+                  "p50",
+                  "p90"
+                ]
+              }
+            },
+            "required": [
+              "storage_mm",
+              "precipitation_mm",
+              "et_deficit_mm"
+            ]
+          },
+          "full_members_artifact": {
+            "$ref": "#/components/schemas/SimulationArtifact"
+          }
+        },
+        "required": [
+          "run_id",
+          "dates",
+          "capacity_mm",
+          "day_kind",
+          "members",
+          "bands",
+          "full_members_artifact"
+        ]
+      },
+      "SimulationCatalogResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SimulationCatalog"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "SimulationPublicationListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SimulationPublicationList"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "SimulationRunResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SimulationRun"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "SimulationSeriesResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SimulationSeries"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
         ]
       },
       "LocationPageResponse": {

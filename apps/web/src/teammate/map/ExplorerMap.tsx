@@ -3,6 +3,7 @@ import maplibregl, { type Map as MlMap, type StyleSpecification } from 'maplibre
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { bboxOf, type BBox, type FC } from '../adapters';
 import { MOTION } from '../config';
+import { stateSelection, stateViewBounds, US_OVERVIEW } from '../geo/usStates';
 import { reducedMotion } from '../ui';
 import { translate, useI18n } from '../i18n';
 
@@ -14,7 +15,7 @@ const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
 const C = { ocean: '#0a1a21', land: '#1a2c24', landLine: '#3d5648', brazil: '#28503a', line: '#7d9a89', munLine: '#4f6a5b', action: '#87C98F', text: '#EAF2EB', water: '#79BDD8' };
 const style: StyleSpecification = {
   version: 8, projection: { type: 'globe' } as any, glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE' } },
+  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE / Natural Earth Admin 1' } },
   sky: { 'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 5, 0] } as any,
   layers: [
     { id: 'bg', type: 'background', paint: { 'background-color': C.ocean } },
@@ -48,8 +49,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
   const camera = (instant = false) => {
     const m = mapRef.current; if (!m || !ready.current) return; const { selection: s, states, municipalities, padding } = latest.current;
     const { countryBox } = latest.current; if (s.pais && s.pais !== 'BR' && !countryBox) return; // espera a lista de países para não enquadrar o lugar errado
-    let box: BBox = !s.pais ? SOUTH_AMERICA : s.pais === 'BR' ? BRAZIL : countryBox!; let extra = s.pais ? 24 : 8;
-    const uf = s.uf && states?.features.find((f) => f.properties.code === s.uf); if (uf) { box = bboxOf(uf.geometry); extra = 28; }
+    let box: BBox = !s.pais ? SOUTH_AMERICA : s.pais === 'BR' ? BRAZIL : s.pais === 'USA' ? US_OVERVIEW : countryBox!; let extra = s.pais ? 24 : 8;
+    const uf = s.uf && states?.features.find((f) => f.properties.code === s.uf); if (uf) { box = stateViewBounds(uf); extra = 28; }
     const mun = s.mun && municipalities?.features.find((f) => f.properties.code === s.mun); if (mun) { box = bboxOf(mun.geometry); extra = padding.bottom ? 36 : 90; }
     else if (s.mun && latest.current.placeBox) { box = latest.current.placeBox; extra = padding.bottom ? 36 : 90; } // catalogue box when the mesh is not loaded
     else if (s.mun && !municipalities) return; // espera a malha chegar para não enquadrar o lugar errado
@@ -89,7 +90,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     m.on('click', (e) => {
       const f = m.queryRenderedFeatures(e.point, { layers: ['mun-fill', 'states-fill', 'countries'] }); const mun = f.find((x) => x.layer.id === 'mun-fill'); const st = f.find((x) => x.layer.id === 'states-fill'); const ct = f.find((x) => x.layer.id === 'countries');
       if (mun) latest.current.onPick({ pais: 'BR', uf: String(mun.properties.code).slice(0, 2), mun: String(mun.properties.code) });
-      else if (st) latest.current.onPick({ pais: 'BR', uf: String(st.properties.code), mun: null });
+      else if (st) latest.current.onPick(stateSelection(String(st.properties.code)));
       else if (ct?.properties?.ADM0_A3) latest.current.onPick({ pais: ct.properties.ADM0_A3 === 'BRA' ? 'BR' : String(ct.properties.ADM0_A3), uf: null, mun: null }); // qualquer país do globo é selecionável
     });
     for (const id of ['mun-fill', 'states-fill', 'countries']) { m.on('mouseenter', id, () => { m.getCanvas().style.cursor = 'pointer'; }); m.on('mouseleave', id, () => { m.getCanvas().style.cursor = ''; }); }
@@ -100,7 +101,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
   const sync = () => {
     const m = mapRef.current; if (!m || !ready.current) return; const { states, municipalities, image } = latest.current;
     (m.getSource('states') as any).setData(states ?? empty); (m.getSource('mun') as any).setData(municipalities ?? empty);
-    (m.getSource('labels') as any).setData({ type: 'FeatureCollection', features: (states?.features ?? []).map((f) => { const b = bboxOf(f.geometry); return { type: 'Feature', properties: { sigla: f.properties.sigla }, geometry: { type: 'Point', coordinates: [(b[0][0] + b[1][0]) / 2, (b[0][1] + b[1][1]) / 2] } }; }) });
+    (m.getSource('labels') as any).setData({ type: 'FeatureCollection', features: (states?.features ?? []).map((f) => { const b = stateViewBounds(f); return { type: 'Feature', properties: { sigla: f.properties.sigla }, geometry: { type: 'Point', coordinates: [(b[0][0] + b[1][0]) / 2, (b[0][1] + b[1][1]) / 2] } }; }) });
     if (image) { (m.getSource('hls') as any).updateImage({ url: image.url, coordinates: image.corners }); (m.getSource('field') as any).setData({ type: 'Feature', properties: {}, geometry: image.field }); }
     applySelected();
   };

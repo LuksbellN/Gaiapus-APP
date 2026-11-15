@@ -23,6 +23,8 @@ export type SceneDailyRow = {
   drainage_mm: number | null;
   stress_coefficient: number | null;
   root_depth_m: number | null;
+  /** Origin of root_depth_m when present: computed by the engine or observed. Absent/null for methods without roots. */
+  root_depth_source?: 'modelled' | 'observed' | null;
 };
 
 /** What the method behind a result sustains. The scene shows a quantity only when its capability is true. */
@@ -44,6 +46,7 @@ export type CropSceneState = {
   drainageMm: number | null;
   runoffMm: number | null;
   rootDepthM: number | null;
+  rootDepthSource: 'modelled' | 'observed' | null;
   stress: StressLevel | null;
   /** A depth ruler only makes sense when a depth is interpretable. */
   depthScale: boolean;
@@ -82,6 +85,7 @@ export function toSceneState(row: SceneDailyRow, caps: SceneCapabilities): CropS
     drainageMm: orNull(row.drainage_mm),
     runoffMm: caps.runoff ? orNull(row.runoff_mm) : null,
     rootDepthM,
+    rootDepthSource: rootDepthM != null ? (row.root_depth_source ?? 'modelled') : null,
     // On bare fallow the coefficient only reduces soil evaporation: there is no plant to be stressed.
     stress: row.land_cover === 'bare' ? null : stressLevel(row.stress_coefficient),
     depthScale: rootDepthM != null,

@@ -95,6 +95,6 @@ docker build -f services/science-adapter/Dockerfile -t gaiapus-science:local .
 docker compose -f compose.backend.yaml up --build api
 ```
 
-The API image is independent of frontend source; add the built `apps/web/dist` to the combined deployment image after frontend integration. The optional Compose `live` profile starts Python with no exposed host port. Mount a trusted artifact manifest read-only and configure its path before enabling live products. Supply runtime credentials through the deployment's secret/environment configuration; none are built into the image.
+The API Dockerfile now builds contracts, API and frontend together and serves them on one origin. See [first deployment](../../Docs/2026-11-15-primeiro-deploy.md). The optional Compose `live` profile starts Python with no exposed host port. Mount a trusted artifact manifest read-only and configure its path before enabling live products. Supply runtime credentials through the deployment's secret/environment configuration; none are built into the image.
 
-No remote was configured, no push/deployment performed, and no external messages sent.
+Hosted deployment and Supabase provisioning are separate from the local integration and Git publication. Follow the first-deployment guide for the current package.
