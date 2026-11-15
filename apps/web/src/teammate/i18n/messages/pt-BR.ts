@@ -129,7 +129,7 @@ const ptBR = {
       downloadTitle: 'O mapa não pôde ser baixado.', download: 'Sem conexão para carregar o mapa. A busca e as listas ao lado continuam funcionando para escolher o lugar.',
       loading: 'Carregando o mapa…', baseOffline: 'Mapa-base sem conexão. Os limites do IBGE e as listas continuam funcionando.',
     },
-    sheet: { recolhida: 'recolhida', media: 'média', expandida: 'expandida', expand: 'Painel na posição {pos}. Tocar para expandir', collapse: 'Painel na posição {pos}. Tocar para recolher' },
+    sheet: { expandBtn: "Expandir detalhes", collapseBtn: "Recolher detalhes", recolhida: 'recolhida', media: 'média', expandida: 'expandida', expand: 'Painel na posição {pos}. Tocar para expandir', collapse: 'Painel na posição {pos}. Tocar para recolher' },
     loadingCountries: 'Carregando países…', loadingCountry: 'Carregando país…', loadingStates: 'Carregando estados', loadingMun: 'Carregando municípios',
     filterCountries: 'Filtrar países', filterCountriesPh: 'Filtrar {count} países e territórios…', noCountry: 'Nenhum país com esse nome', noCountryText: 'Confira a grafia ou clique no país no mapa.', countries: 'Países',
     brStates: '27 unidades da federação', dataIn: 'dados em {states}', withDataPill: 'Com dados',

@@ -129,7 +129,7 @@ const m: DeepPartial<Messages> = {
       downloadTitle: 'The map could not be downloaded.', download: 'No connection to load the map. Search and the lists alongside it still work for choosing a place.',
       loading: 'Loading the map…', baseOffline: 'Basemap offline. IBGE boundaries and the lists still work.',
     },
-    sheet: { recolhida: 'collapsed', media: 'medium', expandida: 'expanded', expand: 'Panel in {pos} position. Tap to expand', collapse: 'Panel in {pos} position. Tap to collapse' },
+    sheet: { expandBtn: "Expand details", collapseBtn: "Collapse details", recolhida: 'collapsed', media: 'medium', expandida: 'expanded', expand: 'Panel in {pos} position. Tap to expand', collapse: 'Panel in {pos} position. Tap to collapse' },
     loadingCountries: 'Loading countries…', loadingCountry: 'Loading country…', loadingStates: 'Loading states', loadingMun: 'Loading municipalities',
     filterCountries: 'Filter countries', filterCountriesPh: 'Filter {count} countries and territories…', noCountry: 'No country with that name', noCountryText: 'Check the spelling or click the country on the map.', countries: 'Countries',
     brStates: '27 federative units', dataIn: 'data in {states}', withDataPill: 'With data',

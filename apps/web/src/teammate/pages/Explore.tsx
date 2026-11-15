@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Layers, LocateFixed, MapPin, Minus, Plus, RotateCcw, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, Layers, LocateFixed, MapPin, Minus, Plus, RotateCcw, Search } from 'lucide-react';
 import { countryName, coverage, geography, imagery, type BBox, type Coverage, type FC, type Place, type SearchResult } from '../adapters';
 import { latestOnly, type Meta } from '../adapters/core';
 import type { MapHandle, MapLayers, Selection } from '../map/types';
@@ -25,7 +25,7 @@ const KIND: Record<string, { key: MessageKey; tone: 'water' | 'warn' | 'ok' | 's
 /** Product label from its id (coverage.product.*); crops in the current language. */
 export const productLabel = (id: string, crops: string[]) => translate(`coverage.product.${id}`, { crops: crops.map((c) => translate(`land.${c}`)).join(', ') });
 const periodsLabel = (ps: { start: string; end: string }[]) => ps.map((p) => (p.start === p.end ? dFull(p.start) : `${dFull(p.start)} – ${dFull(p.end)}`)).join(' · ') || translate('coverage.noPeriod');
-const SHEET = { recolhida: 132, media: 0.46, expandida: 0.86 } as const; type SheetPos = keyof typeof SHEET;
+import { stepSheet, useBottomSheet, type SheetPos } from '../ui/bottom-sheet';
 
 function pointIn(geom: any, lon: number, lat: number) {
   const ring = (r: number[][]) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) if ((r[i][1] > lat) !== (r[j][1] > lat) && lon < ((r[j][0] - r[i][0]) * (lat - r[i][1])) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; return c; };
@@ -83,7 +83,9 @@ export function Explore() {
   const catalogBox: BBox | null = catalogArea?.bbox ? [[catalogArea.bbox[0], catalogArea.bbox[1]], [catalogArea.bbox[2], catalogArea.bbox[3]]] : null;
   const munFeature = sel.mun && mun.uf === sel.uf ? mun.fc?.features.find((f) => f.properties.code === sel.mun) : undefined;
   const munList = useMemo(() => { const all = mun.fc?.features ?? []; const f = norm(filter); const hit = f ? all.filter((x) => norm(x.properties.name).includes(f) || x.properties.code.startsWith(f)) : all; return [...hit].sort((a, b) => Number(covered.includes(b.properties.code)) - Number(covered.includes(a.properties.code)) || byName(a.properties.name, b.properties.name)); }, [mun.fc, filter, covered, locale]); // eslint-disable-line
-  const sheetPx = mobile ? (sheet === 'recolhida' ? SHEET.recolhida : Math.round(innerHeight * SHEET[sheet === 'expandida' ? 'media' : sheet])) : 0;
+  // Phone: the panel is a bottom sheet (three positions, dragged by its grip). The map keeps the room of the middle position at most.
+  const rootRef = useRef<HTMLDivElement>(null); const sheetUi = useBottomSheet({ enabled: mobile, pos: sheet, onPos: setSheet, container: rootRef });
+  const sheetPx = mobile ? sheetUi.heights[sheet === 'expandida' ? 'media' : sheet] : 0;
   const padding = mobile ? { top: 132, left: 0, right: 0, bottom: sheetPx } : { top: 0, left: 344 + 16, right: wide && sel.mun && !us ? 312 + 16 : 0, bottom: 0 };
   const locate = () => {
     if (!navigator.geolocation) { setGeo(t('explore.geo.unsupported')); return; } setGeo(t('explore.geo.locating'));
@@ -115,15 +117,22 @@ export function Explore() {
   const withDataBox = showWithData && <WithData state={cidx.index} places={withData} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
 
   return (
-    <div className="explore">
+    <div className="explore" ref={rootRef}>
       {mapDown ? <div className="explore__map" style={{ display: 'grid', placeItems: 'center', padding: 24, paddingLeft: mobile ? 24 : 384 }}><Notice tone="warn" title={t('explore.map.unavailableTitle')}>{t('explore.map.unavailable')}</Notice></div>
         : mapMod.failed ? <div className="explore__map" style={{ display: 'grid', placeItems: 'center', padding: 24, paddingLeft: mobile ? 24 : 384 }}><div className="stack-2"><Notice tone="warn" title={t('explore.map.downloadTitle')}>{t('explore.map.download')}</Notice><div><button className="btn btn--sm" onClick={mapMod.retry}>{t('common.retry')}</button></div></div></div>
         : ExplorerMap && <ExplorerMap ref={map} onStatus={(s) => setMapStatus((prev) => (s === 'ready' && prev === 'base-offline' ? prev : s))} selection={sel} states={mapStates} municipalities={us ? usCounties.data ?? null : mun.uf === sel.uf ? mun.fc : null} covered={us ? [...abroad.map((l) => l.id), ...simIds] : covered} layers={layers} countryBox={country?.bbox ?? null} placeBox={!munFeature && catalogBox ? catalogBox : null} padding={padding} image={img.data ? { url: img.data.data.imageUrl, corners: img.data.data.image.corners, field: img.data.data.field.geojson } : null} onPick={select} onUnavailable={setMapDown} markers={markers} />}
       {!mapDown && !mapMod.failed && mapStatus === 'loading' && <div className="explore__loading" role="status" style={{ paddingLeft: mobile ? 0 : 360 }}><span className="spinner" aria-hidden /><span>{t('explore.map.loading')}</span></div>}
       {!mapDown && mapStatus === 'base-offline' && <div className="explore__toast" role="status">{t('explore.map.baseOffline')}</div>}
-      {mobile && <div className="explore__search-top">{searchBox}</div>}
-      <section className="explore__panel" aria-label={t('explore.panel')} style={mobile ? ({ '--sheet-h': sheet === 'recolhida' ? `${SHEET.recolhida}px` : `${SHEET[sheet] * 100}%` } as any) : undefined}>
-        <button className="sheet-handle" aria-label={t(sheet === 'expandida' ? 'explore.sheet.collapse' : 'explore.sheet.expand', { pos: t(`explore.sheet.${sheet}` as MessageKey) })} onClick={() => setSheet(sheet === 'recolhida' ? 'media' : sheet === 'media' ? 'expandida' : 'recolhida')} />
+      {mobile && <div className="explore__search-top" onFocusCapture={() => setSheet('recolhida')}>{searchBox}</div>}
+      <section className="explore__panel" data-testid="explore-sheet" data-pos={mobile ? sheet : undefined} data-dragging={sheetUi.dragging || undefined} aria-label={t('explore.panel')} style={mobile ? ({ '--sheet-h': `${sheetUi.height}px` } as any) : undefined}>
+        {mobile && <div className="sheet-grip" data-testid="explore-sheet-grip" {...sheetUi.grip}>
+          <span className="sheet-grip__bar" aria-hidden />
+          <div className="row sheet-grip__actions" role="group" aria-label={t('explore.sheet.expand', { pos: t(`explore.sheet.${sheet}` as MessageKey) })}>
+            <button type="button" className="btn btn--sm btn--quiet" disabled={sheet === 'expandida'} onClick={() => setSheet(stepSheet(sheet, 1))}><ChevronUp size={16} aria-hidden />{t('explore.sheet.expandBtn')}</button>
+            <button type="button" className="btn btn--sm btn--quiet" disabled={sheet === 'recolhida'} onClick={() => setSheet(stepSheet(sheet, -1))}><ChevronDown size={16} aria-hidden />{t('explore.sheet.collapseBtn')}</button>
+          </div>
+        </div>}
+        <div className="explore__sheet-scroll" data-testid="explore-sheet-scroll" {...(mobile ? sheetUi.content : {})}>
         <div className="explore__panel-head">
           {!mobile && searchBox}
           <nav className="crumbs" aria-label={t('explore.crumbs')}>
@@ -175,6 +184,7 @@ export function Explore() {
             <button className="btn btn--sm" onClick={() => select({ pais: 'BR', uf: PRESETS.uberlandia.uf, mun: PRESETS.uberlandia.mun })}>Uberlândia, MG</button>
           </div></div>
           {geo && <p className="meta" role="status">{geo}</p>}
+        </div>
         </div>
       </section>
       {wide && detail && <aside className="explore__detail" aria-label={t('explore.selectedMun')} key={sel.mun}>{detail}</aside>}
