@@ -1235,6 +1235,7 @@ export interface LocationWaterSeason {
   sowing_date: string;
   harvest_date: string;
   initial_fraction: number;
+  parameter_set: string;
   /**
    * @minItems 1
    */

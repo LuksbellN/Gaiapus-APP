@@ -3062,6 +3062,11 @@
         "initial_fraction": {
           "type": "number"
         },
+        "parameter_set": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
         "rows": {
           "type": "array",
           "items": {
@@ -3076,6 +3081,7 @@
         "sowing_date",
         "harvest_date",
         "initial_fraction",
+        "parameter_set",
         "rows"
       ]
     },

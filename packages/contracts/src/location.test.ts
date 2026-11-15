@@ -47,6 +47,11 @@ describe('LocationCore v1', () => {
     expect(valid(c), JSON.stringify(validators.LocationCore!.errors)).toBe(true);
   });
 
+  it('records which FAO-56 parameter set produced each season', () => {
+    const c = core(); delete c.layers.water_balance.seasons[0].parameter_set;
+    expect(valid(c)).toBe(false);
+  });
+
   it('declares public, additive routes without touching the private /v1/places', () => {
     const routes = routeContracts.map(([method, url, , , , priv]) => `${method} ${url} ${priv}`);
     expect(routes).toContain('GET /v1/locations false');

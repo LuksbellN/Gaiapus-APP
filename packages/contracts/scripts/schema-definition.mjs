@@ -99,7 +99,7 @@ const layer = (...args) => ({ oneOf: [available(...args), unavailable] });
 const stage = en('establishment', 'vegetative', 'reproductive', 'maturation');
 defs.LocationWeatherRow = obj({ date, rain_mm: number, et0_mm: number, tmin_c: number, tmax_c: number });
 defs.LocationWaterRow = obj({ date, storage_mm: number, available_fraction: number, etc_mm: number, eta_mm: number, deficit_mm: number, drainage_mm: number, ks: number, stage });
-defs.LocationWaterSeason = obj({ crop: ref('LocationCropId'), season: text, sowing_date: date, harvest_date: date, initial_fraction: number, rows: nonEmpty(ref('LocationWaterRow')) });
+defs.LocationWaterSeason = obj({ crop: ref('LocationCropId'), season: text, sowing_date: date, harvest_date: date, initial_fraction: number, parameter_set: text, rows: nonEmpty(ref('LocationWaterRow')) });
 defs.LocationNdviRow = obj({ date, ndvi: nullable(number), valid_fraction: number, scene_id: text, collection: en('hls2-l30', 'hls2-s30') });
 defs.LocationForecastRow = obj({ date, rain_mm: number, et0_mm: number, storage_mm: number, stress: { type: 'boolean' } });
 defs.LocationPlace = obj({ id: ref('LocationId'), country: en('BR', 'US'), scheme: en('ibge', 'fips'), code: text, name: text, admin1_code: { type: 'string', pattern: '^(BR|US)-[A-Z]{2}$' }, admin1_name: text, legacy_area_id: nullable(text), centroid: lonLat, bbox: { type: 'array', items: number, minItems: 4, maxItems: 4 }, boundary_url: text });
