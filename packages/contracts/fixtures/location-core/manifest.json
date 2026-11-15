@@ -1,0 +1,49 @@
+{
+ "schema_version": "location-core.v1",
+ "generator": "gaiapus_nasa@e4a046063a96",
+ "generated_at": "2026-11-15T03:42:50+00:00",
+ "files": [
+  {
+   "id": "BR:ibge:5107925",
+   "path": "BR_ibge_5107925.json",
+   "sha256": "5a7309f1edb2c30a2384f7f15d16ff7e4ef5335fff1ad145dfee5ac93c508090",
+   "bytes": 841962
+  },
+  {
+   "id": "BR:ibge:3170206",
+   "path": "BR_ibge_3170206.json",
+   "sha256": "ac04ed99d2cf0faca7bdbe10fbf95ea80dfead2d5c0bf6accdce293aa372e03c",
+   "bytes": 578901
+  },
+  {
+   "id": "BR:ibge:5218805",
+   "path": "BR_ibge_5218805.json",
+   "sha256": "6029533833a53417e9673d43c30d7adab7d27ec936684ae47ab123d49f1ac87f",
+   "bytes": 579399
+  },
+  {
+   "id": "BR:ibge:2903201",
+   "path": "BR_ibge_2903201.json",
+   "sha256": "0dc7d6812f3237f061e0e9755d96253c761d648a90326123fb54e1ea6f396113",
+   "bytes": 582762
+  },
+  {
+   "id": "US:fips:19169",
+   "path": "US_fips_19169.json",
+   "sha256": "5d9a4435a82d8d6568708bde26e7d75683767d9ead10657609f19e3992235f2f",
+   "bytes": 1052700
+  },
+  {
+   "id": "US:fips:31185",
+   "path": "US_fips_31185.json",
+   "sha256": "e8888dc933e9578a2aaf1b79e489ffbbb06b5b5d8bd50c4ab8bf03bb68e723e8",
+   "bytes": 740760
+  },
+  {
+   "id": "US:fips:20191",
+   "path": "US_fips_20191.json",
+   "sha256": "1116a3d900c8d58973001aa3f53a19967ca26fe8d936db7fffd4c3e491dc843a",
+   "bytes": 874525
+  }
+ ]
+}

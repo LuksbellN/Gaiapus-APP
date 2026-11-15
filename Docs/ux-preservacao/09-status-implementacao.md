@@ -45,3 +45,14 @@ Data: 14/11/2026. Branch local `ux-preservacao`, sem push e sem deploy. Escopo t
 1. Supabase real: entrar, cadastrar, confirmar e-mail, recuperar senha com o idioma trocado (RT-22 cobre só as rotas sem Supabase); conferir que o tutorial abre na primeira entrada de uma conta recém-criada e não abre para conta antiga.
 2. Aparelhos reais: iOS Safari e Android Chrome, zoom de 200 %, leitor de tela (NVDA/VoiceOver) no painel do tutorial.
 3. Revisão linguística nativa (ver I8).
+
+## Núcleo global por lugar (Brasil + EUA) — 15/11/2026
+
+Desenho e plano: `Docs/2026-11-14-nucleo-global-lugares-design.md` e `-plano.md`. Branch `feat/location-core` no APP e no repositório científico.
+
+- 7 lugares com o mesmo núcleo: Sorriso, Uberlândia, Rio Verde, Barreiras, Story (IA), York (NE) e Sumner (KS).
+- Rotas públicas novas `/v1/locations` e `/v1/locations/:id/core` (aditivas; contrato `LocationCore` v1; pacotes fixados por hash).
+- Tela única do lugar (`#/municipio?id=…` ou `?mun=…`) com seletor País → Estado → Lugar e busca; marcadores dos EUA no mapa; `#/local` redireciona.
+- Sem rendimento nos EUA (rótulos USDA não auditados).
+
+**Aceite pendente do Leandro:** calendário de GO/BA pelo registro interno (não ZARC); calendário dos EUA pelo Handbook 628 (2010), não Crop Progress; recortes novos para os 7 lugares (os antigos de Uberlândia e Barreiras tinham 12 % e 0 % de lavoura).

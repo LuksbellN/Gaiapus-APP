@@ -216,6 +216,54 @@
       "date": "2026-11-15",
       "reason": "sonar: explicit button types, dialog backdrop listener, handled promises",
       "sha256": "9b8adced62ed206159361023f3a141d97019da5180e4dfd4929a96161fdc8e00"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "location core screen, US in Explore, link from Municipality",
+      "sha256": "3c5c1dec337a7a99c1d37b93df43ff04e1df91a9a4b342c0d430c30991685993"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "fa05a4dfa04c626e726b2c42ce29c7017f59af0a8029e50a6143eb5cb9c69482"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "a65a2afc8556fbd1085e8fdc356058f1e2db07ea642b3b0dc1249344d599f525"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "023b68252dc97ca6509828ff72fbb15d7bfd45f2de9d85eb8cb7103259b422c4"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "bfd14b090dc543414c5bb4434c7dc15b29f726c4b56ddcf333e8fbbf594bc35c"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "442480613a0455219a8a225a2dab12022fe80e521025e1e792479f2c2a27188c"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "7ec56975c03a086fabd621f1469722ebfb6d2e1051f00015003bb990486dd47a"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "eeb43702cbc6c300a5256f77b77d276b6007915fdf8cb12a816db25dcb3de054"
     }
   ]
 }

@@ -38,13 +38,17 @@ test.describe('RT-07 município', () => {
     await expect(page.getByRole('heading', { name: /Resumo por ano agrícola/ })).toBeVisible();
     await page.goto('/#/municipio?mun=3170206&aba=imagem');
     await expect(page.getByRole('heading', { name: 'NDVI e chuva alinhados por data' })).toBeVisible();
+    // Sorriso now has season NDVI from the location core (no published 2024 recorte there; nothing contradictory is shown).
     await page.goto('/#/municipio?mun=5107925&aba=imagem');
-    await expect(page.getByText(/Sem imagem orbital processada/)).toBeVisible();
+    await expect(page.getByTestId('location-ndvi')).toBeVisible();
+    await expect(page.getByText(/Sem imagem orbital processada/)).toHaveCount(0);
   });
 
   test('D-08: recorte publicado de Rio Verde mostra NDVI do recorte', async ({ page }) => {
     await page.goto('/#/municipio?mun=5218805&aba=imagem');
-    await expect(page.getByRole('heading', { name: /NDVI/ })).toBeVisible();
+    // Both the core season NDVI and the preserved published 2024 recorte are shown.
+    await expect(page.getByTestId('location-ndvi')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'NDVI e chuva alinhados por data' })).toBeVisible();
     await expect(page.getByText(/recorte/i).first()).toBeVisible();
   });
 });

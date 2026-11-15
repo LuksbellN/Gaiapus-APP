@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { publication, examples, scientificCatalog } from '@gaiapus/contracts/fixtures';
+import { locationCore, locationSummaries, locationPublication } from '@gaiapus/contracts/fixtures';
 import { publishedCoverage, publishedObservations } from '@gaiapus/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { contextKey, canonicalJson } from '@gaiapus/contracts';
@@ -24,6 +25,13 @@ export function publicResult(request: FastifyRequest, reply: FastifyReply, kind:
   const etag = createHash('sha256').update(`${publication.publication_version}:${key}:${canonicalJson(data)}`).digest('hex');
   reply.header('Cache-Control', 'public, max-age=300').header('ETag', `"${etag}"`);
   return { data, meta: { app_contract_version: '0.1.0', request_id: request.id, context_key: key, publication_version: publication.publication_version } };
+}
+/** Location core responses carry the location publication version in their cache identity. */
+function locationResult(request: FastifyRequest, reply: FastifyReply, kind: string, query: Record<string, any>, data: unknown) {
+  const key = contextKey(kind, query);
+  const etag = createHash('sha256').update(`${locationPublication.version}:${key}:${canonicalJson(data)}`).digest('hex');
+  reply.header('Cache-Control', 'public, max-age=300').header('ETag', `"${etag}"`);
+  return { data, meta: { app_contract_version: '0.1.0', request_id: request.id, context_key: key, publication_version: locationPublication.version } };
 }
 export function publicHandlers(options: { origin: 'fixture' | 'live'; capabilities?: Capabilities }) {
   return {
@@ -58,6 +66,15 @@ export function publicHandlers(options: { origin: 'fixture' | 'live'; capabiliti
       if (query.area_id) areaById(query.area_id);
       const items = examples.filter(x => (!query.area_id || x.area_id === query.area_id) && (!query.product_id || x.product_id === query.product_id)).map(({ example_id, title, area_id, product_id, period, result_basis }) => ({ example_id, title, area_id, product_id, period, result_basis }));
       return publicResult(request, reply, 'examples', query, paginate(items, query, contextKey('examples', { area_id: query.area_id ?? null, product_id: query.product_id ?? null, publication_version: publication.publication_version })));
+    },
+    // Location core v1: same data core for every place in any supported country (additive; ids BR:ibge:… / US:fips:…).
+    'GET /v1/locations': (request: FastifyRequest, reply: FastifyReply) => {
+      const query = request.query as Record<string, any>;
+      return locationResult(request, reply, 'locations', query, paginate(locationSummaries(), query, contextKey('locations', { version: locationPublication.version })));
+    },
+    'GET /v1/locations/:id/core': (request: FastifyRequest, reply: FastifyReply) => {
+      const id = (request.params as { id: string }).id;
+      return locationResult(request, reply, 'location-core', { id }, locationCore(id) ?? notFound());
     },
     'GET /v1/examples/:id': (request: FastifyRequest, reply: FastifyReply) => {
       const id = (request.params as { id: string }).id;
