@@ -288,6 +288,12 @@
       "date": "2026-11-15",
       "reason": "Unified frontend: preserve US state navigation alongside Lara and future planning",
       "sha256": "b1736c44329369cadadd72aba652a24dc7612aa505b1f038672a64aa0aa36436"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "world list: every country with published data is highlighted and listed first (Brazil and US counties), derived from the catalogues",
+      "sha256": "e41891ba700d9c26d08a00d13d8da6a617ea4a42d5808c7a07d3d8f43607dc46"
     }
   ]
 }
