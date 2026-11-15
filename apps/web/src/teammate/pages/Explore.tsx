@@ -55,7 +55,7 @@ export function Explore() {
 
   const ufFeature = sel.uf ? states.data?.data.features.find((f) => f.properties.code === sel.uf) : undefined;
   const ufCode = (sigla: string | undefined | null) => states.data?.data.features.find((f) => f.properties.sigla === sigla)?.properties.code ?? '';
-  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }), [withData, states.data]); // eslint-disable-line
+  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }).concat(abroad.map((l) => ({ code: l.id, uf: '', name: l.name, lon: l.centroid[0]!, lat: l.centroid[1]!, href: `#/local?id=${encodeURIComponent(l.id)}` }))), [withData, states.data, located.data]); // eslint-disable-line
   const catalogArea = sel.mun && cidx.index?.status === 'ok' ? cidx.index.areas.find((a) => a.id === sel.mun) : undefined; const catalogName = catalogArea?.name;
   const catalogBox: BBox | null = catalogArea?.bbox ? [[catalogArea.bbox[0], catalogArea.bbox[1]], [catalogArea.bbox[2], catalogArea.bbox[3]]] : null;
   const munFeature = sel.mun && mun.uf === sel.uf ? mun.fc?.features.find((f) => f.properties.code === sel.mun) : undefined;

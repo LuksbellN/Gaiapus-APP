@@ -572,6 +572,7 @@ const m: DeepPartial<Messages> = {
     },
   },
   location: {
+    markerOpen: "{name} : données disponibles. Ouvrir",
     fieldNote: "Fenêtre de culture illustrative ; ce n’est pas une limite de propriété.", nextWithData: "{continent} · noyau de données mondial disponible dans cette version.",
     title: "Centre de données du lieu",
     subtitle: "Le même jeu de données pour tout lieu publié, au Brésil ou aux États-Unis : météo quotidienne, eau du sol, NDVI de la zone délimitée de la parcelle et prévisions à 10 jours.",

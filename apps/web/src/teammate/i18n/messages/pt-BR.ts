@@ -572,6 +572,7 @@ const ptBR = {
     },
   },
   location: {
+    markerOpen: "{name}: dados disponíveis. Abrir",
     fieldNote: "Recorte ilustrativo de lavoura; não é limite de propriedade.", nextWithData: "{continent} · com núcleo global de dados nesta versão.",
     title: 'Núcleo de dados do lugar', subtitle: 'O mesmo conjunto de dados para qualquer lugar publicado, no Brasil ou nos EUA: clima diário, água no solo, NDVI do recorte e previsão de 10 dias.',
     country: { BR: 'Brasil', US: 'Estados Unidos' }, code: 'Código oficial {scheme} {code}',

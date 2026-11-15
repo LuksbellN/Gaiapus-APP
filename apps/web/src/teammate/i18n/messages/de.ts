@@ -572,6 +572,7 @@ const m: DeepPartial<Messages> = {
     },
   },
   location: {
+    markerOpen: "{name}: Daten verfügbar. Öffnen",
     fieldNote: "Illustrativer Ackerausschnitt; keine Grundstücksgrenze.", nextWithData: "{continent} · globaler Datenkern in dieser Version verfügbar.",
     title: "Datenzentrale für den Ort",
     subtitle: "Derselbe Datensatz für jeden veröffentlichten Ort in Brasilien oder den USA: tägliches Wetter, Bodenwasser, NDVI des abgegrenzten Schlagbereichs und eine 10-Tage-Vorhersage.",

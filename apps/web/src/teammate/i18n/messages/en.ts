@@ -572,6 +572,7 @@ const m: DeepPartial<Messages> = {
     },
   },
   location: {
+    markerOpen: "{name}: data available. Open",
     fieldNote: "Illustrative crop window; not a property boundary.", nextWithData: "{continent} · global data core available in this version.",
     title: "Location data hub",
     subtitle: "The same dataset for any published location, in Brazil or the US: daily weather, soil water, NDVI for the field boundary and a 10-day forecast.",

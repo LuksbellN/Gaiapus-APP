@@ -7,7 +7,7 @@ import { reducedMotion } from '../ui';
 import { translate, useI18n } from '../i18n';
 
 import type { MapHandle, MapLayers, Selection } from './types';
-type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; placeBox?: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
+type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; placeBox?: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number; href?: string }[] };
 
 const SOUTH_AMERICA: BBox = [[-92, -52], [-22, 16]];
 const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
@@ -111,7 +111,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     const m = mapRef.current; if (!m) return; markerEls.current.forEach((x) => x.remove()); markerEls.current = [];
     if (p.selection.mun) return;
     // Alternate label side so nearby places (Sorriso, Uberlândia) do not overlap at world zoom.
-    p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
+    p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', translate('location.markerOpen', { name: mk.name })); b.onclick = (e) => { e.stopPropagation(); if (mk.href) window.location.hash = mk.href; else latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
   }, [p.markers, p.selection.mun]);
   return <div ref={el} className="explore__map" data-tour="explore-map" role="application" aria-label={t('explore.map.label')} />;
 });

@@ -572,6 +572,7 @@ const m: DeepPartial<Messages> = {
     },
   },
   location: {
+    markerOpen: "{name}: datos disponibles. Abrir",
     fieldNote: "Recorte ilustrativo de cultivo; no es un límite de propiedad.", nextWithData: "{continent} · con núcleo global de datos en esta versión.",
     title: "Centro de datos del lugar",
     subtitle: "El mismo conjunto de datos para cualquier lugar publicado, en Brasil o en Estados Unidos: clima diario, agua del suelo, NDVI del área delimitada de la parcela y pronóstico de 10 días.",
