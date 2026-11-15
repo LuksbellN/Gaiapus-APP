@@ -12,6 +12,8 @@ import { ModelTest } from '../ui/SealedTest';
 import { useActiveContext } from '../App';
 import { isKnownPlace, placeName, plotElsewhere, resolvePlace, SORRISO, type ResolvedPlace } from '../context';
 import { ScopeStrip } from '../ui/ScopeStrip';
+import { LinkBtn } from '../ui';
+import { locations, locationIdOf } from '../adapters/locations';
 import { placesWithData, useCoverageIndex } from '../geo/coverageIndex';
 import { useI18n } from '../i18n';
 
@@ -23,12 +25,13 @@ export function Municipality() {
   const [params, setParams] = useSearchParams(); const ctx = useActiveContext(); const idx = useCoverageIndex();
   // Municipalities with data come from the catalogue; Sorriso and Uberlândia stay available while it loads.
   const placeList = useMemo(() => { const out: [string, string][] = [[SORRISO, placeName(SORRISO)], ['3170206', placeName('3170206')]]; for (const p of placesWithData(idx.index)) if (!out.some(([c]) => c === p.municipality.id)) out.push([p.municipality.id, placeName(p.municipality.id)]); return out; }, [idx.index]); const places = Object.fromEntries(placeList);
-  const resolved = resolvePlace(params, ctx); const place: ResolvedPlace = places[resolved.code] || isKnownPlace(resolved.code) ? resolved : { code: SORRISO, name: placeName(SORRISO), origin: 'demo' }; const code = place.code; const elsewhere = plotElsewhere(place, ctx); const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((x) => x === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const setTab = (x: Tab) => setParams({ mun: code, ...(x === 'clima' ? {} : { aba: x }), ...(x === 'safra' ? keep : {}) });
+  const resolved = resolvePlace(params, ctx); const place: ResolvedPlace = places[resolved.code] || isKnownPlace(resolved.code) ? resolved : { code: SORRISO, name: placeName(SORRISO), origin: 'demo' }; const code = place.code; const elsewhere = plotElsewhere(place, ctx); const published = useAsync((sg) => locations.list(sg).catch(() => []), []); const coreId = (published.data ?? []).find((l) => l.id === locationIdOf(code))?.id ?? null; const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((x) => x === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const setTab = (x: Tab) => setParams({ mun: code, ...(x === 'clima' ? {} : { aba: x }), ...(x === 'safra' ? keep : {}) });
   return (
     <div className="page">
       <div className="page-head"><div className="stack-2"><h1>{placeName(code)}</h1><p>{t('municipality.subtitle', { code })}</p></div>
         <Seg legend={t('municipality.choose')} name="mun" value={code} onChange={(v) => setParams({ mun: v, ...(tab === 'clima' ? {} : { aba: tab }), ...(tab === 'safra' ? keep : {}) })} options={placeList.map(([value, label]) => ({ value, label }))} /></div>
       <ScopeStrip place={place} elsewhere={elsewhere} />
+      {coreId && <div className="row"><LinkBtn sm to={`/local?id=${encodeURIComponent(coreId)}`}>{t('location.nav')}</LinkBtn></div>}
       <div data-tour="mun-tabs"><Tabs label={t('municipality.tabs')} value={tab} onChange={setTab} tabs={[{ id: 'clima', label: t('municipality.tab.clima'), icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: t('municipality.tab.agua'), icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: t('municipality.tab.safra'), icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: t('municipality.tab.imagem'), icon: <Satellite size={18} aria-hidden /> }]} /></div>
       <TabPanel id={tab} key={code + tab}>{tab === 'clima' ? <Clima code={code} /> : tab === 'agua' ? <Agua code={code} /> : tab === 'safra' ? <Safra code={code} /> : <Imagem code={code} />}</TabPanel>
     </div>

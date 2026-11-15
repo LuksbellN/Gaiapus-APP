@@ -216,6 +216,12 @@
       "date": "2026-11-15",
       "reason": "sonar: explicit button types, dialog backdrop listener, handled promises",
       "sha256": "9b8adced62ed206159361023f3a141d97019da5180e4dfd4929a96161fdc8e00"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "location core screen, US in Explore, link from Municipality",
+      "sha256": "3c5c1dec337a7a99c1d37b93df43ff04e1df91a9a4b342c0d430c30991685993"
     }
   ]
 }

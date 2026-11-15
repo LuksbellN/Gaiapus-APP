@@ -512,7 +512,7 @@ const ptBR = {
     announce: "Passo {n} de {total}: {title}",
     names: { explore: "Explorar", overview: "Visão geral", municipality: "Município", plan: "Planejar", sim: "Simulador", simUnavailable: "Simulador sem série", fs: "Field Shift", farm: "Propriedades e registros", mon: "Sondas e alertas", acc: "Conta" },
     explore: {
-      s1: { title: "Busque qualquer lugar", body: "Digite um país, estado, município ou código do IBGE. Funciona com nomes em vários idiomas." },
+      s1: { title: "Busque qualquer lugar", body: "Digite um país, estado, município ou código oficial (IBGE no Brasil). Funciona com nomes em vários idiomas. Nos EUA, os condados com dados aparecem em “Regiões com dados”." },
       s2: { title: "Qualquer país pode ser escolhido", body: "Clique no mapa ou na lista. Todos os países ficam navegáveis, mesmo sem análise." },
       s3: { title: "O que existe aqui", body: "Cada lugar mostra quais dados existem, de que período e de que tipo. Se não houver análise, dizemos por quê." },
       s4: { title: "Regiões com dados", body: "Aqui ficam os lugares com análise nesta versão, como Sorriso e Uberlândia. Abrir um deles é sempre escolha sua." },
@@ -570,6 +570,26 @@ const ptBR = {
       s2: { title: "Exportar", body: "Baixe seus dados em um arquivo. Nome e e-mail não entram." },
       s3: { title: "Pesquisa é opcional", body: "Autorizar o uso em pesquisa é separado e pode ser revogado. Nesta versão nada é enviado, com ou sem autorização." },
     },
+  },
+  location: {
+    fieldNote: "Recorte ilustrativo de lavoura; não é limite de propriedade.", nextWithData: "{continent} · com núcleo global de dados nesta versão.",
+    title: 'Núcleo de dados do lugar', subtitle: 'O mesmo conjunto de dados para qualquer lugar publicado, no Brasil ou nos EUA: clima diário, água no solo, NDVI do recorte e previsão de 10 dias.',
+    country: { BR: 'Brasil', US: 'Estados Unidos' }, code: 'Código oficial {scheme} {code}',
+    scopeData: 'Dados de {place}', field: 'recorte de lavoura de {ha} ha', noField: 'sem recorte de lavoura',
+    hypotheses: 'Hipóteses: solo com {soil} mm de água disponível; calendário fixo, não observado.', calendar: 'Fonte do calendário: {source}.',
+    crop: { soy: 'Soja', maize1: 'Milho (safra principal)', maize2: 'Milho 2ª safra', wheat_winter: 'Trigo de inverno' },
+    unavailable: 'Camada indisponível.',
+    reason: {
+      no_field_imagery: 'Não há recorte de lavoura com imagem para este lugar.', too_few_clear_scenes: 'Menos de três datas sem nuvem na safra; o NDVI não é estimado.',
+      forecast_not_in_publication: 'Esta publicação não traz previsão para este lugar.', crop_calendar_unknown: 'Sem calendário de semeadura com fonte para esta cultura.',
+      out_of_season: 'Não há cultura no campo na data de emissão; a previsão de água só é calculada durante a safra.', source_unavailable: 'A fonte de dados não respondeu ou tinha dias faltando; nada foi preenchido.',
+    },
+    weather: { title: 'Clima', rainYear: 'Chuva média por ano', et0Year: 'Demanda da atmosfera (ET0) por ano', period: 'Período', rainMonth: 'Chuva no mês (mm)', et0Month: 'ET0 no mês (mm)', chart: 'Chuva e ET0 mensais dos últimos três anos publicados' },
+    water: { title: 'Água no solo por safra', season: 'Safra', sowing: 'Semeadura → colheita', stressDays: 'Dias abaixo do ideal', deficit: 'Déficit acumulado', reserve: 'Reserva (% da capacidade)', chart: 'Reserva de água no solo e chuva diária, safra {season}', parameters: 'parâmetros FAO-56 “{set}”, reserva inicial {initial}' },
+    ndvi: { title: 'Verde da lavoura (NDVI)', summary: '{clear} de {total} imagens sem nuvem entre {start} e {end}. Imagens com nuvem não são estimadas.', chart: 'NDVI do recorte e chuva diária' },
+    forecast: { title: 'Previsão de água — 10 dias', issued: 'Emitida em {date} · {crop}, safra {season}' },
+    provenance: 'De onde vêm estes dados', generated: 'Gerado em {date} por {generator}.', openMunicipality: 'Abrir a página do município',
+    nav: 'Ver núcleo de dados', usTitle: 'Estados Unidos', usNote: 'Núcleo global: clima, água no solo, NDVI e previsão. Sem estimativa de rendimento nos EUA nesta versão.',
   },
 };
 export default ptBR;
