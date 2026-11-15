@@ -1,6 +1,6 @@
 // Declarative tutorial scripts (Docs/ux-preservacao/04, section 6). Anchors are data-tour attributes, never
 // translated text or CSS selectors. Texts live in the catalogues under tour.<name>.s<n>.
-export type TourName = 'explore' | 'overview' | 'municipality' | 'plan' | 'sim' | 'simUnavailable' | 'fs' | 'farm' | 'mon' | 'acc';
+export type TourName = 'explore' | 'overview' | 'municipality' | 'plan' | 'planning' | 'sim' | 'simUnavailable' | 'fs' | 'farm' | 'mon' | 'acc';
 export type TourStep = {
   /** First anchor found is highlighted (e.g. map, or the country list without WebGL). */
   targets: string[];
@@ -20,6 +20,7 @@ export const TOURS: Tour[] = [
   { id: 'overview@1', name: 'overview', path: '/visao-geral', steps: [s('scope-strip'), s('overview-alert'), s('overview-days'), s('overview-actions')] },
   { id: 'municipality@1', name: 'municipality', path: '/municipio', steps: [s('mun-tabs'), s('mun-crop', { query: { aba: 'safra' } }), s('yield-card', { query: { aba: 'safra' } }), s('ndvi-chart', { query: { aba: 'imagem' } })] },
   { id: 'plan@1', name: 'plan', path: '/planejar', steps: [s('plan-place'), s('plan-form'), s('plan-dates'), s('plan-eco'), s('plan-save')] },
+  { id: 'planning@1', name: 'planning', path: '/simulador', steps: [s('plan-where'), s('plan-member', { skipWhenMissing: true }), s('plan-timeline', { skipWhenMissing: true }), s('plan-compare', { skipWhenMissing: true })] },
   { id: 'simulator@1', name: 'sim', path: '/simulador', steps: [s('sim-mode'), s('sim-year', { skipWhenMissing: true }), s('sim-timeline'), s('sim-ab'), s('sim-limits')] },
   { id: 'simulator-unavailable@1', name: 'simUnavailable', path: '/simulador', steps: [s('sim-missing')] },
   { id: 'fieldShift@1', name: 'fs', path: '/field-shift', steps: [s('fs-question'), s('fs-year'), s('fs-table'), s('fs-limits')] },
@@ -32,6 +33,6 @@ export const tourById = (id: string) => TOURS.find((t) => t.id === id);
 
 /** Tour offered on a screen. The simulator has a one-step tour for the "no compatible series" state. */
 export function tourForPath(pathname: string, doc: Document = document): Tour | undefined {
-  if (pathname === '/simulador') return tourById(doc.querySelector('[data-tour="sim-missing"]') ? 'simulator-unavailable@1' : 'simulator@1');
-  return TOURS.find((t) => t.path === pathname && t.id !== 'simulator-unavailable@1');
+  if (pathname === '/simulador') return tourById(doc.querySelector('[data-tour="plan-where"]') ? 'planning@1' : doc.querySelector('[data-tour="sim-missing"]') ? 'simulator-unavailable@1' : 'simulator@1');
+  return TOURS.find((t) => t.path === pathname && t.id !== 'simulator-unavailable@1' && t.id !== 'planning@1');
 }

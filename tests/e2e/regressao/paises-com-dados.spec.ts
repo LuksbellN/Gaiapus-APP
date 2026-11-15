@@ -1,6 +1,49 @@
 // Países com dados ficam em destaque e no topo da lista do mundo, derivados dos catálogos (Brasil e núcleos publicados no exterior).
 import { test, expect } from '../helpers';
 
+test('no celular os dois países com dados cabem no painel ao abrir o atalho', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/explorar?dados=1&semwebgl=1');
+  const countries = page.getByRole('list', { name: 'Países', exact: true });
+  await expect(countries.getByRole('listitem')).toHaveCount(2);
+  await expect.poll(() => countries.evaluate((list) => {
+    const panel = list.closest('.explore__panel-body')!.getBoundingClientRect();
+    const rows = Array.from(list.children).map((row) => row.getBoundingClientRect());
+    return rows.every((row) => row.top >= panel.top && row.bottom <= panel.bottom);
+  })).toBe(true);
+});
+
+test('regiões com dados começa pelos países e mantém o padrão visual das regiões', async ({ page }) => {
+  await page.goto('/#/explorar?pais=ARG&semwebgl=1');
+  await page.getByRole('button', { name: 'Ver regiões com dados', exact: true }).click();
+  await expect(page.locator('.crumbs [aria-current]')).toHaveText('Mundo');
+  const countries = page.getByRole('list', { name: 'Países', exact: true });
+  await expect(countries.getByRole('listitem')).toHaveCount(2);
+  await expect(countries).toContainText('Brasil');
+  await expect(countries).toContainText('Estados Unidos');
+  await expect(page.getByTestId('abroad-list')).toHaveCount(0);
+  await countries.getByRole('button', { name: /Brasil/ }).click();
+  const brazilianRegion = page.getByTestId('with-data').getByRole('button', { name: /Sorriso/ });
+  await expect(brazilianRegion).toBeVisible();
+  await expect(page.getByTestId('with-data')).not.toContainText('Story County');
+  const stylesOf = (element: HTMLElement) => {
+    const style = getComputedStyle(element);
+    return { display: style.display, padding: style.padding, minHeight: style.minHeight, color: style.color, textDecoration: style.textDecorationLine };
+  };
+  const brazilianStyle = await brazilianRegion.evaluate(stylesOf);
+  await page.getByRole('button', { name: 'Mundo', exact: true }).click();
+  await countries.getByRole('button', { name: /Estados Unidos/ }).click();
+  const county = page.getByTestId('abroad-list').getByRole('link', { name: /Story County/ });
+  await expect(county).toBeVisible();
+  expect(await county.evaluate(stylesOf)).toEqual(brazilianStyle);
+  await expect(county).toHaveAttribute('href', '#/municipio?id=US%3Afips%3A19169');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(county).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  await county.click();
+  await expect(page).toHaveURL(/municipio\?id=US%3Afips%3A19169/);
+});
+
 test('Brasil e Estados Unidos aparecem no topo com o selo "Com dados" e os estados com dados', async ({ page }) => {
   await page.goto('/#/explorar');
   const list = page.getByRole('list', { name: /Países/i });

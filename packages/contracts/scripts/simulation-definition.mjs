@@ -14,7 +14,7 @@ export function addSimulationDefs(defs, h) {
   defs.SimulationCapabilityStatus = en('ready', 'research', 'needs_input', 'queued', 'missing_data', 'out_of_domain', 'unsupported');
   defs.SimulationReason = en('insufficient_history', 'unsupported_crop_engine', 'unknown_yield_lag', 'model_out_of_domain', 'model_not_validated_for_planning',
     'source_unavailable', 'invalid_calendar', 'insufficient_soil_inputs', 'flooded_system_not_represented', 'perennial_engine_missing',
-    'season_already_started_without_observations', 'unsupported');
+    'season_already_started_without_observations', 'post_harvest_no_daily_series', 'unsupported');
   defs.SimulationResearchStatus = en('research_confirmed', 'gain_not_confirmed', 'reference_selected', 'underpowered', 'not_executed', 'not_evaluated');
   defs.SimulationSeasonPosition = en('pre_season', 'in_season_partial', 'post_cutoff', 'post_harvest_pre_release');
   defs.SimulationOutputMode = en('simulation_conditional_on_historical_weather', 'in_season_forecast');
@@ -25,23 +25,28 @@ export function addSimulationDefs(defs, h) {
   defs.SimulationCapability = obj({
     crop_id: text, harvest_year: year, status: ref('SimulationCapabilityStatus'), reason_code: nullable(ref('SimulationReason')),
     run_ids: arr(ref('SimulationRunKey')), water_balance: { const: 'physical_experimental' }, yield: text,
+    // status/reason_code/run_ids describe the daily simulation; a yield result may exist without one (post-harvest, no observed ET0).
+    yield_result: ref('SimulationYield'),
   }, ['crop_id', 'harvest_year', 'status', 'reason_code', 'run_ids']);
   defs.SimulationPlaceCapabilities = obj({
     location_id: ref('LocationId'), name: text, state_code: text, history_years: integer(0), observed_until: nullable(date), capabilities: arr(ref('SimulationCapability')),
   });
+  // Present when more than one publication source is configured: a source that is down never hides another one.
+  defs.SimulationSourceStatus = obj({ source: text, status: en('ok', 'unavailable'), shadowed_places: integer(1) }, ['source', 'status']);
   defs.SimulationCatalog = obj({
     contract: { const: 'future-simulation-capabilities.v1' }, as_of: instant, harvest_years: arr(year), places: arr(ref('SimulationPlaceCapabilities')),
-    inputs: loose('Reproduction inputs of the publication (places, seed, member limit)'),
-  });
+    inputs: loose('Reproduction inputs of the publication (places, seed, member limit)'), source_status: arr(ref('SimulationSourceStatus')),
+  }, ['contract', 'as_of', 'harvest_years', 'places', 'inputs']);
 
   defs.SimulationArtifact = obj({ kind: en('run', 'series', 'members'), path: str(512), sha256: sha, bytes: integer(1), compression: nullable(en('gzip')) });
   defs.SimulationPublication = obj({
     run_id: ref('SimulationRunKey'), location_id: ref('LocationId'), place_name: text, plan_id: text, crops: arr(text), harvest_years: arr(year),
     as_of: instant, issued_at: instant, visibility: en('public_regional', 'private'), publication_version: text, current: { type: 'boolean' },
     artifacts: arr(ref('SimulationArtifact')),
-    measured: obj({ seconds: number, peak_python_mib: number, series_bytes_raw: integer(1), series_bytes_gzip: integer(1), members: integer(1), days: integer(1), note: str(1000) }),
+    // seconds / peak_python_mib: null = not measured for this run (batch-level figures live in the publication manifest); never zero.
+    measured: obj({ seconds: nullable({ type: 'number', minimum: 0 }), peak_python_mib: nullable({ type: 'number', minimum: 0 }), series_bytes_raw: integer(1), series_bytes_gzip: integer(1), members: integer(1), days: integer(1), note: str(1000) }),
   });
-  defs.SimulationPublicationList = obj({ as_of: instant, items: arr(ref('SimulationPublication')) });
+  defs.SimulationPublicationList = obj({ as_of: instant, items: arr(ref('SimulationPublication')), source_status: arr(ref('SimulationSourceStatus')) }, ['as_of', 'items']);
 
   defs.SimulationYield = {
     oneOf: [

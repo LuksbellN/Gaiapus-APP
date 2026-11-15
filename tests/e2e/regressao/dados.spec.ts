@@ -62,7 +62,7 @@ test.describe('RT-08 culturas e capacidades', () => {
     await expect(page).toHaveURL(/cultura=coffee_arabica/);
     await expect(page.getByTestId('safra')).toHaveAttribute('data-crop', 'coffee_arabica');
     await expect(page.getByTestId('capabilities').locator('[data-cap=cena3d]')).toHaveAttribute('data-status', 'sem_suporte');
-    await page.goto('/#/simulador?cultura=coffee_arabica&mun=3170206');
+    await page.goto('/#/simulador?modo=historico&cultura=coffee_arabica&mun=3170206');
     await expect(page.getByTestId('sim-unavailable')).toBeVisible();
     await expect(page.locator('canvas')).toHaveCount(0);
     await page.getByLabel('Implantação de cafezal novo').check();
@@ -80,7 +80,7 @@ test.describe('RT-08 culturas e capacidades', () => {
 test.describe('RT-11 Field Shift', () => {
   test('comparação completa e rendimento não avaliado', async ({ page }) => {
     await page.goto('/#/field-shift');
-    await expect(page.getByRole('columnheader', { name: 'A · Pousio' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'A · Pousio' }).first()).toBeVisible();
     await expect(page.getByText('Não avaliado — indisponível')).toBeVisible();
     await expect(page.getByText(/O benefício depende de uma hipótese/)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Sensibilidade às hipóteses' })).toBeVisible();

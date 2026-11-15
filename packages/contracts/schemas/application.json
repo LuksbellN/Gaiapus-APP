@@ -3968,6 +3968,7 @@
         "flooded_system_not_represented",
         "perennial_engine_missing",
         "season_already_started_without_observations",
+        "post_harvest_no_daily_series",
         "unsupported"
       ]
     },
@@ -4069,6 +4070,9 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256
+        },
+        "yield_result": {
+          "$ref": "#/$defs/SimulationYield"
         }
       },
       "required": [
@@ -4127,6 +4131,31 @@
         "capabilities"
       ]
     },
+    "SimulationSourceStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "unavailable"
+          ]
+        },
+        "shadowed_places": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "source",
+        "status"
+      ]
+    },
     "SimulationCatalog": {
       "type": "object",
       "additionalProperties": false,
@@ -4155,6 +4184,12 @@
         "inputs": {
           "type": "object",
           "description": "Reproduction inputs of the publication (places, seed, member limit)"
+        },
+        "source_status": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SimulationSourceStatus"
+          }
         }
       },
       "required": [
@@ -4278,10 +4313,26 @@
           "additionalProperties": false,
           "properties": {
             "seconds": {
-              "type": "number"
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "peak_python_mib": {
-              "type": "number"
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "series_bytes_raw": {
               "type": "integer",
@@ -4343,6 +4394,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/SimulationPublication"
+          }
+        },
+        "source_status": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SimulationSourceStatus"
           }
         }
       },
