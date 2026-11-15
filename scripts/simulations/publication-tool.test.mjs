@@ -148,3 +148,7 @@ test('numbers that reach SQL must be integers: a tampered index is refused befor
     assert.throws(() => loadPublication(dir), /Unexpected artifact in index/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('the batch key of the fixture is stable (ordering is code-unit, never locale-dependent)', () => {
+  assert.equal(loadPublication(fixture).batchKey, 'us-8d20969f4ff5f704');
+});

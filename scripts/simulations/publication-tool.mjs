@@ -23,6 +23,8 @@ const LOCATION = /^(BR:ibge:[0-9]{7}|US:fips:[0-9]{5})$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const SECRETS = [/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./, /sb_secret_[A-Za-z0-9_-]{8,}/, /service_role/i, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}\b/];
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
+/** UTF-16 code-unit order, identical to Array#sort's default: the batch key depends on it, so it must not be locale-dependent. */
+export const byCodeUnit = (a, b) => (a < b ? -1 : Number(a > b));
 
 function child(root, relative) {
   const base = resolve(root), full = resolve(base, relative);
@@ -48,7 +50,7 @@ export function loadPublication(dir) {
   }
   // The batch identity is the content: catalog, index and every artifact hash. Changing any byte changes the key.
   const lines = [`catalog.json ${sha256(catalogBytes)} ${catalogBytes.length}`, `index.json ${sha256(indexBytes)} ${indexBytes.length}`,
-    ...artifacts.map(a => `${a.path} ${a.sha256} ${a.bytes}`).sort()];
+    ...artifacts.map(a => `${a.path} ${a.sha256} ${a.bytes}`).sort(byCodeUnit)];
   const manifestSha = sha256(Buffer.from(lines.join('\n') + '\n', 'utf8'));
   const batchKey = `${scope.toLowerCase()}-${manifestSha.slice(0, 16)}`;
   const prefix = `${scope.toLowerCase()}/batches/${batchKey}`;
@@ -101,7 +103,7 @@ export function validate(pub, validators) {
   for (const p of pub.index.publications) {
     check('SimulationPublication', p, p.run_id);
     if (Date.parse(p.as_of) > Date.parse(p.issued_at)) note(p.run_id, 'as_of is after issued_at');
-    const key = `${p.location_id}|${p.plan_id}|${[...p.harvest_years].sort().join(',')}`;
+    const key = `${p.location_id}|${p.plan_id}|${[...p.harvest_years].sort((a, b) => a - b).join(',')}`;
     if (keys.has(key)) note(p.run_id, `two publications for ${key}`);
     keys.add(key);
     if (p.visibility !== 'public_regional') note(p.run_id, 'only public regional publications belong in the public bucket');

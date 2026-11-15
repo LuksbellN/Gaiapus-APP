@@ -29,6 +29,8 @@ export interface PublicationSource {
 
 export const ARTIFACT_PATH = /^runs\/sim_[0-9a-f]{24}\/[a-z.]+$/;
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+/** Latest ISO-8601 instant (UTC strings with the same format compare correctly in code-unit order). */
+const latest = (instants: string[]) => instants.reduce<string | undefined>((max, x) => (max === undefined || x > max ? x : max), undefined);
 
 export class LocalPublicationSource implements PublicationSource {
   private loaded: { index: Index; catalog: Catalog } | null = null;
@@ -107,7 +109,7 @@ export class PublicationStore {
     const single = loaded.length === 1 ? loaded[0]!.catalog : null;
     return {
       contract: 'future-simulation-capabilities.v1' as const,
-      as_of: loaded.map(l => l.catalog.as_of).sort().at(-1) ?? new Date(0).toISOString(),
+      as_of: latest(loaded.map(l => l.catalog.as_of)) ?? new Date(0).toISOString(),
       harvest_years: [...new Set(loaded.flatMap(l => l.catalog.harvest_years))].sort((a, b) => a - b),
       places,
       inputs: single ? single.inputs : { sources: Object.fromEntries(loaded.map(l => [l.source.id, l.catalog.inputs])) },
@@ -120,7 +122,7 @@ export class PublicationStore {
     const year = query.harvest_year ? Number(query.harvest_year) : null;
     const items = loaded.flatMap(l => l.index.publications).filter(p => (!query.location_id || query.location_id === p.location_id)
       && (!query.crop_id || p.crops.includes(query.crop_id)) && (year === null || p.harvest_years.includes(year)));
-    return { as_of: loaded.map(l => l.index.as_of).sort().at(-1) ?? new Date(0).toISOString(), items, ...(this.sources.length > 1 ? { source_status: status } : {}) };
+    return { as_of: latest(loaded.map(l => l.index.as_of)) ?? new Date(0).toISOString(), items, ...(this.sources.length > 1 ? { source_status: status } : {}) };
   }
 
   private async find(id: string): Promise<{ source: PublicationSource; publication: Publication }> {
