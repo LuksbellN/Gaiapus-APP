@@ -444,6 +444,12 @@
       "date": "2026-11-15",
       "reason": "Visual refresh 2026-11-15: light theme 'Campo claro / verde mineral' (tokens, states, focus, maps, charts, scene) and organ-level crop scenes with the demonstration board",
       "sha256": "2be54fe0a0598766c4b255e30e25bc2a0f216f3c5591004d16f14130b48f07fd"
+    },
+    {
+      "file": "sim/Field3D.tsx",
+      "date": "2026-11-15",
+      "reason": "Visual refresh 2026-11-15: field camera framing, software-renderer level and caption text",
+      "sha256": "1385eed49ae54da043cbbdab02c1ca892d3a4b02afc26641d4fd0c0b59412210"
     }
   ]
 }

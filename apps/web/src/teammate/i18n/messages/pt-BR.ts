@@ -298,7 +298,7 @@ const ptBR = {
     coffeeNoteTitle: 'Café.', coffeeNote: 'Não há série diária de café no pacote. Acompanhar um cafezal por três meses exigirá espécie, idade, poda e histórico; a primeira produção segue parâmetros de cultura perene.',
     loading3d: 'Carregando o campo 3D…', no3d: 'Sem conexão para baixar a vista 3D; mostrando a vista 2D.',
     fieldLabel: 'Campo ilustrativo em {date}: {land}, fase {stage}, reserva em {reserve}.', fieldKeys: 'Setas giram a vista; + e − aproximam.',
-    caption: 'Ilustração. As plantas seguem o calendário de fases da simulação, não o estado medido de um talhão. A cor do solo acompanha a reserva de água do modelo.',
+    caption: 'Ilustração. As plantas seguem as fases da simulação, não o estado medido de um talhão. Cor do solo: reserva de água do modelo.',
     captionFixedPose: 'Esta janela não traz o início e o fim da fase: a planta fica em uma pose fixa da fase.', caption2d: 'Vista 2D (sem WebGL), com {reserve} da reserva de água do modelo.',
     noPlant: 'Esta cena ainda não tem planta ilustrativa para esta cultura. O solo e os números são os da simulação.', fieldCloseUp: 'Ver as plantas de perto', fieldWide: 'Ver o talhão inteiro',
     view: { legend: 'Vista', field: 'Talhão', profile: 'Perfil do solo' },

@@ -36,7 +36,7 @@ export const MAP_PALETTE: Record<Theme, MapPalette> = {
   // Daytime map: opaque fills (no alpha stacking over light land), contours carry the information.
   light: {
     space: '#F2F6F3', ocean: '#DCEBF0', land: '#E8EDDF', landLine: '#657A68', brazil: '#D3E1C9', brazilContext: '#E8EDDF', stateLine: '#657A68', munLine: '#516B5B',
-    covered: { color: '#B7D6E2', opacity: 1 }, selectedFill: { color: '#B9D6C1', opacity: 1 }, munSelectedFill: { color: '#B9D6C1', opacity: 1 },
+    covered: { color: '#B7D6E2', opacity: 1 }, selectedFill: { color: '#CFE7D9', opacity: 1 }, munSelectedFill: { color: '#B9D6C1', opacity: 1 },
     selection: '#176B4B', munSelection: '#163C2D', label: '#163C2D', labelHalo: '#FFFFFF', here: '#146B8A', hereRing: '#FFFFFF', fieldLine: '#805700', fieldLineCasing: '#FFFFFF',
     plot: { color: '#176B4B', opacity: 0.2 }, plotLine: '#176B4B', plotSelected: '#163C2D', draft: '#805700',
   },

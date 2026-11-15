@@ -115,6 +115,20 @@ describe('determinism and budget', () => {
     expect(tris(brachiariaPlan('living', 0, 'field'), 'field')).toBeLessThanOrEqual(300);
     expect(tris(brachiariaPlan('living', 0, 'far'), 'far')).toBeLessThanOrEqual(120);
   });
+  it('the whole field stays inside the scene budget (540 slots: 14 at the detail level, 526 at the field or far level)', () => {
+    // Same layout as Field3D: the cover adds one tussock per slot with a crop and two per slot when alone.
+    const poses = [annualPose('vegetative', 1), annualPose('reproductive', 0.25), annualPose('reproductive', 0.9), annualPose('maturation', 0.2)];
+    const worst = (build: (v: number, d: Detail) => PlantPlan, detail: Detail) => Math.max(...[0, 1, 2].map((v) => tris(build(v, detail), detail)));
+    const scene = (crop: number[], cover: number[], coverSlots: number) => 14 * (crop[0] + cover[0] * coverSlots) + 526 * (crop[1] + cover[1] * coverSlots);
+    for (const [rest, limit] of [['field', 500_000], ['far', 180_000]] as const) {
+      const grass = (pose: 'understory' | 'living') => [worst((v, d) => brachiariaPlan(pose, v, d), 'detail'), worst((v, d) => brachiariaPlan(pose, v, d), rest)];
+      for (const pose of poses) {
+        const soy = [worst((v, d) => soyPlan(pose, v, d), 'detail'), worst((v, d) => soyPlan(pose, v, d), rest)], maize = [worst((v, d) => maizePlan(pose, v, d), 'detail'), worst((v, d) => maizePlan(pose, v, d), rest)];
+        expect(scene(soy, [0, 0], 0)).toBeLessThanOrEqual(limit); expect(scene(maize, grass('understory'), 1)).toBeLessThanOrEqual(limit);
+      }
+      expect(scene([0, 0], grass('living'), 2)).toBeLessThanOrEqual(limit);
+    }
+  });
   it('an absent organ costs nothing: bare stages build no reproductive triangles', () => {
     const veg = soyPlan(annualPose('vegetative', 0.5), 0, 'field'); expect(veg.filter((x) => REPRODUCTIVE.includes(x.organ))).toEqual([]);
     const g = meshPlan(veg, 'field'); expect(g.getAttribute('color').count).toBe(g.getAttribute('position').count); expect(g.boundingSphere?.radius).toBeGreaterThan(0.1);

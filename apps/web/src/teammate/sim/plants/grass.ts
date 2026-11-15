@@ -22,7 +22,7 @@ export function brachiariaPlan(pose: CoverPose, variant: number, detail: Detail)
     for (let j = 0; j < blades; j++) {
       const t = (j + 1) / blades; const from = add(foot, mul(dir(yaw, Math.PI / 2 - lean), culm * t));
       const length = (0.26 + 0.22 * ((a * 7 + j * 3) % 1)) * scale; const color = j === blades - 1 ? LEAF.light : j === 0 ? LEAF.deep : LEAF.mid;
-      plan.push(blade('leaf', from, yaw + (j - (blades - 1) / 2) * 0.85 + (c - 0.5) * 0.4, 1.15 - lean * 0.6 - j * 0.08, length, 0.026 * Math.sqrt(scale), 1.25 + b * 0.7, 0.25, detail === 'detail' ? 'strap' : 'lance', color));
+      plan.push(blade('leaf', from, yaw + (j - (blades - 1) / 2) * 0.85 + (c - 0.5) * 0.4, 1.15 - lean * 0.6 - j * 0.08, length, 0.026 * Math.sqrt(scale) * (detail === 'detail' ? 1 : detail === 'field' ? 1.25 : 1.7), 1.25 + b * 0.7, 0.25, detail === 'detail' ? 'strap' : 'lance', color));
     }
   }
   return plan;

@@ -29,7 +29,7 @@ export function maizePlan(pose: AnnualPose, variant: number, detail: Detail): Pl
     // The youngest leaves stand upright in the whorl until the tassel is out.
     const young = i >= n - 2 && pose.bloom < 0.5;
     const length = (0.42 + 0.5 * Math.sin(Math.PI * Math.min(1, u * 1.05))) * growth * (young ? 0.72 : 1);
-    const width = Math.min(0.095, length * 0.1 + 0.012);
+    const width = Math.min(0.095, length * 0.1 + 0.012) * (detail === 'detail' ? 1 : detail === 'field' ? 1.15 : 1.4);
     const s = clamp01(pose.senescence * 1.7 - u * 0.7);
     const color = s < 0.5 ? mixHex(u > 0.8 ? LEAF.light : LEAF.mid, LEAF.yellow, s * 2) : mixHex(LEAF.yellow, LEAF.straw, (s - 0.5) * 2);
     const tip = mixHex(color, LEAF.straw, clamp01(pose.senescence * 1.4));

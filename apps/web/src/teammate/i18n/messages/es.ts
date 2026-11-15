@@ -298,7 +298,7 @@ const m: DeepPartial<Messages> = {
     coffeeNoteTitle: 'Café.', coffeeNote: 'No hay una serie diaria de café en el paquete. Dar seguimiento a un cafetal durante tres meses requerirá especie, edad, poda e historial; la primera producción sigue parámetros de cultivo perenne.',
     loading3d: 'Cargando el campo 3D…', no3d: 'Sin conexión para descargar la vista 3D; se muestra la vista 2D.',
     fieldLabel: 'Campo ilustrativo el {date}: {land}, fase {stage}, reserva en {reserve}.', fieldKeys: 'Las flechas giran la vista; + y − ajustan el zoom.',
-    caption: 'Ilustración. Las plantas siguen el calendario de fases de la simulación, no el estado medido de una parcela. El color del suelo sigue la reserva de agua del modelo.',
+    caption: 'Ilustración. Las plantas siguen las fases de la simulación, no el estado medido de una parcela. Color del suelo: reserva de agua del modelo.',
     captionFixedPose: 'Esta ventana no trae el inicio ni el fin de la fase, por eso la planta mantiene una pose fija de la fase.', caption2d: 'Vista 2D (sin WebGL), con {reserve} de la reserva de agua del modelo.',
     noPlant: 'Esta escena aún no tiene planta ilustrativa para este cultivo. El suelo y los números son los de la simulación.', fieldCloseUp: 'Ver las plantas de cerca', fieldWide: 'Ver toda la parcela',
     view: { legend: 'Vista', field: 'Parcela', profile: 'Perfil del suelo' },

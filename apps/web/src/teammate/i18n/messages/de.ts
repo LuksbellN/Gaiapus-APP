@@ -298,7 +298,7 @@ const m: DeepPartial<Messages> = {
     coffeeNoteTitle: 'Kaffee.', coffeeNote: 'Im Paket gibt es keine tägliche Kaffeezeitreihe. Die Beobachtung einer Kaffeeanlage über drei Monate erfordert Art, Alter, Rückschnitt und Vorgeschichte. Die erste Produktion richtet sich nach den Parametern einer Dauerkultur.',
     loading3d: '3D-Feld wird geladen…', no3d: 'Keine Verbindung zum Herunterladen der 3D-Ansicht. Die 2D-Ansicht wird angezeigt.',
     fieldLabel: 'Illustratives Feld am {date} mit {land}, Stadium {stage}, Vorrat bei {reserve}.', fieldKeys: 'Pfeiltasten drehen die Ansicht. + und − steuern den Zoom.',
-    caption: 'Illustration. Die Pflanzen folgen dem Stadienkalender der Simulation und zeigen nicht den gemessenen Zustand eines Schlags. Die Bodenfarbe folgt dem Wasservorrat des Modells.',
+    caption: 'Illustration. Die Pflanzen folgen den Stadien der Simulation, nicht dem gemessenen Zustand eines Schlags. Bodenfarbe: Wasservorrat des Modells.',
     captionFixedPose: 'Dieses Zeitfenster enthält weder Beginn noch Ende des Stadiums, daher bleibt die Pflanze in einer festen Pose des Stadiums.', caption2d: '2D-Ansicht (ohne WebGL), bei {reserve} des modellierten Wasservorrats.',
     noPlant: 'Diese Szene hat für diese Kultur noch keine illustrative Pflanze. Boden und Zahlen stammen aus der Simulation.', fieldCloseUp: 'Pflanzen aus der Nähe ansehen', fieldWide: 'Ganzes Feld ansehen',
     view: { legend: 'Ansicht', field: 'Schlag', profile: 'Bodenprofil' },

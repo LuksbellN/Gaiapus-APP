@@ -46,7 +46,8 @@ export function CropBoard() {
   }, [painter.mod, flat, view, theme, tick]);
   useEffect(() => () => { painter.mod?.disposeBoard(); }, [painter.mod]);
 
-  const heaviest = (row: BoardRow) => row.cards.map((c) => counts[c.id]).filter(Boolean).sort((a, b) => b.detail - a.detail)[0];
+  /** Largest count of each level among the poses of a row (the heaviest pose is not the same at every level). */
+  const heaviest = (row: BoardRow) => { const all = row.cards.map((c) => counts[c.id]).filter(Boolean); return all.length ? { detail: Math.max(...all.map((c) => c.detail)), field: Math.max(...all.map((c) => c.field)), far: Math.max(...all.map((c) => c.far)) } : null; };
   return (
     <section className="card crop-board" aria-labelledby="h-crop-board" data-testid="crop-board" data-mode={flat ? 'flat' : painted ? 'ready' : 'loading'} ref={host}>
       <h2 id="h-crop-board">{t('designPreview.board.title')}</h2>

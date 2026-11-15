@@ -47,11 +47,18 @@ for (const [sizeName, opts] of SIZES) for (const [name, url, detail] of CASES) {
     gl.render = original;
     return { dts: dts.slice(10), renders: renders.slice(10), info: { triangles: gl.info.render.triangles, calls: gl.info.render.calls, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures }, gpu: (() => { const c = gl.getContext(); const e = c.getExtension('WEBGL_debug_renderer_info'); return e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : 'unknown'; })(), dpr: gl.getPixelRatio() };
   });
+  // Day steps: cost of moving the cursor one day (page update + new plant pose), first forward (poses built for the
+  // first time), then back over the same days (poses reused from the cache).
+  const steps = await page.evaluate(async () => {
+    const find = (label) => [...document.querySelectorAll('.transport button')].find((b) => b.getAttribute('aria-label') === label);
+    const raf = () => new Promise((r) => requestAnimationFrame(r)); const run = async (button) => { const out = []; for (let i = 0; i < 40; i++) { const t0 = performance.now(); button.click(); await raf(); await raf(); out.push(performance.now() - t0); } return out; };
+    const forward = await run(find('Avançar 1 dia')); const back = await run(find('Voltar 1 dia')); return { forward, back };
+  });
   // Playback: press play and time the frames while the cursor advances.
   await page.locator('.transport .btn--primary').click();
   const play = await page.evaluate(async () => { const dts = []; let last = performance.now(); for (let i = 0; i < 120; i++) { await new Promise((r) => requestAnimationFrame(r)); const now = performance.now(); dts.push(now - last); last = now; } return dts.slice(10); });
   const row = { case: name, size: sizeName, gpu: orbit.gpu, dpr: orbit.dpr, triangles: orbit.info.triangles, drawCalls: orbit.info.calls, geometries: orbit.info.geometries,
-    renderMs_p50: +pct(orbit.renders, 0.5).toFixed(2), renderMs_p95: +pct(orbit.renders, 0.95).toFixed(2), orbitFrame_p50: +pct(orbit.dts, 0.5).toFixed(2), orbitFrame_p95: +pct(orbit.dts, 0.95).toFixed(2), playFrame_p50: +pct(play, 0.5).toFixed(2), playFrame_p95: +pct(play, 0.95).toFixed(2) };
+    renderMs_p50: +pct(orbit.renders, 0.5).toFixed(2), renderMs_p95: +pct(orbit.renders, 0.95).toFixed(2), orbitFrame_p50: +pct(orbit.dts, 0.5).toFixed(2), orbitFrame_p95: +pct(orbit.dts, 0.95).toFixed(2), stepNew_p50: +pct(steps.forward, 0.5).toFixed(1), stepNew_p95: +pct(steps.forward, 0.95).toFixed(1), stepCached_p50: +pct(steps.back, 0.5).toFixed(1), stepCached_p95: +pct(steps.back, 0.95).toFixed(1), playFrame_p50: +pct(play, 0.5).toFixed(2), playFrame_p95: +pct(play, 0.95).toFixed(2) };
   out.push(row); console.log(JSON.stringify(row));
   await ctx.close();
 }

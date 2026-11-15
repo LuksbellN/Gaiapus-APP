@@ -10,6 +10,8 @@ import { add, blade, blob, clamp01, dir, lerp, mixHex, mul, pod, ramp, tube, typ
 
 export const SOY_HEIGHT_M = 0.92;
 const NODES: Record<Detail, number> = { detail: 13, field: 9, far: 6 };
+/** Fewer leaves at the lighter levels are drawn larger, so the canopy keeps its mass from far away. */
+const LEAF_MASS: Record<Detail, number> = { detail: 1, field: 1.18, far: 1.45 };
 
 /** One compound leaf: petiole and three leaflets (terminal + two laterals). */
 export function trifoliate(plan: PlantPlan, from: V3, yaw: number, petiole: number, length: number, width: number, color: string, detail: Detail, opts: { rise?: number; droop?: number; petioleColor?: string } = {}) {
@@ -50,12 +52,12 @@ export function soyPlan(pose: AnnualPose, variant: number, detail: Detail): Plan
   for (let i = 0; i < shown; i++) {
     const rn = mulberry32(base + 31 * (i + 1)); const jitter = rn(), shedOrder = rn(), podPick = rn(), size0 = rn();
     const u = (i + 1) / (shown + 0.4); const y = h * (0.14 + 0.8 * u); const yaw = twist + i * 2.399 + (jitter - 0.5) * 0.35;
-    const age = clamp01((shown - i) / 2.2); const size = (0.55 + 0.45 * age) * (0.92 + size0 * 0.16);
+    const age = clamp01((shown - i) / 2.2); const size = (0.55 + 0.45 * age) * (0.92 + size0 * 0.16); const blade = size * LEAF_MASS[detail];
     const newest = i === shown - 1 && pose.bloom < 0.5;
     // Leaves fall from the bottom up; the order is fixed per plant so scrubbing back restores the same leaves.
     const shed = (i + shedOrder * 1.4) / (shown + 1.4) < pose.drop * 1.02;
     const color = leafColor(u, newest, pose.senescence);
-    if (!shed) trifoliate(plan, at(y), yaw, 0.15 * size * (1.2 - 0.35 * u), 0.13 * size, 0.086 * size, color, detail, { petioleColor: stemColor });
+    if (!shed) trifoliate(plan, at(y), yaw, 0.15 * size * (1.2 - 0.35 * u), 0.13 * blade, 0.086 * blade, color, detail, { petioleColor: stemColor });
 
     const onBranch = i >= 1 && i <= branches && branchGrowth > 0;
     let branchTip: V3 | null = null;
@@ -66,7 +68,7 @@ export function soyPlan(pose: AnnualPose, variant: number, detail: Detail): Plan
       const leaves = detail === 'detail' ? 3 : detail === 'field' ? 2 : 1;
       for (let k = 0; k < leaves; k++) {
         const t = (k + 1) / leaves; const shedB = (i + k * 0.6 + shedOrder) / (shown + 2) < pose.drop * 1.02;
-        if (!shedB) trifoliate(plan, add(at(y), mul(d, length * t)), byaw + (k % 2 ? 1.3 : -1.1) * (t < 1 ? 1 : 0.2), 0.1 * size, 0.115 * size, 0.076 * size, leafColor(u + 0.1, false, pose.senescence), detail, { petioleColor: stemColor });
+        if (!shedB) trifoliate(plan, add(at(y), mul(d, length * t)), byaw + (k % 2 ? 1.3 : -1.1) * (t < 1 ? 1 : 0.2), 0.1 * size, 0.115 * blade, 0.076 * blade, leafColor(u + 0.1, false, pose.senescence), detail, { petioleColor: stemColor });
       }
     }
 

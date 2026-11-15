@@ -108,7 +108,7 @@ function Soil({ state, scene }: { state: FieldState; scene: SceneTheme }) {
   </group>;
 }
 
-const VIEW = new THREE.Vector3(15.5, 11.5, 23.5), TARGET = new THREE.Vector3(0, -0.4, 0.3), CLOSE = new THREE.Vector3(0.52, 0.3, 1).normalize();
+const VIEW = new THREE.Vector3(15.5, 11.5, 23.5), TARGET = new THREE.Vector3(0, -1.5, 0.3), CLOSE = new THREE.Vector3(0.52, 0.3, 1).normalize();
 const MIN_RADIUS = 1.1, MAX_RADIUS = 42;
 function Controls({ label, detail, height }: { label: string; detail: boolean; height: number }) {
   const { camera, gl, invalidate } = useThree(); const aspect = useThree((st) => st.size.width / Math.max(1, st.size.height)); const narrow = Math.round(Math.min(1.6, aspect) * 4);
@@ -130,7 +130,7 @@ function Controls({ label, detail, height }: { label: string; detail: boolean; h
   // never when the day, the theme or the water changes, so an orbit chosen by the user survives playback.
   const tall = useRef(height); tall.current = height;
   useEffect(() => {
-    const c = controls.current; if (!c) return; const k = Math.max(1, 1.2 / Math.max(0.3, aspect));
+    const c = controls.current; if (!c) return; const k = Math.max(1, 1.55 / Math.max(0.3, aspect));
     if (detail) { const h = Math.max(0.2, tall.current); c.target.set(NEAR_CENTRE.x, h * 0.5, NEAR_CENTRE.z); camera.position.copy(c.target).addScaledVector(CLOSE, (h * 1.9 + 0.9) * k); }
     else { c.target.copy(TARGET); camera.position.copy(VIEW).multiplyScalar(k); }
     c.update(); invalidate();
@@ -148,20 +148,25 @@ function Lights({ scene }: { scene: SceneTheme }) {
 function Redraw({ on }: { on: unknown }) { const { invalidate } = useThree(); useEffect(() => { invalidate(); }, [on, invalidate]); return null; }
 
 type FieldWindow = { __gaiapusField?: THREE.WebGLRenderer };
+function softwareRenderer(gl: THREE.WebGLRenderer): boolean {
+  try { const c = gl.getContext(); const info = c.getExtension('WEBGL_debug_renderer_info'); return !!info && /swiftshader|llvmpipe|software|basic render/i.test(String(c.getParameter(info.UNMASKED_RENDERER_WEBGL))); } catch { return false; }
+}
 export default function Field3D({ state, seed = 7, label, onLost }: { state: FieldState; seed?: number; label: string; onLost?: () => void }) {
   const { t } = useI18n(); const theme = usePrefs((p) => p.theme); const scene = sceneTheme(theme); const compact = useMedia('(max-width: 760px)');
   const [detail, setDetail] = useState(false);
+  // Without GPU acceleration (software rasteriser) every triangle is paid on the CPU: use the light level everywhere.
+  const [software, setSoftware] = useState(false);
   const source = state.phase?.source, fraction = state.phase?.fraction;
   const visual = useMemo(() => resolveFieldVisual(state.land, state.stage, state.phase), [state.land, state.stage, source, fraction]); // eslint-disable-line react-hooks/exhaustive-deps
   const height = visual.crop ? (visual.crop.family === 'maize' ? MAIZE_HEIGHT_M : SOY_HEIGHT_M * SOY_CLUMP) * visual.crop.pose.height : visual.cover ? 0.3 : 0.2;
   const lost = useRef(onLost); lost.current = onLost;
   return (
-    <div className="field3d" style={{ position: 'relative', width: '100%', height: '100%' }} data-testid="field3d" data-crop={visual.crop?.family ?? ''} data-pose={visual.crop?.key ?? ''} data-cover={visual.cover?.pose ?? ''} data-representative={visual.representative} data-detail={detail}>
+    <div className="field3d" style={{ position: 'relative', width: '100%', height: '100%' }} data-testid="field3d" data-crop={visual.crop?.family ?? ''} data-pose={visual.crop?.key ?? ''} data-cover={visual.cover?.pose ?? ''} data-representative={visual.representative} data-detail={detail} data-level={compact || software ? 'far' : 'field'}>
       <Canvas frameloop="demand" dpr={[1, compact ? 1.5 : 1.75]} camera={{ position: [VIEW.x, VIEW.y, VIEW.z], fov: 36, near: 0.1, far: 200 }} gl={{ antialias: true, preserveDrawingBuffer: true }}
-        onCreated={({ gl }) => { (window as unknown as FieldWindow).__gaiapusField = gl; gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.current?.(); }); }}>
+        onCreated={({ gl }) => { (window as unknown as FieldWindow).__gaiapusField = gl; if (softwareRenderer(gl)) setSoftware(true); gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost.current?.(); }); }}>
         <Lights scene={scene} />
         <Soil state={state} scene={scene} />
-        <Plants visual={visual} seed={seed} far={compact} />
+        <Plants visual={visual} seed={seed} far={compact || software} />
         <Controls label={label} detail={detail} height={height} />
         <Redraw on={theme} />
       </Canvas>

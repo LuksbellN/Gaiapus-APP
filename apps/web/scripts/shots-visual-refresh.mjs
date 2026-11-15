@@ -3,6 +3,7 @@
 //   node scripts/shots-visual-refresh.mjs screens <antes|depois>   -> main screens, light + dark, desktop + phone
 //   node scripts/shots-visual-refresh.mjs pause   <antes|depois>   -> the Pause button while playing, both themes
 //   node scripts/shots-visual-refresh.mjs crops   <antes|depois>   -> each crop of the rotation at each stage, field + detail
+//   node scripts/shots-visual-refresh.mjs area    <antes|depois>   -> "Minha área" map with a plot and a stake, both themes
 //   node scripts/shots-visual-refresh.mjs board                    -> demonstration board, desktop + phone
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
@@ -92,6 +93,49 @@ if (what === 'crops') {
     const detail = page.getByTestId('field-detail');
     if (await detail.count()) { await detail.click(); await page.waitForTimeout(900); await stage.screenshot({ path: path.join(out, `cultivo-${name}-detalhe-${size}-${suffix}.jpg`), ...JPG }); }
     console.log(name, size, errors.length ? errors.slice(0, 3) : 'ok');
+    await ctx.close();
+  }
+}
+
+if (what === 'area') {
+  // Same seeding as scripts/shots-sensores.mjs: one property, one plot and one stake through the real forms (guest demo).
+  const COORDS = ['-18.9186, -48.2772', '-18.9186, -48.2712', '-18.9146, -48.2702', '-18.9136, -48.2768'].join(String.fromCharCode(10));
+  for (const [size, opts] of SIZES) {
+    const { ctx, page, errors } = await open(opts, '/#/propriedades?mun=3170206&nome=Uberl%C3%A2ndia&uf=MG', 'light');
+    await page.getByLabel('Nome da propriedade').fill('Sítio Boa Vista');
+    await page.getByRole('button', { name: 'Salvar propriedade' }).click();
+    await page.getByText('Propriedade "Sítio Boa Vista" salva', { exact: false }).waitFor();
+    await page.goto(base + '/#/minha-area?demo=1');
+    await page.getByRole('button', { name: 'Demarcar talhão' }).click();
+    await page.getByLabel('Nome do talhão').fill('Talhão da baixada');
+    await page.getByTestId('plot-coords').fill(COORDS);
+    await page.getByRole('button', { name: 'Aplicar coordenadas' }).click();
+    await page.getByRole('button', { name: 'Salvar talhão' }).click();
+    await page.getByTestId('area-message').waitFor();
+    await page.getByRole('button', { name: 'Adicionar sensor' }).click();
+    await page.getByLabel('Identificador da estaca').fill('c4000110');
+    await page.getByLabel('Código de posse').fill('K7Q2-M9XD');
+    await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.getByLabel('Apelido').fill('Estaca da baixada');
+    await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.getByLabel('Talhão', { exact: true }).selectOption({ label: 'Talhão da baixada' });
+    await page.getByLabel('Latitude').fill('-18.9162');
+    await page.getByLabel('Longitude').fill('-48.2741');
+    await page.getByLabel('Confirmo que este é o ponto onde a estaca está').check();
+    await page.getByRole('button', { name: 'Registrar instalação' }).click();
+    await page.getByRole('button', { name: 'Inserir leitura sintética de exemplo' }).click();
+    await page.getByRole('button', { name: 'Concluir', exact: true }).click();
+    await page.getByTestId('sensor-detail').waitFor();
+    if (size === 'celular') await page.getByText('Mapa', { exact: true }).click();
+    await page.waitForSelector('[data-testid="area-map"][data-ready="true"]', { timeout: 30000 });
+    await page.evaluate(() => document.getElementById('conteudo')?.scrollTo(0, 0));
+    await page.waitForTimeout(2500);
+    await shot(page, `minha-area-mapa-claro-${size}-${suffix}`);
+    await page.evaluate(() => { window.__gaiapusAreaMap.__mark = 1; });
+    await page.getByRole('button', { name: 'Mudar para tema escuro' }).click();
+    await page.waitForTimeout(1500);
+    await shot(page, `minha-area-mapa-escuro-${size}-${suffix}`);
+    console.log('area', size, 'same map after theme change:', await page.evaluate(() => window.__gaiapusAreaMap.__mark === 1), 'ocean:', await page.evaluate(() => window.__gaiapusAreaMap.getPaintProperty('bg', 'background-color')), errors.slice(0, 2));
     await ctx.close();
   }
 }
