@@ -129,7 +129,7 @@ const m: DeepPartial<Messages> = {
       downloadTitle: 'Die Karte konnte nicht heruntergeladen werden.', download: 'Keine Verbindung zum Laden der Karte. Die Suche und die Listen daneben funktionieren weiterhin zur Ortsauswahl.',
       loading: 'Karte wird geladen…', baseOffline: 'Basiskarte ohne Verbindung. Die IBGE-Grenzen und die Listen funktionieren weiterhin.',
     },
-    sheet: { recolhida: 'eingeklappt', media: 'mittel', expandida: 'ausgeklappt', expand: 'Bereich in Position {pos}. Zum Ausklappen antippen', collapse: 'Bereich in Position {pos}. Zum Einklappen antippen' },
+    sheet: { expandBtn: "Details ausklappen", collapseBtn: "Details einklappen", recolhida: 'eingeklappt', media: 'mittel', expandida: 'ausgeklappt', expand: 'Bereich in Position {pos}. Zum Ausklappen antippen', collapse: 'Bereich in Position {pos}. Zum Einklappen antippen' },
     loadingCountries: 'Länder werden geladen…', loadingCountry: 'Land wird geladen…', loadingStates: 'Bundesstaaten werden geladen', loadingMun: 'Gemeinden werden geladen',
     filterCountries: 'Länder filtern', filterCountriesPh: '{count} Länder und Gebiete filtern…', noCountry: 'Kein Land mit diesem Namen', noCountryText: 'Prüfen Sie die Schreibweise oder klicken Sie auf das Land auf der Karte.', countries: 'Länder',
     brStates: '27 föderative Einheiten', dataIn: 'Daten in {states}', withDataPill: 'Mit Daten',

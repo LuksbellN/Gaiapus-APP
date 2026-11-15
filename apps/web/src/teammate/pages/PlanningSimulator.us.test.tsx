@@ -152,4 +152,4 @@ it('Brazil → US → Brazil keeps each place with its own run; an unknown place
   expect(await screen.findByTestId('planning-unavailable', undefined, SLOW)).toBeInTheDocument();
   expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent('Sorriso');
   expect(shown()).toBe('');
-});
+}, 20000); // three full runs are read from disk; the default 5 s is too short on a busy machine

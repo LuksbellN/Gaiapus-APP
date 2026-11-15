@@ -190,7 +190,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .list button:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
 /* Lista longa (países): só desenha os itens perto da área visível */
 .list--long li { content-visibility: auto; contain-intrinsic-size: auto 44px; }
-.sheet-handle { display: none; }
+.sheet-grip { display: none; } .explore__sheet-scroll { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .maplibregl-ctrl-attrib { font-size: 11px; }
 /* Text links that stand alone in lists or short meta lines keep a 24px target (WCAG 2.5.8). */
 .plain li > a, p.meta > a { display: inline-block; min-height: 24px; line-height: 24px; }
@@ -251,16 +251,21 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
   .rail a { flex: 1; min-height: 54px; font-size: 12px; } .rail a.more-only { display: none; } .rail hr { display: none; } .rail .only-mobile { display: flex; } .rail__group { display: contents; }
   .rail a[aria-current='page']::before { left: 20%; right: 20%; top: -4px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
   .page { padding: var(--s4); gap: var(--s4); } h1 { font-size: 24px; } .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .explore__panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 16px 16px 0 0; border-bottom: 0; height: var(--sheet-h, 46%); transition: height var(--t-panel) var(--ease-out); }
+  /* Bottom sheet: the grip drags (touch-action none only there); head and lists scroll together inside, so the collapsed sheet still names the place and the expanded one reaches the last item. */
+  .explore__panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 16px 16px 0 0; border-bottom: 0; height: var(--sheet-h, 46%); max-height: 100%; transition: height var(--t-panel) var(--ease-out); }
+  .explore__panel[data-dragging] { transition: none; }
+  .sheet-grip { display: grid; justify-items: center; gap: 2px; flex: none; padding: 8px var(--s3) 4px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; border-bottom: 1px solid var(--border); }
+  .sheet-grip__bar { width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); } .sheet-grip__actions { gap: var(--s2); justify-content: center; flex-wrap: nowrap; }
+  .explore__sheet-scroll { display: block; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; padding-bottom: var(--s4); }
+  .explore__sheet-scroll > .explore__panel-head { border-bottom: 0; padding-bottom: 0; } .explore__sheet-scroll > .explore__panel-body { overflow: visible; flex: none; }
   .explore__panel-head { padding-top: 0; } .explore__search-top { position: absolute; z-index: 4; left: var(--s3); right: var(--s3); top: var(--s3); }
-  .sheet-handle { display: grid; place-items: center; width: 100%; min-height: 36px; background: none; border: 0; color: var(--text-2); cursor: pointer; } .sheet-handle::before { content: ''; width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); }
   .explore__controls { right: var(--s3); bottom: auto; top: 76px; } .explore__legend { display: none; } .explore__toast { bottom: auto; top: 132px; }
   .sim { display: flex; flex-direction: column; } .sim__tabs { display: block; padding: var(--s2) var(--s3) 0; background: var(--bg); } .sim__tabs .sim__title { font-size: 17px; margin-bottom: 4px; } .sim__stage--message { padding: var(--s4); }
   .sim__config, .sim__config[data-collapsed='true'] { width: auto; border: 0; flex: 1; } .sim__results { max-height: none; flex: 1; border: 0; } .sim__stage { flex: 1; min-height: 240px; }
   .sim[data-tab='campo'] .sim__config, .sim[data-tab='campo'] .sim__results, .sim[data-tab='indicadores'] .sim__config, .sim[data-tab='indicadores'] .sim__stage, .sim[data-tab='configurar'] .sim__results, .sim[data-tab='configurar'] .sim__stage, .sim[data-tab='configurar'] .sim__timeline { display: none; }
   th, td { padding: 8px 10px; }
   /* Alvos de toque: tudo o que se toca tem pelo menos 44 px */
-  .brand { min-width: var(--touch); min-height: var(--touch); justify-content: center; } .sheet-handle { min-height: var(--touch); } .crumbs button, .crumbs [aria-current] { min-height: var(--touch); min-width: var(--touch); justify-content: center; padding-inline: 8px; display: inline-flex; align-items: center; }
+  .brand { min-width: var(--touch); min-height: var(--touch); justify-content: center; } .crumbs button, .crumbs [aria-current] { min-height: var(--touch); min-width: var(--touch); justify-content: center; padding-inline: 8px; display: inline-flex; align-items: center; }
   .btn--sm, select.input--sm, .ctx-btn { min-height: var(--touch); }
   /* A atribuição do mapa não pode ficar sob o painel inferior */
   .explore .maplibregl-ctrl-bottom-right { top: 76px; bottom: auto; right: auto; left: 0; }
@@ -279,7 +284,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .tour-target { outline: 3px solid var(--focus) !important; outline-offset: 3px; border-radius: var(--r-control); }
 @media (max-width: 760px) {
   .tour-bar { padding: var(--s3) var(--s4) 0; }
-  .tour-bar--float { top: auto; bottom: 12px; right: 12px; }
+  .tour-bar--float { top: 128px; bottom: auto; right: 12px; } /* above the bottom sheet, below the map controls */
   .tour-pop--sheet { bottom: calc(var(--nav-h, 64px) + 12px + env(safe-area-inset-bottom)); }
 }
 
