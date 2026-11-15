@@ -15,7 +15,7 @@ export const deviceLabel = (d: { id: string; nickname: string }) => d.nickname |
 
 /** Text and tone of the inferred contact state. Never "online"/"offline": the stake sleeps between readings. */
 export function contactOf(s: State, deviceId: string, now: string) {
-  const m = latestMeasurement(s, deviceId); const received = s.measurements.filter((x) => x.deviceId === deviceId).map((x) => x.receivedAt).sort().at(-1) ?? null;
+  const m = latestMeasurement(s, deviceId); const received = s.measurements.filter((x) => x.deviceId === deviceId).map((x) => x.receivedAt).reduce<string | null>((latest, at) => (latest === null || at > latest ? at : latest), null); // ISO instants: the greatest string is the latest
   const cmd = currentCommand(s, deviceId);
   // The interval in force is never echoed by the stake: only the default is known until a backend reports otherwise.
   return contactStatus({ lastReceivedAt: received, lastObservedAt: m?.observedAt ?? null, intervalMin: null, desiredIntervalMin: cmd?.config.intervalMin ?? null, now });
