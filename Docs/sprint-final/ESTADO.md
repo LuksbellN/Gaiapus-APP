@@ -202,3 +202,10 @@ Sem achados críticos. Conferências independentes do revisor: o pareamento em T
 | API e contratos | sem mudança de código desde 56/56 e 28/28 |
 
 **Teste intermitente, declarado:** em 4 execuções completas da suíte web depois do M3 houve 2 com uma falha cada, sempre em testes de identidade criados neste sprint ("Brazil → US → Brazil" e "changing the harvest year…"), nunca isolados (passaram em todas as repetições individuais e em 4 execuções simultâneas). O primeiro era espera curta; o segundo não teve a mensagem capturada e a causa não foi determinada. Ambos passaram a esperar pelo estado de carregamento com prazo maior. Se voltar a falhar no CI, é esse o ponto a olhar.
+
+## Situação da entrega (15/11/2026, fim do sprint)
+
+- Branch `codex/revisao-ux` enviado e **PR #8 aberto** contra o `main`: https://github.com/LuksbellN/Gaiapus-APP/pull/8. As frases "sem push, sem PR" nas seções dos marcos descrevem o momento de cada commit.
+- **Sem merge e sem deploy.** Merge no `main` publica em produção e depende da autorização do Leandro para esta entrega.
+- Ciência: commits `56b1af3`, `22f67ad`, `a37cada`, `9e02928` no branch local `feat/us-v2`, sem push.
+- Não feito do plano: M4 (temperatura, acabamento do Explorar e da cena), guia de leitura na tela Município, busca de counties, revisão humana do inglês das telas antigas, smoke em produção.
