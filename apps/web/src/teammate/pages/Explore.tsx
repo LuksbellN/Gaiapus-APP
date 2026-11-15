@@ -79,7 +79,7 @@ export function Explore() {
   const next = sel.mun ? t('explore.next.mun') : sel.uf ? t('explore.next.uf') : br ? t('explore.next.br') : sel.pais ? (country ? t('explore.next.country', { continent: t(`continent.${country.continent}` as MessageKey) }) : '') : t('explore.next.world');
   const searchBox = <PlaceSearch onPick={(p) => select(p.type === 'pais' ? { pais: p.code, uf: null, mun: null } : { pais: 'BR', uf: p.uf, mun: p.type === 'municipio' ? p.code : null })} />;
   const worldList = useMemo(() => { const f = norm(worldFilter); const all = world.data?.data ?? []; const hit = f ? all.filter((c) => c.aliases.some((a) => norm(a).includes(f)) || norm(translate(`continent.${c.continent}`)).includes(f)) : all; return [...hit].sort((a, b) => Number(b.code === 'BR') - Number(a.code === 'BR') || byName(countryName(a, locale), countryName(b, locale))); }, [world.data, worldFilter, locale]);
-  const detail = sel.mun ? <MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }} go={nav} /> : null;
+  const detail = sel.mun ? <div data-tour="explore-coverage"><MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }} go={nav} /></div> : null;
   const withDataBox = <WithData state={cidx.index} places={withData} open={showWithData} onToggle={() => setShowWithData((v) => !v)} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
 
   return (
@@ -99,12 +99,12 @@ export function Explore() {
           </nav>
           <div><h1 style={{ fontSize: 24 }}>{title}</h1><p className="meta">{next}</p></div>
         </div>
-        <div className="explore__panel-body">
+        <div className="explore__panel-body" data-tour="explore-lists">
           {!sel.pais && (world.status === 'error' ? <ErrorState error={world.error} onRetry={world.retry} /> : !world.data ? <Loading label={t('explore.loadingCountries')} rows={5} /> : <div className="stack-2">
             {withDataBox}
             <label className="sr-only" htmlFor="filtro-pais">{t('explore.filterCountries')}</label>
             <input id="filtro-pais" className="input" name="filtro-pais" autoComplete="off" spellCheck={false} placeholder={t('explore.filterCountriesPh', { count: world.data.data.length })} value={worldFilter} onChange={(e) => setWorldFilter(e.target.value)} />
-            {worldList.length === 0 ? <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty> : <ul className="list list--long" aria-label={t('explore.countries')}>{worldList.map((c) => <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>{c.code === 'BR' ? <span><b>{countryName(c, locale)}</b><br /><span className="meta-13">{t('explore.brStates')}{ufWithData.length ? ` · ${t('explore.dataIn', { states: ufWithData.join(', ') })}` : ''}</span></span> : <span>{countryName(c, locale)} <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span></span>}{c.code === 'BR' && withData.length ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>}
+            {worldList.length === 0 ? <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty> : <ul className="list list--long" data-tour="explore-country-list" aria-label={t('explore.countries')}>{worldList.map((c) => <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>{c.code === 'BR' ? <span><b>{countryName(c, locale)}</b><br /><span className="meta-13">{t('explore.brStates')}{ufWithData.length ? ` · ${t('explore.dataIn', { states: ufWithData.join(', ') })}` : ''}</span></span> : <span>{countryName(c, locale)} <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span></span>}{c.code === 'BR' && withData.length ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>}
             <Source meta={world.data.meta} />
           </div>)}
           {sel.pais && !br && (world.status === 'error' ? <ErrorState error={world.error} onRetry={world.retry} /> : !world.data ? <Loading label={t('explore.loadingCountry')} rows={3} /> : unknownCountry ? <Notice tone="risk" title={t('explore.countryNotFoundTitle')}>{t('explore.countryNotFoundText', { code: sel.pais })}</Notice> : <div className="stack" data-testid="country-detail" data-code={sel.pais}>
@@ -192,7 +192,7 @@ function MunDetail({ code, name, uf, cov, munStatus, meshLoaded, found, outline,
 /** "Regiões com dados": places listed by the API catalogue, with what each one has. */
 function WithData({ state, places, open, onToggle, onRetry, onPick }: { state: ReturnType<typeof useCoverageIndex>['index']; places: PlaceWithData[]; open: boolean; onToggle: () => void; onRetry: () => void; onPick: (p: PlaceWithData) => void }) {
   const { t } = useI18n();
-  return <div className="stack-2">
+  return <div className="stack-2" data-tour="explore-with-data">
     <button className="btn btn--sm" aria-expanded={open} aria-controls="with-data" onClick={onToggle}>{open ? t('explore.withData.hide') : `${t('explore.withData.show')}${state?.status === 'ok' ? ` (${places.length})` : ''}`}</button>
     {open && <div id="with-data" data-testid="with-data">{!state ? <Loading label={t('explore.withData.loading')} rows={2} />
       : state.status === 'failed' ? <Notice tone="warn" title={t('explore.withData.failedTitle')}>{t('explore.withData.failed')} <button className="btn btn--sm" onClick={onRetry}>{t('common.retry')}</button></Notice>
@@ -207,7 +207,7 @@ function PlaceSearch({ onPick }: { onPick: (p: Place) => void }) {
   const shown = res ? (all ? res.places : res.places.slice(0, SEARCH_LIMIT)) : [];
   const choose = (p: Place) => { onPick(p); setQ(''); setOpen(false); };
   return (
-    <div className="search" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
+    <div className="search" data-tour="explore-search" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
       <Search className="lead" size={18} aria-hidden />
       <label className="sr-only" htmlFor="busca-local">{t('explore.search.label')}</label>
       <input id="busca-local" className="input" role="combobox" aria-expanded={open && !!res} aria-controls="busca-lista" aria-autocomplete="list" aria-activedescendant={open && shown.length ? `busca-op-${act}` : undefined} placeholder={t('explore.search.placeholder')} value={q} autoComplete="off" spellCheck={false} name="busca-local" enterKeyHint="search"

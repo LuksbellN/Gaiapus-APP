@@ -168,6 +168,48 @@
       "date": "2026-11-15",
       "reason": "i18n: map accessible names translated",
       "sha256": "aa9116eab6c49e7f1e124c83c784a517759e7e8e5f5fef6f7ead6e29d7c2107d"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "a62c8f9a662f0a4ba2b9da976bb473d10638671356bc19dd9cb48e87b6c35c3f"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "509ea3ae6926fd700e1bc51a33fb46f2930e981ede75056965162960af1dc0de"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "48e8ae19cd40cbda076d04a39988b7bef4f2306d47c3d8755e96d7add220dc6a"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "d309f38033b5506cf5185e5d9282bda3623cb7e8fddede406ad8d94cd4c7f2bc"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "403416a105ae7530968ed999988a0835393355e1e99881ea4de4b38e566326ab"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "7ca7fc4944c4693a533d2ada9c7e3f8fa5e089eaf6dd72862ebf2577ba5c7ad1"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "ee829eb204cb8e7754bac6cfe7be9b2d22b1b791938e71a6a20763b2600e68c2"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { clearTours } from './tours/storage';
 import { cropIdFromName, isAmbiguousCropName } from './catalog';
 import { withCodes } from './options';
 
@@ -36,7 +37,7 @@ export function setState(patch: Partial<State> | ((s: State) => Partial<State>))
 export function useStore<T>(sel: (s: State) => T): T { return useSyncExternalStore((cb) => { subs.add(cb); return () => subs.delete(cb); }, () => sel(state)); }
 export const uid = (p: string) => `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 export const now = () => new Date().toISOString();
-export function resetAll() { state = { ...initial, session: state.session }; try { localStorage.removeItem(activeKey); if (activeKey === KEY + '.guest') localStorage.removeItem(KEY); } catch { /* sem armazenamento */ } subs.forEach((f) => f()); }
+export function resetAll() { state = { ...initial, session: state.session }; try { localStorage.removeItem(activeKey); if (activeKey === KEY + '.guest') localStorage.removeItem(KEY); } catch { /* sem armazenamento */ } clearTours(); subs.forEach((f) => f()); }
 // Only the verified Supabase session bridge calls this; stored identity never authenticates.
 // Device preferences (theme, language) live in prefs.ts and are not part of any account bucket.
 export function activateAccount(session: Session) {

@@ -113,6 +113,6 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     // Alternate label side so nearby places (Sorriso, Uberlândia) do not overlap at world zoom.
     p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
   }, [p.markers, p.selection.mun]);
-  return <div ref={el} className="explore__map" role="application" aria-label={t('explore.map.label')} />;
+  return <div ref={el} className="explore__map" data-tour="explore-map" role="application" aria-label={t('explore.map.label')} />;
 });
 export default ExplorerMap;

@@ -29,7 +29,7 @@ export function Municipality() {
       <div className="page-head"><div className="stack-2"><h1>{placeName(code)}</h1><p>{t('municipality.subtitle', { code })}</p></div>
         <Seg legend={t('municipality.choose')} name="mun" value={code} onChange={(v) => setParams({ mun: v, ...(tab === 'clima' ? {} : { aba: tab }), ...(tab === 'safra' ? keep : {}) })} options={placeList.map(([value, label]) => ({ value, label }))} /></div>
       <ScopeStrip place={place} elsewhere={elsewhere} />
-      <Tabs label={t('municipality.tabs')} value={tab} onChange={setTab} tabs={[{ id: 'clima', label: t('municipality.tab.clima'), icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: t('municipality.tab.agua'), icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: t('municipality.tab.safra'), icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: t('municipality.tab.imagem'), icon: <Satellite size={18} aria-hidden /> }]} />
+      <div data-tour="mun-tabs"><Tabs label={t('municipality.tabs')} value={tab} onChange={setTab} tabs={[{ id: 'clima', label: t('municipality.tab.clima'), icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: t('municipality.tab.agua'), icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: t('municipality.tab.safra'), icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: t('municipality.tab.imagem'), icon: <Satellite size={18} aria-hidden /> }]} /></div>
       <TabPanel id={tab} key={code + tab}>{tab === 'clima' ? <Clima code={code} /> : tab === 'agua' ? <Agua code={code} /> : tab === 'safra' ? <Safra code={code} /> : <Imagem code={code} />}</TabPanel>
     </div>
   );
@@ -73,7 +73,7 @@ function Safra({ code }: { code: string }) {
   const [params, setParams] = useSearchParams(); const crop: CropId = isCropId(params.get('cultura')) ? (params.get('cultura') as CropId) : 'soy';
   const setCrop = (c: string) => setParams((prev) => { const p = new URLSearchParams(prev); if (c === 'soy') p.delete('cultura'); else p.set('cultura', c); return p; });
   return <>
-    <div className="row-between"><Field label={t('crops.label')} hint={isPlainCrop(crop) ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{CROP_IDS.map((id) => <option key={id} value={id}>{CROPS[id].name}{CROPS[id].plantable ? '' : ` ${t('crops.cohortSuffix')}`}</option>)}</select>}</Field></div>
+    <div className="row-between" data-tour="mun-crop"><Field label={t('crops.label')} hint={isPlainCrop(crop) ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{CROP_IDS.map((id) => <option key={id} value={id}>{CROPS[id].name}{CROPS[id].plantable ? '' : ` ${t('crops.cohortSuffix')}`}</option>)}</select>}</Field></div>
     <SafraCrop key={code + crop} code={code} crop={crop} />
   </>;
 }
@@ -84,7 +84,7 @@ function SafraCrop({ code, crop }: { code: string; crop: CropId }) {
   const elsewhere = (all.data ?? []).filter((r) => r.data.municipality_code !== code);
   return <div className="stack" data-testid="safra" data-crop={crop} data-mun={code}>
     <section className="stack" aria-labelledby="h-est"><div className="stack-2"><h2 id="h-est">{t('municipality.safra.title', { crop: name, place })}</h2><p className="meta">{t('municipality.safra.intro')}</p></div>
-      {here.data.length ? <div className="grid-2">{here.data.map((r) => <YieldCard key={r.meta.source + r.data.generated_at} r={r} />)}</div>
+      {here.data.length ? <div className="grid-2" data-tour="yield-card">{here.data.map((r) => <YieldCard key={r.meta.source + r.data.generated_at} r={r} />)}</div>
         : <Empty title={t('municipality.safra.noneTitle', { crop: name, place })}>{t('municipality.safra.none')}{crop === 'coffee_total_mg' ? ` ${t('municipality.safra.cohort')}` : ''}</Empty>}
     </section>
     {crop === 'soy' && <section className="card"><div className="row-between"><h2>{t('municipality.safra.mlpTitle')}</h2><Pill tone="warn">{t('kind.research')}</Pill></div>
@@ -102,7 +102,7 @@ function Imagem({ code }: { code: string }) {
   const d = im.data.data; const byDate = new Map<string, (typeof d.observations)[number]>(); for (const o of d.observations) { const prev = byDate.get(o.date); if (!prev || (prev.ndvi == null && o.ndvi != null) || (o.ndvi != null && o.valid_fraction > prev.valid_fraction)) byDate.set(o.date, o); } const dates = d.rainfall.map((r) => r.date); const valid = d.observations.filter((o) => o.ndvi != null);
   const ndviAt = byDate.get(d.image.date)?.ndvi;
   return <div className="cols">
-    <section className="card"><div className="row-between"><h2>{t('municipality.imagem.title')}</h2><Pill tone="ok">{t('kind.orbital')}</Pill></div>
+    <section className="card" data-tour="ndvi-chart"><div className="row-between"><h2>{t('municipality.imagem.title')}</h2><Pill tone="ok">{t('kind.orbital')}</Pill></div>
       <DualChart dates={dates} line={dates.map((x) => (byDate.has(x) ? byDate.get(x)!.ndvi ?? null : undefined))} rejected={dates.map((x) => byDate.has(x) && byDate.get(x)!.ndvi == null)} lineLabel={t('municipality.imagem.lineLabel')} lineDomain={[0, 1]} bars={d.rainfall.map((r) => r.rain_mm)} barsLabel={t('chart.rainDaily')} ariaLabel={t('municipality.imagem.chart', { from: dates[0] ? dFull(dates[0]) : '', to: dates.length ? dFull(dates[dates.length - 1]) : '' })} />
       <p className="meta">{t('municipality.imagem.method', { accepted: d.validation.accepted_scenes, total: d.validation.total_scenes, min: d.validation.min_valid_fraction != null ? t('municipality.imagem.minValid', { pct: pct(d.validation.min_valid_fraction) }) : '', dates: valid.length })}</p>
       <Source meta={im.data.meta} extra={d.observations[0]?.field_pixels ? t('municipality.imagem.pixels', { pixels: d.observations[0].field_pixels, label: d.field.label }) : t('municipality.imagem.polygon', { label: d.field.label })} /></section>

@@ -7,7 +7,7 @@ import { translate, useI18n, type MessageKey } from '../i18n';
 const API_CODES: Record<string, true> = Object.fromEntries(['invalid_input', 'not_found', 'unauthenticated', 'email_verification_required', 'identity_unavailable', 'dependency_failure', 'dependency_busy', 'database_unavailable', 'upstream_invalid', 'unsupported_input', 'fixture_not_available', 'rate_limited', 'result_expired', 'internal_error', 'request_failed', 'invalid_response'].map((c) => [c, true]));
 
 export const KIND_LABEL: Record<string, string> = new Proxy({} as Record<string, string>, { get: (_, k) => (typeof k === 'string' ? translate(`source.${k}`) : undefined) });
-export function Pill({ tone, children }: { tone?: 'water' | 'warn' | 'risk' | 'ok' | 'soil'; children: ReactNode }) { return <span className={`pill${tone ? ` pill--${tone}` : ''}`}>{children}</span>; }
+export function Pill({ tone, children, tour }: { tone?: 'water' | 'warn' | 'risk' | 'ok' | 'soil'; children: ReactNode; tour?: string }) { return <span className={`pill${tone ? ` pill--${tone}` : ''}`} data-tour={tour}>{children}</span>; }
 export function Source({ meta, extra }: { meta: Meta; extra?: ReactNode }) {
   const { t } = useI18n(); const note = [meta.noteKey ? t(meta.noteKey as MessageKey, meta.noteVars) : null, meta.note].filter(Boolean).join(' · ');
   return <p className="source"><Database size={14} aria-hidden /><span><b>{KIND_LABEL[meta.kind]}</b> · {t('source.label', { source: meta.source })}{note ? ` · ${note}` : ''}{extra ? <> · {extra}</> : null}</span></p>;

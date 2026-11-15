@@ -10,6 +10,7 @@ import { setPrefs, usePrefs } from './prefs';
 import { Pill } from './ui';
 import { lazyPage, preloadLightPages, preloadRoute } from './lazyPage';
 import { More } from './pages/More';
+import { TourBar, TourProvider } from './tours/TourProvider';
 
 // Cada rota é um módulo carregado sob demanda: no build para hospedagem (dist-web) o mapa (MapLibre) e o
 // campo 3D (Three.js) só são baixados quando a tela que os usa é aberta. No build de arquivo único (dist) tudo fica embutido.
@@ -100,7 +101,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />{t('nav.more')}</NavLink>
       </nav>
       <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
-        {authPage ?? <Routes>
+        <TourProvider>{authPage ?? <><TourBar /><Routes>
           <Route path="/" element={<Navigate to="/explorar" replace />} />
           <Route path="/explorar" element={<Explore />} />
           <Route path="/visao-geral" element={<Overview />} />
@@ -117,7 +118,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
           <Route path="/design-preview" element={<DesignPreview />} />
           <Route path="/ajuda" element={<Help />} />
           <Route path="*" element={<div className="page"><h1>{t('nav.notFound')}</h1><p><Link to="/explorar">{t('nav.backToExplorer')}</Link></p></div>} />
-        </Routes>}
+        </Routes></>}</TourProvider>
       </main>
     </div>
   );

@@ -12,8 +12,8 @@ import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, useAsync } f
 export function Devices() {
   const { t } = useI18n(); const d = useAsync((s) => devices.list(s), []);
   return <div className="page"><div className="page-head"><div className="stack-2"><h1>{t('devices.title')}</h1><p>{t('devices.subtitle')}</p></div><Pill tone="warn">{t('kind.synthetic')}</Pill></div>
-    <Notice tone="warn" title={t('devices.syntheticTitle')}>{t('devices.synthetic')}</Notice>
-    {d.status === 'error' ? <ErrorState error={d.error} onRetry={d.retry} /> : !d.data ? <Loading rows={4} /> : d.data.data.length === 0 ? <Empty title={t('devices.none')} /> : <div className="grid-auto">{d.data.data.map((x) => <section className="card" key={x.id} style={x.fault ? { borderColor: 'var(--risk)' } : undefined}><div className="row-between"><h2><Droplets size={18} aria-hidden />{t('devices.name', { n: x.id.slice(-2) })}</h2>{x.fault ? <Pill tone="risk">{t('devices.fault')}</Pill> : <Pill tone="ok">{t('devices.ok')}</Pill>}</div>
+    <div data-tour="devices-synthetic"><Notice tone="warn" title={t('devices.syntheticTitle')}>{t('devices.synthetic')}</Notice></div>
+    {d.status === 'error' ? <ErrorState error={d.error} onRetry={d.retry} /> : !d.data ? <Loading rows={4} /> : d.data.data.length === 0 ? <Empty title={t('devices.none')} /> : <div className="grid-auto">{d.data.data.map((x) => <section className="card" key={x.id} data-tour="device-card" style={x.fault ? { borderColor: 'var(--risk)' } : undefined}><div className="row-between"><h2><Droplets size={18} aria-hidden />{t('devices.name', { n: x.id.slice(-2) })}</h2>{x.fault ? <Pill tone="risk">{t('devices.fault')}</Pill> : <Pill tone="ok">{t('devices.ok')}</Pill>}</div>
       {x.fault && <Notice tone="risk"><BatteryLow size={0} aria-hidden />{t('devices.faultText', { hours: x.fault.hours })}</Notice>}
       <dl className="kv"><dt>{t('devices.plot')}</dt><dd>{t('devices.demoPlot')}</dd><dt>{t('devices.depth')}</dt><dd>{x.depth_cm} cm</dd><dt>{t('devices.vwc')}</dt><dd>{x.vwc_pct == null ? t('devices.noReading') : `${n1(x.vwc_pct)}%`}</dd><dt>{t('devices.temp')}</dt><dd>{x.soil_temp_c == null ? t('devices.noReading') : `${n1(x.soil_temp_c)} °C`}</dd><dt>{t('devices.last')}</dt><dd>{dTime(x.last_reading_at)}</dd><dt>{t('devices.battery')}</dt><dd>{x.battery_pct}%</dd><dt>{t('devices.signal')}</dt><dd>{t(`devices.signals.${x.signal}`)}</dd><dt>{t('devices.calibration')}</dt><dd>{x.calibrated ? t('devices.calibrated') : t('devices.noCalibration')}</dd></dl>
       <p className="meta-13">{t('devices.faultVsAlert')}</p></section>)}</div>}
@@ -38,7 +38,7 @@ export function Alerts() {
   ];
   return <div className="page">{head}
     <ScopeStrip place={place} elsewhere={elsewhere} />
-    {stress.length === 0 ? <Empty title={t('alerts.noWater')}>{t('alerts.noWaterText', { count: p.days.length })}</Empty> : <section className="card" style={{ borderColor: 'var(--warn)' }}><div className="row-between"><h2><Bell size={18} aria-hidden />{t('alerts.waterTitle')}</h2><Pill tone="warn">{t('alerts.attention')}</Pill></div>
+    {stress.length === 0 ? <Empty title={t('alerts.noWater')}>{t('alerts.noWaterText', { count: p.days.length })}</Empty> : <section className="card" data-tour="alert-card" style={{ borderColor: 'var(--warn)' }}><div className="row-between"><h2><Bell size={18} aria-hidden />{t('alerts.waterTitle')}</h2><Pill tone="warn">{t('alerts.attention')}</Pill></div>
       <dl className="kv" style={{ gridTemplateColumns: 'auto 1fr' }}>{rows.map(([k, v]) => <Fragment key={k}><dt>{t(k)}</dt><dd style={{ textAlign: 'left', fontWeight: 400 }}>{v}</dd></Fragment>)}</dl>
       <div className="row"><LinkBtn primary to="/visao-geral">{t('alerts.fullForecast')}</LinkBtn></div><Source meta={w.data.meta} /></section>}
     <section className="stack-2"><h2>{t('alerts.otherTitle')}</h2><Empty title={t('alerts.otherNone')}>{t('alerts.otherText')}</Empty></section></div>;

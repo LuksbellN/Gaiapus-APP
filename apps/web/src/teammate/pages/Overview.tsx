@@ -40,7 +40,7 @@ export function Overview() {
       <ScopeStrip place={place} elsewhere={elsewhere} period={t('overview.period', { from: dShort(d0.date), to: dFull(last.date) })} />
       <div className="cols">
         <div className="stack">
-          <section className="card" aria-labelledby="h-alerta" style={{ borderColor: stressDays.length ? 'var(--warn)' : undefined }}>
+          <section className="card" data-tour="overview-alert" aria-labelledby="h-alerta" style={{ borderColor: stressDays.length ? 'var(--warn)' : undefined }}>
             <h2 id="h-alerta"><Droplets size={20} aria-hidden />{stressDays.length ? t('overview.alert.titleStress') : t('overview.alert.titleOk')}</h2>
             <p>{stressDays.length ? tn('overview.alert.textStress', { day: dShort(d0.date), deficit: <b>{n2(d0.et_deficit_mm)} mm</b>, rain: <b>{n0(rainTotal)} mm</b>, until: dShort(last.date), from: pct(p.initial_state.available_water_fraction), to: <b>{pct(last.available_water_fraction)}</b> }) : t('overview.alert.textOk')}</p>
             <dl className="kv kv--text">
@@ -50,7 +50,7 @@ export function Overview() {
               <dt>{t('overview.alert.uncertainty')}</dt><dd>{t('overview.alert.uncertaintyText', { mae: n1(lead1.storage_mae_mm), clim: n1(lead1.reference_storage_mae_mm) })}</dd>
             </dl>
           </section>
-          <section className="card" aria-labelledby="h-prev">
+          <section className="card" data-tour="overview-days" aria-labelledby="h-prev">
             <div className="row-between"><h2 id="h-prev"><CloudRain size={20} aria-hidden />{t('overview.next.title', { count: p.days.length })}</h2><span className="meta-13">{t('overview.next.issued', { issued: dTime(p.forecast.issued_at), available: dTime(p.forecast.available_at) })}</span></div>
             <div className="table-wrap" tabIndex={0} role="group" aria-label={t('common.tableScroll')}><table>
               <thead><tr><th>{t('overview.next.day')}</th><th className="num">{t('overview.next.rain')}</th><th className="num">{t('overview.next.et0')}</th><th className="num">{t('overview.next.reserveMm')}</th><th className="num">{t('overview.next.reservePct')}</th><th>{t('overview.next.plantWater')}</th></tr></thead>
@@ -91,7 +91,7 @@ export function Overview() {
 }
 function Actions() {
   const { t } = useI18n();
-  return <section className="card" aria-labelledby="h-acoes">
+  return <section className="card" data-tour="overview-actions" aria-labelledby="h-acoes">
     <h2 id="h-acoes">{t('overview.actions.title')}</h2>
     <LinkBtn primary to="/planejar"><CalendarDays size={18} aria-hidden />{t('overview.actions.plan')}</LinkBtn>
     <LinkBtn to="/simulador"><Sprout size={18} aria-hidden />{t('overview.actions.follow')}</LinkBtn>
