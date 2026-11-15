@@ -247,6 +247,7 @@ const area: DeepPartial<Messages>['area'] = {
     confirm: 'Confirmo que este es el punto donde está la estaca',
     confirmRequired: 'Confirme el punto de la estaca.',
   },
+  guide: {"title": "Dónde está el QR en la estaca", "label": "Modelo 3D de la estaca Gaiapus. Arrastre para girar; con el teclado, las flechas giran y + y − acercan.", "loading": "Cargando el modelo…", "showQr": "Mostrar el QR", "whole": "Ver la estaca entera", "where": "El QR está en una etiqueta en el lateral de la caja, del lado opuesto al pluviómetro. Contiene el identificador de la estaca y el código de posesión.", "ring": "En el modelo, la etiqueta está marcada con un anillo.", "rotate": "Arrastre para girar y use la rueda o el gesto de pinza para acercar. En el teclado: las flechas giran, + y − acercan.", "scale": "Es el modelo del equipo en proporción real, sin lectura ni estado de su estaca.", "failed": "No se pudo cargar el modelo 3D ahora. La descripción de arriba sigue siendo válida.", "unavailable": "Modelo 3D no disponible en este dispositivo. La descripción de arriba sigue siendo válida."},
   wizard: {
     title: 'Añadir sensor',
     progress: 'Paso {n} de {total}',
@@ -259,7 +260,7 @@ const area: DeepPartial<Messages>['area'] = {
     cameraDenied: 'No se pudo usar la cámara. Escriba los datos abajo.',
     qr: { unreadable: 'Este QR no es de una estaca Gaiapus.', invalid_device_id: 'El identificador de este QR no es válido.', missing_claim_code: 'Este QR no incluye el código de posesión.' },
     deviceId: 'Identificador de la estaca',
-    deviceIdHint: '8 caracteres, de 0 a 9 y de a a f. Está en la etiqueta.',
+    deviceIdHint: '8 caracteres, de 0 a 9 y de a a f. El QR de la estaca ya contiene este identificador.',
     claimCode: 'Código de posesión',
     claimCodeHint: 'Está en la etiqueta, junto al QR. No se guarda en este dispositivo.',
     continue: 'Continuar',

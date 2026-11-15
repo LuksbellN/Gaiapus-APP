@@ -248,6 +248,7 @@ const area: DeepPartial<Messages>['area'] = {
     confirm: 'Je confirme que c’est le point où se trouve le piquet',
     confirmRequired: 'Confirmez le point du piquet.',
   },
+  guide: {"title": "Où se trouve le QR sur le piquet", "label": "Modèle 3D du piquet Gaiapus. Faites glisser pour tourner ; au clavier, les flèches tournent et + et − zooment.", "loading": "Chargement du modèle…", "showQr": "Montrer le QR", "whole": "Voir le piquet entier", "where": "Le QR est sur une étiquette sur le côté du boîtier, à l’opposé du pluviomètre. Il contient l’identifiant du piquet et le code de possession.", "ring": "Dans le modèle, l’étiquette est entourée d’un anneau.", "rotate": "Faites glisser pour tourner et utilisez la molette ou le pincement pour zoomer. Au clavier : les flèches tournent, + et − zooment.", "scale": "C’est le modèle de l’équipement en proportions réelles, sans mesure ni état de votre piquet.", "failed": "Le modèle 3D n’a pas pu être chargé. La description ci-dessus reste valable.", "unavailable": "Modèle 3D indisponible sur cet appareil. La description ci-dessus reste valable."},
   wizard: {
     title: 'Ajouter un capteur',
     progress: 'Étape {n} sur {total}',
@@ -260,7 +261,7 @@ const area: DeepPartial<Messages>['area'] = {
     cameraDenied: 'La caméra n’a pas pu être utilisée. Saisissez les données ci-dessous.',
     qr: { unreadable: 'Ce QR n’est pas celui d’un piquet Gaiapus.', invalid_device_id: 'L’identifiant de ce QR n’est pas valide.', missing_claim_code: 'Ce QR ne contient pas le code de propriété.' },
     deviceId: 'Identifiant du piquet',
-    deviceIdHint: '8 caractères, de 0 à 9 et de a à f. Il figure sur l’étiquette.',
+    deviceIdHint: '8 caractères, de 0 à 9 et de a à f. Le QR du piquet contient déjà cet identifiant.',
     claimCode: 'Code de propriété',
     claimCodeHint: 'Il figure sur l’étiquette, à côté du QR. Il n’est pas conservé sur cet appareil.',
     continue: 'Continuer',

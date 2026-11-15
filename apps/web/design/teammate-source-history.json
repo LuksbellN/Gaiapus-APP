@@ -414,6 +414,12 @@
       "date": "2026-11-15",
       "reason": "Merge of main (bottom sheet, phone sweep, logo, regions with data) into the sensors and plots branch: combined content of the pinned sources",
       "sha256": "b09480a771ca6d371324e4a904d296a1958b73a56081b7440cd76271a1b6d519"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Minha área: rotatable stake guide in the add-sensor wizard, with the QR label marked",
+      "sha256": "c932be1ec41f37e5fb5ad40642f4d8980f6e66633d9baefda073d927fc01387b"
     }
   ]
 }

@@ -237,3 +237,69 @@ test.describe('Simulador · modelo 3D da estaca', () => {
     await expect(page.getByTestId('stake-failed')).toHaveCount(0);
   });
 });
+
+// Guia 3D no "Adicionar sensor": modelo real, girável, com a etiqueta do QR marcada.
+test.describe('Minha área · guia 3D da estaca', () => {
+  const openWizard = async (page: Page) => {
+    await seedProperty(page);
+    await page.goto('/#/minha-area?demo=1');
+    await page.getByRole('button', { name: 'Adicionar sensor' }).click();
+    await expect(page.getByTestId('sensor-wizard')).toBeVisible();
+  };
+  const pose = (page: Page) => page.locator('[data-testid="stake-guide-canvas"]').evaluate((c: HTMLElement) => ({ az: Number(c.dataset.azimuth), polar: Number(c.dataset.polar), dist: Number(c.dataset.distance), view: c.dataset.view }));
+
+  test('mostra onde fica o QR, gira com o mouse e com o teclado, e alterna as vistas', async ({ page, errors }) => {
+    await openWizard(page);
+    const guide = page.getByTestId('stake-guide');
+    await expect(guide).toHaveAttribute('data-state', 'ready', { timeout: 30000 });
+    await expect(guide).toContainText('O QR fica numa etiqueta na lateral da caixa, do lado oposto ao pluviômetro');
+    await expect(guide).toContainText('marcada com um anel');
+    const canvas = page.getByTestId('stake-guide-canvas');
+    await expect(canvas).toHaveAttribute('data-view', 'qr');
+    const start = await pose(page);
+    const box = (await canvas.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 10, { steps: 6 }); await page.mouse.up();
+    const dragged = await pose(page);
+    expect(Math.abs(dragged.az - start.az)).toBeGreaterThan(0.2);
+    await canvas.focus();
+    await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight');
+    expect(Math.abs((await pose(page)).az - dragged.az)).toBeGreaterThan(0.3);
+    await page.keyboard.press('+');
+    expect((await pose(page)).dist).toBeLessThan(dragged.dist);
+    await page.getByRole('button', { name: 'Ver a estaca inteira' }).click();
+    await expect(canvas).toHaveAttribute('data-view', 'whole');
+    expect((await pose(page)).dist).toBeGreaterThan(start.dist * 2);
+    await page.getByRole('button', { name: 'Mostrar o QR' }).click();
+    const back = await pose(page);
+    expect(back.dist).toBeCloseTo(start.dist, 2); expect(back.az).toBeCloseTo(start.az, 2);
+    // The form under the guide still works and the guide never stole the focus on opening.
+    await page.getByLabel('Identificador da estaca').fill('C4000110');
+    await expect(page.getByLabel('Identificador da estaca')).toHaveValue('C4000110');
+    expect(errors).toEqual([]);
+  });
+
+  test('se o modelo não carrega, a explicação em texto continua e o cadastro segue', async ({ page }) => {
+    await page.route('**/*.glb', (r) => r.abort());
+    await openWizard(page);
+    const guide = page.getByTestId('stake-guide');
+    await expect(guide).toHaveAttribute('data-state', 'failed', { timeout: 30000 });
+    await expect(guide).toContainText('Não foi possível carregar o modelo 3D agora');
+    await expect(guide).toContainText('O QR fica numa etiqueta na lateral da caixa');
+    await expect(page.getByRole('button', { name: 'Mostrar o QR' })).toHaveCount(0);
+    await expect(page.getByLabel('Código de posse')).toBeVisible();
+  });
+
+  test.describe('no celular', () => {
+    test.use(MOBILE);
+    test('o guia cabe na largura e os botões têm tamanho de toque', async ({ page }) => {
+      await openWizard(page);
+      await expect(page.getByTestId('stake-guide')).toHaveAttribute('data-state', 'ready', { timeout: 30000 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+      const b = (await page.getByRole('button', { name: 'Mostrar o QR' }).boundingBox())!;
+      expect(b.height).toBeGreaterThanOrEqual(40);
+      const g = (await page.getByTestId('stake-guide').boundingBox())!;
+      expect(g.x).toBeGreaterThanOrEqual(0); expect(g.x + g.width).toBeLessThanOrEqual(391);
+    });
+  });
+});

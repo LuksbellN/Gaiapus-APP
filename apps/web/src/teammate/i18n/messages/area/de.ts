@@ -247,6 +247,7 @@ const area: DeepPartial<Messages>['area'] = {
     confirm: 'Ich bestätige, dass der Messstab an diesem Punkt steht',
     confirmRequired: 'Bestätigen Sie den Punkt des Messstabs.',
   },
+  guide: {"title": "Wo der QR-Code am Stab sitzt", "label": "3D-Modell des Gaiapus-Stabs. Zum Drehen ziehen; mit der Tastatur drehen die Pfeiltasten, + und − zoomen.", "loading": "Modell wird geladen…", "showQr": "QR-Code zeigen", "whole": "Ganzen Stab ansehen", "where": "Der QR-Code befindet sich auf einem Etikett an der Seite des Gehäuses, gegenüber dem Regenmesser. Er enthält die Kennung des Stabs und den Besitzcode.", "ring": "Im Modell ist das Etikett mit einem Ring markiert.", "rotate": "Zum Drehen ziehen, zum Zoomen das Mausrad oder die Zwei-Finger-Geste verwenden. Tastatur: Pfeiltasten drehen, + und − zoomen.", "scale": "Dies ist das Modell des Geräts in realen Proportionen, ohne Messwert oder Zustand Ihres Stabs.", "failed": "Das 3D-Modell konnte gerade nicht geladen werden. Die Beschreibung oben gilt weiterhin.", "unavailable": "3D-Modell auf diesem Gerät nicht verfügbar. Die Beschreibung oben gilt weiterhin."},
   wizard: {
     title: 'Sensor hinzufügen',
     progress: 'Schritt {n} von {total}',
@@ -259,7 +260,7 @@ const area: DeepPartial<Messages>['area'] = {
     cameraDenied: 'Die Kamera konnte nicht verwendet werden. Geben Sie die Angaben unten ein.',
     qr: { unreadable: 'Dieser QR gehört nicht zu einem Gaiapus-Messstab.', invalid_device_id: 'Die Kennung in diesem QR ist ungültig.', missing_claim_code: 'Dieser QR enthält keinen Besitzcode.' },
     deviceId: 'Kennung des Messstabs',
-    deviceIdHint: '8 Zeichen, von 0 bis 9 und von a bis f. Sie steht auf dem Etikett.',
+    deviceIdHint: '8 Zeichen, von 0 bis 9 und von a bis f. Der QR-Code des Stabs enthält diese Kennung bereits.',
     claimCode: 'Besitzcode',
     claimCodeHint: 'Er steht auf dem Etikett neben dem QR. Er wird auf diesem Gerät nicht gespeichert.',
     continue: 'Weiter',
