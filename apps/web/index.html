@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -17,10 +17,16 @@
     @keyframes boot { to { transform: translateX(150%); } }
     @media (prefers-reduced-motion: reduce) { .boot i::after { animation: none; width: 100%; opacity: .5; } }
   </style>
-  <script>try { var p = JSON.parse(localStorage.getItem('gaiapus.prefs') || localStorage.getItem('gaiapus.v1.guest') || '{}'); if (p.theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}</script>
+  <script>try { var p = JSON.parse(localStorage.getItem('gaiapus.prefs') || localStorage.getItem('gaiapus.v1.guest') || '{}'); if (p.theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}
+    // Boot language before React: saved preference, then browser languages, then English (same rule as i18n/locale.ts).
+    var L = ['pt-BR', 'en', 'es', 'fr', 'de'], lang = 'en';
+    try { var s = JSON.parse(localStorage.getItem('gaiapus.prefs') || '{}').locale; if (L.indexOf(s) >= 0) lang = s; else { var n = navigator.languages || [navigator.language]; for (var i = 0; i < n.length; i++) { var c = String(n[i]).slice(0, 2).toLowerCase(), m = c === 'pt' ? 'pt-BR' : L.indexOf(c) >= 0 ? c : null; if (m) { lang = m; break; } } } } catch (e) {}
+    document.documentElement.lang = lang;
+    window.__gaiapusBoot = { 'pt-BR': ['Carregando…', 'Não foi possível iniciar. Confira a conexão e recarregue a página.'], en: ['Loading…', 'Could not start. Check your connection and reload the page.'], es: ['Cargando…', 'No se pudo iniciar. Revisa la conexión y recarga la página.'], fr: ['Chargement…', 'Impossible de démarrer. Vérifiez la connexion et rechargez la page.'], de: ['Wird geladen…', 'Start nicht möglich. Prüfen Sie die Verbindung und laden Sie die Seite neu.'] }[lang];</script>
 </head>
 <body>
-  <div id="root"><div class="boot" role="status"><b translate="no">Gaiapus</b><span>Carregando…</span><i aria-hidden="true"></i></div></div>
+  <div id="root"><div class="boot" role="status"><b translate="no">Gaiapus</b><span id="boot-text">Carregando…</span><i aria-hidden="true"></i></div></div>
+  <script>document.getElementById('boot-text').textContent = window.__gaiapusBoot[0];</script>
   <noscript><p style="padding:24px;font-family:system-ui">A Gaiapus precisa de JavaScript para mostrar o mapa e os dados.</p></noscript>
   <script type="module" src="/src/main.tsx"></script>
 </body>

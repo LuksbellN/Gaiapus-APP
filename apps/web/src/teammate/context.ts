@@ -5,6 +5,7 @@
 // Simulator and Field Shift are historical simulations of Sorriso by definition and skip step 2;
 // they still declare that the data are not the user's plot.
 import type { FieldRecord, Plot, Property } from './store';
+import { translate } from './i18n';
 
 export const SORRISO = '5107925';
 export type PlaceOrigin = 'link' | 'plot' | 'demo';
@@ -17,7 +18,7 @@ const KNOWN: Record<string, string> = { '5107925': 'Sorriso, MT', '3170206': 'Ub
 export const isKnownPlace = (code: string) => code in KNOWN;
 export function placeName(code: string, ctx?: ActiveContext): string {
   if (ctx?.property?.municipalityCode === code) return `${ctx.property.municipalityName}, ${ctx.property.uf}`;
-  return KNOWN[code] ?? `município IBGE ${code}`;
+  return KNOWN[code] ?? translate('explore.mun.fallbackName', { code });
 }
 
 export function resolvePlace(params: URLSearchParams, ctx: ActiveContext, opts: { followPlot?: boolean } = {}): ResolvedPlace {
