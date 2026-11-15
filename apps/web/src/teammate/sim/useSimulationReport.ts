@@ -6,7 +6,7 @@ import type { ReportGenerationResult, ReportScope } from '@gaiapus/contracts';
 import { simulationReports } from '../adapters/simulation-reports';
 import { useI18n } from '../i18n';
 import type { Locale } from '../i18n/locale';
-import { reportRequestKey, scopeKey } from './report-model';
+import { reportRequestKey } from './report-model';
 
 export type ReportView =
   | { status: 'idle' | 'loading'; key: string | null }
@@ -22,7 +22,6 @@ export function useSimulationReport({ runId, scope, reportId = null }: Source): 
   const { locale, loading } = useI18n();
   const [view, setView] = useState<ReportView>({ status: 'idle', key: null });
   const [attempt, setAttempt] = useState(0);
-  const scopeId = scopeKey(scope);
   // A saved representation keeps its own language: it is read by id and does not follow the interface.
   const key = runId ? (reportId ? `${runId}|saved|${reportId}` : reportRequestKey(runId, scope, locale)) : null;
   const waiting = !reportId && loading;
@@ -40,7 +39,8 @@ export function useSimulationReport({ runId, scope, reportId = null }: Source): 
       else setView({ status: 'failed', key: asked, result });
     }).catch((error: unknown) => { if (!controller.signal.aborted && (error as Error)?.name !== 'AbortError') setView({ status: 'error', key: asked, error }); });
     return () => controller.abort();
-  }, [runId, scopeId, locale, reportId, waiting, attempt]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `key` already holds everything that identifies the request (run, scope and language, or the saved report id).
+  }, [key, waiting, attempt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The state held may belong to the previous identity for one render: never expose it as the current one.
   const current: ReportView = view.key === key ? view : { status: key ? 'loading' : 'idle', key };
