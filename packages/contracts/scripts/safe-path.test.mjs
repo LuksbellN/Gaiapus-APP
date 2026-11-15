@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import { childFile, sourceDirectory } from './safe-path.mjs';
@@ -9,13 +9,14 @@ mkdirSync(join(root, 'boundaries'));
 writeFileSync(join(root, 'manifest.json'), '{}');
 
 describe('pin script path guards', () => {
-  it('accepts an existing source directory that has a manifest', () => {
-    expect(sourceDirectory(root)).toBe(root);
-  });
-  it('rejects a missing argument, a file, or a directory without manifest', () => {
-    expect(() => sourceDirectory(undefined)).toThrow();
-    expect(() => sourceDirectory(join(root, 'manifest.json'))).toThrow();
-    expect(() => sourceDirectory(join(root, 'boundaries'))).toThrow();
+  it('uses the current directory as source when it has a manifest (no path from the command line)', () => {
+    const here = process.cwd();
+    try {
+      process.chdir(root);
+      expect(sourceDirectory()).toBe(realpathSync(root));
+      process.chdir(join(root, 'boundaries'));
+      expect(() => sourceDirectory()).toThrow();
+    } finally { process.chdir(here); }
   });
   it('allows only plain file names inside the root', () => {
     expect(childFile(root, 'BR-5107925.json')).toBe(join(root, 'BR-5107925.json'));

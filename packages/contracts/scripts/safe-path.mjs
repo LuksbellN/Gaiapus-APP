@@ -1,15 +1,13 @@
-// Path guards for the pin scripts: the CLI argument and every name read from a manifest are untrusted input.
-import { existsSync, statSync } from 'node:fs';
+// Path guards for the pin scripts: the source is the working directory and every name read from a manifest is untrusted.
+import { existsSync, realpathSync } from 'node:fs';
 import { basename, join, resolve, sep } from 'node:path';
 
 const PLAIN_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
-/** Resolved source directory; it must exist and contain manifest.json. */
-export function sourceDirectory(arg) {
-  if (typeof arg !== 'string' || !arg.trim()) throw new Error('Usage: node scripts/pin-location-core.mjs <location-core dir>');
-  const dir = resolve(arg);
-  if (!existsSync(dir) || !statSync(dir).isDirectory()) throw new Error('Source is not a directory');
-  if (!existsSync(join(dir, 'manifest.json'))) throw new Error('Source directory has no manifest.json');
+/** The source is the current working directory (no path is taken from the command line); it must contain manifest.json. */
+export function sourceDirectory() {
+  const dir = realpathSync(process.cwd());
+  if (!existsSync(join(dir, 'manifest.json'))) throw new Error('Run from the location-core directory: cd <Gaiapus_nasa>/data/serving/location-core && node <Gaiapus-APP>/packages/contracts/scripts/pin-location-core.mjs');
   return dir;
 }
 

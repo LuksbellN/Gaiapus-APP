@@ -1,13 +1,15 @@
 // Copy the LocationCore v1 packages from Gaiapus_nasa unchanged and pin them.
-// Usage: node scripts/pin-location-core.mjs <path to Gaiapus_nasa/data/serving/location-core>
+// Usage: cd <Gaiapus_nasa>/data/serving/location-core && node <Gaiapus-APP>/packages/contracts/scripts/pin-location-core.mjs
 // Refuses any file whose bytes do not match the generator's manifest sha256.
 import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { childFile, sourceDirectory } from './safe-path.mjs';
 
-// The CLI argument and every file name from the manifest are untrusted: resolved and checked before use.
-const source = sourceDirectory(process.argv[2]);
+// No path comes from the command line: the source is the current directory, and every file name read from the
+// manifest must be a plain name inside it.
+if (process.argv.length > 2) throw new Error('This script takes no arguments; run it from the location-core directory.');
+const source = sourceDirectory();
 const target = fileURLToPath(new URL('../fixtures/location-core/', import.meta.url));
 const boundaries = fileURLToPath(new URL('../../../apps/api/public/publications/location-core-v1/', import.meta.url));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
