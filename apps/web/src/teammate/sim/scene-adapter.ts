@@ -82,7 +82,8 @@ export function toSceneState(row: SceneDailyRow, caps: SceneCapabilities): CropS
     drainageMm: orNull(row.drainage_mm),
     runoffMm: caps.runoff ? orNull(row.runoff_mm) : null,
     rootDepthM,
-    stress: stressLevel(row.stress_coefficient),
+    // On bare fallow the coefficient only reduces soil evaporation: there is no plant to be stressed.
+    stress: row.land_cover === 'bare' ? null : stressLevel(row.stress_coefficient),
     depthScale: rootDepthM != null,
     virtualProbes: caps.layeredSoil && rootDepthM != null,
     rainParticles: particles(rainMm, 8, 300),

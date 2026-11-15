@@ -41,6 +41,11 @@ describe('toSceneState', () => {
     expect(toSceneState({ ...base, precipitation_mm: 12 }, LEGACY_SCENE_CAPS).rainParticles).toBe(a);
     expect(toSceneState({ ...base, precipitation_mm: 900 }, LEGACY_SCENE_CAPS).rainParticles).toBeLessThanOrEqual(300);
   });
+  it('bare fallow has no crop stress: its ks only reduces soil evaporation', () => {
+    expect(toSceneState({ ...base, land_cover: 'bare', phase_code: 'off_season_bare', stress_coefficient: 0.1 }, LEGACY_SCENE_CAPS).stress).toBeNull();
+    expect(toSceneState({ ...base, land_cover: 'bare', phase_code: 'fallow', stress_coefficient: 0.1 }, LEGACY_SCENE_CAPS).stress).toBeNull();
+    expect(toSceneState({ ...base, land_cover: 'brachiaria', phase_code: 'off_season_cover', stress_coefficient: 0.1 }, LEGACY_SCENE_CAPS).stress).toBe('severe');
+  });
   it('matches the panel stress rule: any ks below 1 is stress', () => {
     expect(stressLevel(1)).toBe('none');
     expect(stressLevel(0.99)).toBe('moderate');

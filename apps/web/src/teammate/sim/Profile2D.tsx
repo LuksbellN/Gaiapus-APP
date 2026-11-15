@@ -1,13 +1,15 @@
 // 2D soil-profile view: the WebGL-free alternative of SoilProfile3D, drawn from the same ProfileLayers.
 // Static (no animation), so it also serves reduced-motion users.
 import { useMemo } from 'react';
-import { DRAINAGE_COLOR, IRRIGATION_COLOR, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
+import { DRAINAGE_COLOR, IRRIGATION_COLOR, LED_COLORS, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
 import type { CropSceneState } from './scene-adapter';
 
-const W = 600, GROUND = 120, SOIL_H = 165, PX_PER_M = SOIL_H / PROFILE_DEPTH_M;
+const W = 600, GROUND = 120, SOIL_H = 165, PX_PER_M = SOIL_H / PROFILE_DEPTH_M, STAKE_X = W - 46;
 function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-export function Profile2D({ scene, layers, label, zoneLabel }: { scene: CropSceneState; layers: ProfileLayers; label: string; zoneLabel: string }) {
+export type DeviceText = { electrode: (depthCm: number) => string; led: string };
+
+export function Profile2D({ scene, layers, label, zoneLabel, deviceText }: { scene: CropSceneState; layers: ProfileLayers; label: string; zoneLabel: string; deviceText: DeviceText }) {
   const drops = useMemo(() => { const r = mulberry32(17); return Array.from({ length: 60 }, () => ({ x: 20 + r() * (W - 40), y: 8 + r() * (GROUND - 24) })); }, []);
   const zoneBottom = layers.roots ? GROUND + layers.roots.depthM * PX_PER_M : GROUND + SOIL_H;
   const plants = 14; const h = layers.plantHeight * 70; const gid = `pg-${scene.date}`;
@@ -28,7 +30,14 @@ export function Profile2D({ scene, layers, label, zoneLabel }: { scene: CropScen
       {layers.irrigationCount > 0 && Array.from({ length: Math.min(30, Math.round(layers.irrigationCount / 5)) }, (_, i) => <circle key={i} cx={24 + i * 19} cy={GROUND - 4} r="2.5" fill={IRRIGATION_COLOR} />)}
       {layers.drainage && <g data-testid="drainage-arrow" fill={DRAINAGE_COLOR} stroke={DRAINAGE_COLOR}><line x1={W / 2} x2={W / 2} y1={zoneBottom - 40} y2={zoneBottom - 40 + layers.drainage.length * 90} strokeWidth={layers.drainage.width * 220} /><path d={`M${W / 2 - 8},${zoneBottom - 40 + layers.drainage.length * 90} l8,12 l8,-12 z`} /></g>}
       {layers.runoff && <g data-testid="runoff-arrow" fill={RUNOFF_COLOR} stroke={RUNOFF_COLOR}><line x1={60} x2={60 + layers.runoff.length * 400} y1={GROUND - 3} y2={GROUND - 3} strokeWidth={layers.runoff.width * 220} /><path d={`M${60 + layers.runoff.length * 400},${GROUND - 11} l12,8 l-12,8 z`} /></g>}
-      <text x={W - 12} y={GROUND + 18} textAnchor="end" fill="#EAF2EB" fontSize="13">{zoneLabel}</text>
+      {layers.device && <g data-testid="device">
+        {/* Stake drawn at its physical size: 0.75 m body, top 0.3 m above ground (as in the device), electrodes at 15/40 cm. */}
+        <rect x={STAKE_X - 3} y={GROUND - 0.3 * PX_PER_M} width="6" height={0.75 * PX_PER_M} fill="#d8d6cf" />
+        {layers.device.electrodesM.map((d) => <g key={d} data-testid="electrode"><rect x={STAKE_X - 6} y={GROUND + d * PX_PER_M - 3} width="12" height="6" rx="1" fill="#b98d2c" /><text x={STAKE_X - 12} y={GROUND + d * PX_PER_M + 4} textAnchor="end" fill="#EAF2EB" fontSize="11">{deviceText.electrode(Math.round(d * 100))}</text></g>)}
+        <circle data-testid="led" data-led={layers.device.led} cx={STAKE_X} cy={GROUND - 0.3 * PX_PER_M} r="6" fill={LED_COLORS[layers.device.led]} stroke="#0d1a22" />
+        <text x={STAKE_X - 12} y={GROUND - 0.3 * PX_PER_M + 4} textAnchor="end" fill="#EAF2EB" fontSize="11">{deviceText.led}</text>
+      </g>}
+      <text x={W / 2} y={GROUND + 18} textAnchor="middle" fill="#EAF2EB" fontSize="13">{zoneLabel}</text>
     </svg>
   );
 }

@@ -35,3 +35,22 @@ test.describe('Simulador · perfil do solo', () => {
     await expect(page.getByTestId('profile-2d')).toHaveAttribute('data-water', water!);
   });
 });
+
+test.describe('Simulador · estaca Gaiapus', () => {
+  test('estaca aparece por padrão no perfil, pode ser desligada e o link guarda a escolha', async ({ page }) => {
+    await page.goto('/#/simulador?vista=perfil&dia=60&semwebgl=1');
+    const p = page.getByTestId('profile-2d');
+    await expect(p.getByTestId('device')).toBeVisible();
+    await expect(p.getByTestId('electrode')).toHaveCount(2);
+    await expect(p.getByTestId('ruler-tick')).toHaveCount(5);
+    await page.getByRole('checkbox', { name: 'Mostrar a estaca Gaiapus' }).uncheck();
+    await expect(page).toHaveURL(/estaca=0/);
+    await expect(p.getByTestId('device')).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole('checkbox', { name: 'Mostrar a estaca Gaiapus' })).not.toBeChecked();
+  });
+  test('LED apagado no pousio de solo exposto (sem cultura, sem estresse de planta)', async ({ page }) => {
+    await page.goto('/#/simulador?vista=perfil&dia=273&semwebgl=1');
+    await expect(page.getByTestId('led')).toHaveAttribute('data-led', '0');
+  });
+});

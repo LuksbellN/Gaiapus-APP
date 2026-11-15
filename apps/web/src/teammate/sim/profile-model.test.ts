@@ -45,6 +45,31 @@ describe('profileLayers (shared by the 3D profile and its 2D fallback)', () => {
     expect(p.rulerTicksM.length).toBeGreaterThan(0);
     expect(p.rulerTicksM).toContain(0.6);
   });
+  it('device (stake) is optional and drawn at its real electrode depths with a depth ruler', () => {
+    const off = profileLayers(toSceneState(row, LEGACY_SCENE_CAPS), 0.5);
+    expect(off.device).toBeNull();
+    expect(off.rulerTicksM).toEqual([]);
+    const on = profileLayers(toSceneState(row, LEGACY_SCENE_CAPS), 0.5, { device: true });
+    expect(on.device).not.toBeNull();
+    expect(on.device!.electrodesM).toEqual([0.15, 0.4]);
+    expect(on.rulerTicksM).toEqual([0, 0.15, 0.4, 1, 1.5]);
+    // A single bucket has no value per depth: the electrodes carry no reading, and no virtual probes appear.
+    expect(on.device!.readings).toBe('unavailable');
+    expect(on.probesM).toEqual([]);
+    expect(on.zone).toBe('root_zone_mean');
+  });
+  it('device LED follows the protocol codes from the model stress, labelled as model', () => {
+    const led = (ks: number | null) => profileLayers(toSceneState({ ...row, stress_coefficient: ks }, LEGACY_SCENE_CAPS), 0.5, { device: true }).device!;
+    expect(led(1).led).toBe(1);
+    expect(led(0.8).led).toBe(2);
+    expect(led(0.2).led).toBe(3);
+    expect(led(null).led).toBe(0);
+    expect(led(1).ledSource).toBe('model');
+  });
+  it('with a layered profile the electrodes may show model values per depth', () => {
+    const caps = { ...LEGACY_SCENE_CAPS, rootDepth: true, layeredSoil: true };
+    expect(profileLayers(toSceneState({ ...row, root_depth_m: 0.6 }, caps), 0.5, { device: true }).device!.readings).toBe('model_layers');
+  });
   it('leaf colour follows stress; plants follow the illustrative development only', () => {
     const none = profileLayers(toSceneState({ ...row, stress_coefficient: 1 }, LEGACY_SCENE_CAPS), 0.5);
     const severe = profileLayers(toSceneState({ ...row, stress_coefficient: 0.2 }, LEGACY_SCENE_CAPS), 0.5);

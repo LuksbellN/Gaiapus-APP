@@ -42,3 +42,20 @@ it('the published bucket has no root depth: profile shows the root-zone mean and
   expect(screen.getByText(/único reservatório/)).toBeInTheDocument();
   expect(screen.getAllByText(/Ilustração do cenário/).length).toBeGreaterThan(0);
 });
+
+it('the Gaiapus stake can be shown or hidden; its electrodes carry no per-depth reading from a single bucket', async () => {
+  open('?vista=perfil&dia=60');
+  const profile = await screen.findByTestId('profile-2d');
+  const toggle = screen.getByRole('checkbox', { name: /Mostrar a estaca/ });
+  expect(toggle).toBeChecked();
+  expect(within(profile).getByTestId('device')).toBeInTheDocument();
+  expect(within(profile).getAllByTestId('electrode')).toHaveLength(2);
+  expect(within(profile).getAllByText(/sem leitura por camada/)).toHaveLength(2);
+  expect(within(profile).getByText(/LED · modelo/)).toBeInTheDocument();
+  expect(within(profile).getAllByTestId('ruler-tick').map((t) => t.textContent)).toEqual(['0 cm', '15 cm', '40 cm', '100 cm', '150 cm']);
+  const before = within(panel()).getByText('Água no dia').closest('.card')!.textContent;
+  fireEvent.click(toggle);
+  expect(within(screen.getByTestId('profile-2d')).queryByTestId('device')).toBeNull();
+  expect(within(screen.getByTestId('profile-2d')).queryAllByTestId('ruler-tick')).toHaveLength(0);
+  expect(within(panel()).getByText('Água no dia').closest('.card')!.textContent).toBe(before);
+});
