@@ -64,17 +64,34 @@ E2E (`pnpm --filter @gaiapus/web test:e2e`) exige servidor em `:5174`; não exec
 |---|---|---|---|
 | 1 Inventário | concluída | este arquivo | baseline acima |
 | 8 Visualização sem recálculo | concluída | `sim/scene-adapter.ts`, `sim/profile-model.ts`, `sim/Profile2D.tsx`, `sim/SoilProfile3D.tsx` (novos); `pages/Simulator.tsx`, `styles.css`, 5 catálogos i18n, `design/teammate-source-history.json` (alterados); testes `sim/scene-adapter.test.ts`, `sim/profile-model.test.ts`, `pages/Simulator.profile.test.tsx`, `tests/e2e/regressao/simulador-perfil.spec.ts` | web 207/207 (188 + 19 novos); typecheck ok; E2E completo 94/94 contra API + Vite locais |
+| 8b Estaca Gaiapus + régua (pedido do usuário durante a execução) | concluída | `sim/profile-model.ts`, `sim/Profile2D.tsx`, `sim/SoilProfile3D.tsx`, `sim/scene-adapter.ts`, `pages/Simulator.tsx`, `styles.css`, 5 catálogos | web 212/212; E2E completo 96/96 |
+| 4 Motor físico conservativo (ciência) | concluída | `Gaiapus_nasa`: `data/models/crop_simulation/{__init__,types,soil,calendar,engine}.py`, `parameters/gaiapus-fao56-br-v1.json`; testes `tests/test_crop_simulation_{calendar,balance}.py` | H01–H06 como regressão; equivalência com o bucket congelado (armazenamento/ETa ≤ 1e-9 mm); resíduo diário ≤ 1e-8 mm; 4 mutações deliberadas, todas detectadas |
+| 3 Forcing e manifesto temporal (ciência) | concluída | `data/serving/simulation_forcing.py`, `tests/test_simulation_forcing.py` | 14 testes; 4/4 mutações detectadas |
+| 5 Ensembles, A/B pareado, economia (ciência) | concluída | `data/models/crop_simulation/{ensemble,economics}.py`, `data/serving/simulation_product.py`, 3 arquivos de teste | 19 testes; 5/5 mutações detectadas; total ciência 72 passaram, 1 skip |
+| Correção do PR #4 (SonarCloud) | concluída | `packages/contracts/scripts/{pin-location-core,safe-path}.mjs`, `safe-path.test.mjs` | gate reprovava só por `new_security_rating` = D (S8707 ×3, S8689 ×1 no script de pin); script reproduz os 7 pacotes com conteúdo idêntico |
+| 2 Contratos públicos de simulação | **pendente** | — | — |
+| 6 Fronteira Python + API Node | **pendente** | — | — |
+| 7 Persistência Supabase + relatórios | **pendente** (exige migração aditiva e banco de teste isolado) | — | — |
+| 9 Jornada, A/B na UI, tutorial | **pendente** (depende de 6) | — | — |
+| 10 Café perene | **pendente** | — | — |
+| 11 Verificação integrada e benchmark | **parcial**: suítes e E2E rodados; benchmark não medido | — | — |
 
 ## 3. Capacidades disponíveis ao usuário
 
 - **Simulador › Vista “Perfil do solo”** (soja/Sorriso, todos os modos): alternância Talhão/Perfil no topo da cena, guardada no link (`?vista=perfil`). Corte de solo com cor = fração da água disponível na zona radicular, gotas proporcionais à chuva do dia, seta de drenagem quando há drenagem, folhas coloridas por ks (verde ≥ 1; amarelo < 1; marrom < 0,5). Mesmo cursor, mesmo dia e mesmos números do painel e do gráfico. Fallback 2D (`?semwebgl=1`/sem WebGL), partículas paradas com movimento reduzido, pausa de animação com aba oculta, teclado (setas, + e −).
-- O que **não** aparece, por falta de suporte do dado publicado (bucket único AD4 55 mm, sequeiro): raízes, régua de profundidade, sondas virtuais 15/40 cm, escoamento, irrigação. O card “Perfil do solo” explica isso; o adaptador já aceita esses campos quando um método futuro os sustentar (`SceneCapabilities`).
+- **Estaca Gaiapus** (ligada por padrão no perfil; `?estaca=0` desliga): desenho do dispositivo com eletrodos a 15 e 40 cm (protocolo `raw_15`/`raw_40`), LED com os códigos do protocolo (0 apagado, 1 verde, 2 amarelo, 3 vermelho) derivados do ks **simulado** e rotulados “modelo”, e régua 0/15/40/100/150 cm na escala real do bloco. Os eletrodos mostram “sem leitura por camada”, porque o resultado publicado não tem valor por profundidade. No pousio de solo exposto o LED fica apagado e não há estresse de planta.
+- O que **não** aparece, por falta de suporte do dado publicado (bucket único AD4 55 mm, sequeiro): raízes, umidade por camada, sondas virtuais com valor, escoamento, irrigação. O card “Perfil do solo” explica isso; o adaptador já aceita esses campos quando um método futuro os sustentar (`SceneCapabilities`).
 - Talhão 3D, rendimento, modos e A/B continuam como antes.
+- **Ciência (não exposto ao usuário ainda):** motor `crop-simulation-v1` (`physical_experimental`) com calendário contínuo (aquecimento, culturas e pousio no mesmo reservatório), validação estrita de datas/planos, adaptador de forcing POWER com cutoff e manifesto, ensembles históricos com comparação pareada, economia com unidades explícitas e envelope de resultado em que rendimento fica `unavailable`. Só ficará disponível na tela após as etapas 2, 6 e 7.
 
 ## 4. Limitações conhecidas
 
 - Toda a simulação exibida continua sendo fixture publicada de Sorriso; não há cálculo arbitrário.
 - O perfil é ilustrativo: altura das plantas segue o calendário demonstrativo de fases; o limite inferior da zona radicular é desconhecido e aparece como degradê, não como linha.
 - Chrome headless com WebGL por software emite avisos de desempenho de leitura de buffer durante a animação; sem efeito funcional. Desempenho em aparelho de referência não foi medido.
+- Motor v1: um reservatório fixo por perfil (sem raízes dinâmicas nem camadas); parâmetros de pousio são hipótese não calibrada; sem rendimento físico; cenários só de chuva/ET0 (temperatura adiada); previsão curta tem verificação de cutoff, mas ainda não normaliza Open-Meteo.
+- Reinício da animação ao voltar para a aba: corrigido por leitura de código (pedido de quadro ao ficar visível); sem teste automatizado (jsdom não tem WebGL).
+- Revisão final feita pelo próprio autor (sem revisor independente).
+- Falha preexistente mantida: `contracts.test.ts` › pin byte-a-byte de `upstream/yield-estimate.schema.json`.
 - O spec E2E do perfil foi escrito após a implementação (os testes unitários foram escritos e vistos falhando antes).
 - `design/teammate-source-history.json` recebeu entradas novas; a sessão concorrente (estados dos EUA) pode acrescentar entradas no mesmo arquivo — conflito trivial de JSON na fusão.

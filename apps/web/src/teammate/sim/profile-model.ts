@@ -18,6 +18,9 @@ export const RUNOFF_COLOR = '#c27a2c';
 /** Profile block depth in metres (true scale, no vertical exaggeration). */
 export const PROFILE_DEPTH_M = 1.5;
 
+/** Deterministic PRNG: the same day always draws the same decoration. */
+export function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
 export function lerpHex(a: string, b: string, t: number): string {
   const k = Math.min(1, Math.max(0, t));
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16)), pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));

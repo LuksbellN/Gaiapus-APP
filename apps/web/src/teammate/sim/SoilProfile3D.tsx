@@ -7,16 +7,15 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { DeviceText } from './Profile2D';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { DRAINAGE_COLOR, IRRIGATION_COLOR, LED_COLORS, lerpHex, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
+import { DRAINAGE_COLOR, IRRIGATION_COLOR, mulberry32, LED_COLORS, lerpHex, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
 
 const BLOCK = { width: 4, depth: 2.5 } as const; const FRONT_Z = BLOCK.depth / 2;
 const ROWS = 5, PER_ROW = 28, ROW_SPACING = 0.5;
 const tmp = new THREE.Object3D();
-function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const slots = (() => { const r = mulberry32(42); const out: { x: number; z: number; s: number; rot: number; front: boolean }[] = []; for (let row = 0; row < ROWS; row++) for (let i = 0; i < PER_ROW; i++) out.push({ x: -1.85 + (3.7 * (i + 0.5)) / PER_ROW + (r() - 0.5) * 0.02, z: -((ROWS - 1) * ROW_SPACING) / 2 + row * ROW_SPACING, s: 0.88 + r() * 0.24, rot: r() * Math.PI * 2, front: row === ROWS - 1 }); return out; })();
 
-/** Pauses continuous redraws while the tab is hidden; frameloop is "demand" anyway. */
-function useVisible() { const v = useRef(typeof document === 'undefined' || !document.hidden); useEffect(() => { const on = () => { v.current = !document.hidden; }; document.addEventListener('visibilitychange', on); return () => document.removeEventListener('visibilitychange', on); }, []); return v; }
+/** Pauses continuous redraws while the tab is hidden and asks for a frame when it is shown again (frameloop is "demand"). */
+function useVisible() { const v = useRef(typeof document === 'undefined' || !document.hidden); const { invalidate } = useThree(); useEffect(() => { const on = () => { v.current = !document.hidden; if (v.current) invalidate(); }; document.addEventListener('visibilitychange', on); return () => document.removeEventListener('visibilitychange', on); }, [invalidate]); return v; }
 
 function Soil({ layers }: { layers: ProfileLayers }) {
   const zone = layers.roots ? layers.roots.depthM : PROFILE_DEPTH_M * 0.55; const below = PROFILE_DEPTH_M - zone;
