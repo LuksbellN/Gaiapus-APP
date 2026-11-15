@@ -8,3 +8,5 @@ services/science-adapter/delivery/** -text -whitespace
 *.png -text
 *.jpg -text
 *.gz binary
+# Field Shift v2 package: bytes are pinned by manifest.json (sha256); never normalise line endings.
+apps/web/src/teammate/data/field-shift-v2/** -text -whitespace

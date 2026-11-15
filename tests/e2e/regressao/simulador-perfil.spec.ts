@@ -5,7 +5,7 @@ const dayCard = (page: Page) => page.getByRole('complementary', { name: /Indicad
 
 test.describe('Simulador · perfil do solo', () => {
   test('alternar Talhão/Perfil não muda números; o link guarda a vista; 3D carrega', async ({ page, errors }) => {
-    await page.goto('/#/simulador?dia=120');
+    await page.goto('/#/simulador?modo=historico&dia=120');
     await expect(page.getByRole('radio', { name: 'Talhão' })).toBeChecked();
     const before = await dayCard(page).textContent();
     await page.getByText('Perfil do solo', { exact: true }).first().click();
@@ -19,7 +19,7 @@ test.describe('Simulador · perfil do solo', () => {
   });
 
   test('sem WebGL o perfil 2D mostra o mesmo dia, raízes ilustrativas e nenhuma sonda virtual', async ({ page }) => {
-    await page.goto('/#/simulador?vista=perfil&dia=60&semwebgl=1');
+    await page.goto('/#/simulador?modo=historico&vista=perfil&dia=60&semwebgl=1');
     const p = page.getByTestId('profile-2d');
     await expect(p).toBeVisible();
     await expect(p).toHaveAttribute('data-date', '2020-12-03');
@@ -28,7 +28,7 @@ test.describe('Simulador · perfil do solo', () => {
   });
 
   test('trocar o idioma mantém a vista e os números do dia', async ({ page }) => {
-    await page.goto('/#/simulador?vista=perfil&dia=120&semwebgl=1');
+    await page.goto('/#/simulador?modo=historico&vista=perfil&dia=120&semwebgl=1');
     const water = await page.getByTestId('profile-2d').getAttribute('data-water');
     await page.locator('[data-testid="language-select"]:visible').first().selectOption('en');
     await expect(page.getByRole('radio', { name: 'Soil profile' })).toBeChecked();
@@ -38,7 +38,7 @@ test.describe('Simulador · perfil do solo', () => {
 
 test.describe('Simulador · estaca Gaiapus', () => {
   test('estaca aparece por padrão no perfil, pode ser desligada e o link guarda a escolha', async ({ page }) => {
-    await page.goto('/#/simulador?vista=perfil&dia=60&semwebgl=1');
+    await page.goto('/#/simulador?modo=historico&vista=perfil&dia=60&semwebgl=1');
     const p = page.getByTestId('profile-2d');
     await expect(p.getByTestId('device')).toBeVisible();
     await expect(p.getByTestId('electrode')).toHaveCount(2);
@@ -50,20 +50,20 @@ test.describe('Simulador · estaca Gaiapus', () => {
     await expect(page.getByRole('checkbox', { name: 'Mostrar a estaca Gaiapus' })).not.toBeChecked();
   });
   test('LED apagado no pousio de solo exposto (sem cultura, sem estresse de planta)', async ({ page }) => {
-    await page.goto('/#/simulador?vista=perfil&dia=273&semwebgl=1');
+    await page.goto('/#/simulador?modo=historico&vista=perfil&dia=273&semwebgl=1');
     await expect(page.getByTestId('led')).toHaveAttribute('data-led', '0');
   });
 });
 
 test.describe('Simulador · raízes', () => {
   test('raízes crescem com a timeline, voltam iguais e podem ser ocultadas; 3D carrega sem erros', async ({ page, errors }) => {
-    const count = async (dia: number) => { await page.goto(`/#/simulador?vista=perfil&dia=${dia}&semwebgl=1`); await page.reload(); return Number(await page.getByTestId('roots').getAttribute('data-segments')); };
+    const count = async (dia: number) => { await page.goto(`/#/simulador?modo=historico&vista=perfil&dia=${dia}&semwebgl=1`); await page.reload(); return Number(await page.getByTestId('roots').getAttribute('data-segments')); };
     const d20 = await count(20), d70 = await count(70), back = await count(20);
     expect(d70).toBeGreaterThan(d20); expect(back).toBe(d20);
     await page.getByRole('checkbox', { name: 'Mostrar raízes' }).uncheck();
     await expect(page).toHaveURL(/raizes=0/);
     await expect(page.getByTestId('roots')).toHaveCount(0);
-    await page.goto('/#/simulador?vista=perfil&dia=181'); await page.reload();
+    await page.goto('/#/simulador?modo=historico&vista=perfil&dia=181'); await page.reload();
     await expect(page.locator('.sim__stage canvas')).toBeVisible();
     expect(errors).toEqual([]);
   });

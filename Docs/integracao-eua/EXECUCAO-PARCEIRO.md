@@ -6,6 +6,19 @@
 
 ## 1. O que está preparado e o que está implantado
 
+> **Atualização de 15/11/2026 (sprint final) — a tabela abaixo é o retrato de antes da execução e fica como histórico.**
+> O que aconteceu depois, com as provas em `ideias_nasa/handoff/us-v2-supabase/` (`ESTADO.md`, `remote-verification.json`, `activation-result.json`) e em `VALIDACAO-RUNTIME-SUPABASE.md` nesta pasta:
+>
+> | Item | Estado em 15/11/2026, 15h40 BRT |
+> |---|---|
+> | Contratos, API, seleção, traduções | **No `main`** (PR #7, merge `13a140d`) |
+> | Migrações `202611150001_future_simulations.sql` e `20261115163549_simulation_publication_batches.sql` | **Aplicadas** pelo Codex no projeto `kgtvvdwwqnmmjbtcmbbu` |
+> | Lote `us-74a444b5fb7f886e` (245 condados, 710 runs, 1.422 objetos) | **Enviado, verificado (1.422/1.422) e ativado** às 14:06 BRT |
+> | Tela de planejamento abrindo os EUA | **Feita** no branch `codex/revisao-ux` (lote 1 de UX + sprint final); ainda não está no `main` |
+> | Produção (Azure, `https://gaiapus.space`) | Publicada a partir do `main`; `GET /v1/simulations/capabilities` devolve **4 lugares do Brasil e nenhum dos EUA**: `SIMULATION_US_SOURCE` não está ligado no serviço |
+>
+> **Não repetir** migração, upload, ativação nem rollback: o lote já está ativo. Para os EUA aparecerem em produção falta apenas configuração do serviço (seção 8 e `VALIDACAO-RUNTIME-SUPABASE.md`, "Configuração de execução/deploy"), feita pelo operador da conta Azure.
+
 | Item | Estado |
 |---|---|
 | Contratos, API, lógica de seleção, traduções | Implementado e testado localmente no branch `codex/integracao-eua-supabase` (sem push) |

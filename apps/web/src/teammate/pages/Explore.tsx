@@ -201,7 +201,8 @@ function MunDetail({ code, name, uf, cov, munStatus, meshLoaded, found, outline,
       {c.missing.length > 0 && <details><summary className="meta">{t('explore.mun.missing', { count: c.missing.length })}</summary><ul className="plain">{c.missing.map((m, i) => <li key={m.id}>{missingLabels[i]}: {t(`coverage.reason.${m.reason ?? 'unknown'}` as MessageKey)}.</li>)}</ul></details>}
       <div className="row">
         {has ? <LinkBtn primary to={c.products.some((p) => p.id === 'water_risk_projection') ? `/visao-geral?mun=${code}` : `/municipio?mun=${code}`}>{c.products.some((p) => p.id === 'water_risk_projection') ? t('explore.mun.seeWater') : t('explore.mun.seeData')}</LinkBtn> : /^\d{7}$/.test(code) && <LinkBtn primary to={`/propriedades?mun=${code}&nome=${encodeURIComponent(label)}&uf=${uf ?? ''}`}>{t('explore.mun.register')}</LinkBtn>}
-        {c.products.some((p) => p.id === 'strategy_comparison') && <LinkBtn to="/simulador">{t('explore.mun.simulate')}</LinkBtn>}
+        {/^\d{7}$/.test(code) && <LinkBtn to={`/simulador?modo=planejamento&local=BR:ibge:${code}`}>{t('sim.planning.simulateFuture')}</LinkBtn>}
+        {c.products.some((p) => p.id === 'strategy_comparison') && <LinkBtn to="/simulador?modo=historico">{t('explore.mun.simulate')}</LinkBtn>}
         {!has && <button className="btn" onClick={onSeeCovered}>{t('explore.seeWithData')}</button>}
       </div>
       {cov.meta && <Source meta={cov.meta} />}

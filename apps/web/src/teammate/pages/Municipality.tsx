@@ -17,6 +17,8 @@ import { Forecast, Ndvi, Provenance, Scope, Water, Weather } from '../ui/Locatio
 import { PlacePicker, type PickItem } from '../ui/PlacePicker';
 import { placesWithData, useCoverageIndex } from '../geo/coverageIndex';
 import { useI18n } from '../i18n';
+import { simulations as planning } from '../adapters/simulations';
+import { hasPlanningResult, planningHref } from '../sim/planning-model';
 
 type Tab = 'clima' | 'agua' | 'safra' | 'imagem';
 
@@ -37,12 +39,17 @@ export function Municipality() {
   const setTab = (x: Tab) => setParams({ ...where, ...(x === 'clima' ? {} : { aba: x }), ...(x === 'safra' ? keep : {}) });
   const pick = (id: string) => { const next: Record<string, string> = id.startsWith('BR:ibge:') ? { mun: id.slice(8) } : { id }; if (tab !== 'clima') next.aba = tab; setParams(next); };
   const c = core.data as LocationCore | null | undefined;
+  // Season planning of this place, when a calculated run is published for it; otherwise the way to the places that have one.
+  const locId = abroad?.id ?? `BR:ibge:${code}`; const plan = useAsync((sg) => planning.capabilities({ location_id: locId }, sg).catch(() => null), [locId]);
+  const planCaps = plan.data?.places.find((p) => p.location_id === locId)?.capabilities; const simulable = hasPlanningResult(planCaps);
+  const planCrop = planCaps?.some((x) => x.crop_id === params.get('cultura')) ? params.get('cultura') : null;
   // An id that is not published is reported, never replaced by another place.
   const unknownId = !!idParam && !idParam.startsWith('BR:') && published.status !== 'loading' && !abroad;
   if (unknownId) return <div className="page"><h1>{t('place.notFoundTitle')}</h1><PlacePicker items={items} value={null} onPick={pick} /><Notice tone="risk" title={t('place.notFoundTitle')}>{t('place.notFound', { id: idParam! })}</Notice></div>;
   return (
     <div className="page">
-      <div className="page-head"><div className="stack-2"><h1>{abroad ? `${abroad.name}, ${abroad.admin1_name}` : placeName(code)}</h1><p>{abroad ? t('location.subtitle') : t('municipality.subtitle', { code })}</p></div></div>
+      <div className="page-head"><div className="stack-2"><h1>{abroad ? `${abroad.name}, ${abroad.admin1_name}` : placeName(code)}</h1><p>{abroad ? t('location.subtitle') : t('municipality.subtitle', { code })}</p></div>
+        {plan.status !== 'loading' && <div className="stack-2 page-head__action"><a className={`btn${simulable ? ' btn--primary' : ''}`} data-testid="simulate-here" href={simulable ? planningHref(locId, planCrop) : '#/simulador?modo=planejamento'}>{t(simulable ? 'sim.planning.simulateHere' : 'sim.planning.simulateNone')}</a><span className="meta-13">{t('sim.planning.simulateHint')}</span></div>}</div>
       <PlacePicker items={items} value={abroad?.id ?? `BR:ibge:${code}`} onPick={pick} />
       {abroad ? (c ? <Scope core={c} /> : null) : <ScopeStrip place={place} elsewhere={elsewhere} />}
       <div data-tour="mun-tabs"><Tabs label={t('municipality.tabs')} value={tab} onChange={setTab} tabs={[{ id: 'clima', label: t('municipality.tab.clima'), icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: t('municipality.tab.agua'), icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: t('municipality.tab.safra'), icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: t('municipality.tab.imagem'), icon: <Satellite size={18} aria-hidden /> }]} /></div>

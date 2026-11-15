@@ -17,7 +17,7 @@ import { Simulator } from './Simulator';
 window.matchMedia ??= ((query: string) => ({ matches: false, media: query, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false })) as unknown as typeof window.matchMedia;
 globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
 
-const open = (query: string) => render(<MemoryRouter initialEntries={[`/simulador${query}`]}><Simulator /></MemoryRouter>);
+const open = (query: string) => render(<MemoryRouter initialEntries={[`/simulador${query ? `${query}&modo=historico` : '?modo=historico'}`]}><Simulator /></MemoryRouter>);
 const panel = () => screen.getByRole('complementary', { name: 'Indicadores no dia selecionado' });
 
 it('field view stays the default; the profile view is an alternative over the same day', async () => {
