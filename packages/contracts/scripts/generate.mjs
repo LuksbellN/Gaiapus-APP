@@ -24,9 +24,11 @@ await put('src/generated/routes.ts', `/* Generated; do not edit. */\nexport cons
 const componentRef = name => ({ $ref: `#/components/schemas/${name}` });
 const convertRefs = value => JSON.parse(JSON.stringify(value).replaceAll('#/$defs/', '#/components/schemas/'));
 const paths = {};
-for (const [method, url, body, query, response, privateRoute] of routes) {
+for (const [method, url, body, query, response, privateRoute, extraQuery] of routes) {
   const path = url.replace(':id', '{id}');
   const parameters = query ? Object.entries(schema.$defs[query].properties).map(([name, value]) => ({ name, in: url.includes(':id') ? 'path' : 'query', required: schema.$defs[query].required.includes(name), schema: convertRefs(value) })) : [];
+  // Routes with path parameters and a query string declare the query schema as a seventh entry.
+  if (extraQuery) parameters.push(...Object.entries(schema.$defs[extraQuery].properties).map(([name, value]) => ({ name, in: 'query', required: schema.$defs[extraQuery].required.includes(name), schema: convertRefs(value) })));
   if (method === 'POST' && url === '/v1/comparisons') parameters.push({ name: 'Idempotency-Key', in: 'header', required: true, schema: { type: 'string', minLength: 1, maxLength: 128 } });
   paths[path] ??= {};
   paths[path][method.toLowerCase()] = { operationId: `${method.toLowerCase()}_${url.replace(/[^a-z0-9]/gi, '_')}`, security: privateRoute ? [{ bearerAuth: [] }] : [], parameters, ...(body ? { requestBody: { required: true, content: { 'application/json': { schema: componentRef(body) } } } } : {}), responses: { [response ? '200' : '204']: { description: 'Success', ...(response ? { content: { 'application/json': { schema: componentRef(response) } } } : {}) }, default: { description: 'Application error', content: { 'application/json': { schema: componentRef('ErrorResponse') } } } } };

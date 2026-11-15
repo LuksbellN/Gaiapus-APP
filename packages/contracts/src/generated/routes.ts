@@ -97,6 +97,23 @@ export const routeContracts = [
     false
   ],
   [
+    "POST",
+    "/v1/simulations/:id/report",
+    "ReportRequest",
+    "SimulationIdParams",
+    "ReportGenerationResultResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/simulations/:id/report",
+    null,
+    "SimulationIdParams",
+    "ReportGenerationResultResponse",
+    false,
+    "ReportQuery"
+  ],
+  [
     "GET",
     "/v1/me",
     null,
