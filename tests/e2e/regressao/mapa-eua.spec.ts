@@ -11,7 +11,7 @@ test.describe('RT-27 mapa mostra os lugares com dados fora do Brasil', () => {
     await expect(page.locator('.map-marker', { hasText: 'Sumner County' })).toBeVisible();
     await expect(marker).toHaveAttribute('aria-label', /Story County/);
     await marker.click();
-    await expect(page).toHaveURL(/#\/local\?id=US%3Afips%3A19169/);
+    await expect(page).toHaveURL(/#\/municipio\?id=US%3Afips%3A19169/);
     await expect(page.getByRole('heading', { level: 1, name: 'Story County, Iowa' })).toBeVisible();
   });
 });

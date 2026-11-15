@@ -592,5 +592,6 @@ const ptBR = {
     provenance: 'De onde vêm estes dados', generated: 'Gerado em {date} por {generator}.', openMunicipality: 'Abrir a página do município',
     nav: 'Ver núcleo de dados', usTitle: 'Estados Unidos', usNote: 'Núcleo global: clima, água no solo, NDVI e previsão. Sem estimativa de rendimento nos EUA nesta versão.',
   },
+  place: { notFoundTitle: "Lugar não encontrado", notFound: "Não há dados publicados para “{id}”. Escolha um lugar na lista ou busque pelo nome.", picker: "Escolher lugar", country: "País", state: "Estado", place: "Lugar", search: "Buscar lugar com dados", searchPh: "Nome ou código oficial (IBGE, FIPS)…", noResult: "Nenhum lugar com dados encontrado.", noYieldTitle: "Sem estimativa de rendimento.", noYield: "Nesta versão não há modelo de rendimento para este país; os rótulos de rendimento ainda não foram auditados. Clima, água no solo, NDVI e previsão estão nas outras abas." },
 };
 export default ptBR;

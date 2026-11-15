@@ -55,7 +55,7 @@ export function Explore() {
 
   const ufFeature = sel.uf ? states.data?.data.features.find((f) => f.properties.code === sel.uf) : undefined;
   const ufCode = (sigla: string | undefined | null) => states.data?.data.features.find((f) => f.properties.sigla === sigla)?.properties.code ?? '';
-  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }).concat(abroad.map((l) => ({ code: l.id, uf: '', name: l.name, lon: l.centroid[0]!, lat: l.centroid[1]!, href: `#/local?id=${encodeURIComponent(l.id)}` }))), [withData, states.data, located.data]); // eslint-disable-line
+  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }).concat(abroad.map((l) => ({ code: l.id, uf: '', name: l.name, lon: l.centroid[0]!, lat: l.centroid[1]!, href: `#/municipio?id=${encodeURIComponent(l.id)}` }))), [withData, states.data, located.data]); // eslint-disable-line
   const catalogArea = sel.mun && cidx.index?.status === 'ok' ? cidx.index.areas.find((a) => a.id === sel.mun) : undefined; const catalogName = catalogArea?.name;
   const catalogBox: BBox | null = catalogArea?.bbox ? [[catalogArea.bbox[0], catalogArea.bbox[1]], [catalogArea.bbox[2], catalogArea.bbox[3]]] : null;
   const munFeature = sel.mun && mun.uf === sel.uf ? mun.fc?.features.find((f) => f.properties.code === sel.mun) : undefined;
@@ -198,7 +198,7 @@ function AbroadList({ items }: { items: LocationSummary[] }) {
   if (!items.length) return null;
   const countries = [...new Set(items.map((l) => l.country))];
   return <div className="stack-2" data-testid="abroad-list">{countries.map((c) => <div key={c} className="stack-2"><h3>{t(`location.country.${c}` as MessageKey)}</h3><p className="meta-13">{t('location.usNote')}</p>
-    <ul className="list">{items.filter((l) => l.country === c).map((l) => <li key={l.id}><a href={`#/local?id=${encodeURIComponent(l.id)}`}><span><b>{l.name}</b>, {l.admin1_name}<br /><span className="meta-13">{t('location.code', { scheme: l.scheme.toUpperCase(), code: l.code })}</span></span></a></li>)}</ul></div>)}</div>;
+    <ul className="list">{items.filter((l) => l.country === c).map((l) => <li key={l.id}><a href={`#/municipio?id=${encodeURIComponent(l.id)}`}><span><b>{l.name}</b>, {l.admin1_name}<br /><span className="meta-13">{t('location.code', { scheme: l.scheme.toUpperCase(), code: l.code })}</span></span></a></li>)}</ul></div>)}</div>;
 }
 
 /** "Regiões com dados": places listed by the API catalogue, with what each one has. */

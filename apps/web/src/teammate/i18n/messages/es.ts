@@ -636,5 +636,6 @@ const m: DeepPartial<Messages> = {
     usTitle: "Estados Unidos",
     usNote: "Centro global: clima, agua del suelo, NDVI y pronóstico. Sin estimación de rendimiento en Estados Unidos en esta versión.",
   },
+  place: { notFoundTitle: "Lugar no encontrado", notFound: "No hay datos publicados para «{id}». Elija un lugar de la lista o búsquelo por nombre.", picker: "Elegir lugar", country: "País", state: "Estado", place: "Lugar", search: "Buscar lugares con datos", searchPh: "Nombre o código oficial (IBGE, FIPS)…", noResult: "No se encontró ningún lugar con datos.", noYieldTitle: "Sin estimación de rendimiento.", noYield: "Esta versión no tiene modelo de rendimiento para este país; sus registros de rendimiento aún no se auditaron. Clima, agua del suelo, NDVI y pronóstico están en las otras pestañas." },
 };
 export default m;

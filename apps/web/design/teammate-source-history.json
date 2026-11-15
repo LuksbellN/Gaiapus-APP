@@ -222,6 +222,24 @@
       "date": "2026-11-15",
       "reason": "location core screen, US in Explore, link from Municipality",
       "sha256": "3c5c1dec337a7a99c1d37b93df43ff04e1df91a9a4b342c0d430c30991685993"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "fa05a4dfa04c626e726b2c42ce29c7017f59af0a8029e50a6143eb5cb9c69482"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "a65a2afc8556fbd1085e8fdc356058f1e2db07ea642b3b0dc1249344d599f525"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "023b68252dc97ca6509828ff72fbb15d7bfd45f2de9d85eb8cb7103259b422c4"
     }
   ]
 }

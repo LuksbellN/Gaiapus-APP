@@ -5,15 +5,16 @@ import { crops, imagery, simulations, weather } from '../adapters';
 import { dFull, n0, n1, nMax, pct } from '../format';
 import { CROP_IDS, CROPS, isCropId, type CropId, isPlainCrop } from '../catalog';
 import { CapabilityTable, ModelStatus, YieldCard } from '../ui/Crops';
-import { Empty, ErrorState, Field, Loading, Notice, Pill, Seg, Source, Stat, TabPanel, Tabs, useAsync } from '../ui';
+import { Empty, ErrorState, Field, Loading, Notice, Pill, Source, Stat, TabPanel, Tabs, useAsync } from '../ui';
 import { DualChart } from '../ui/DualChart';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
 import { ModelTest } from '../ui/SealedTest';
 import { useActiveContext } from '../App';
 import { isKnownPlace, placeName, plotElsewhere, resolvePlace, SORRISO, type ResolvedPlace } from '../context';
 import { ScopeStrip } from '../ui/ScopeStrip';
-import { LinkBtn } from '../ui';
-import { locations, locationIdOf } from '../adapters/locations';
+import { locations, locationIdOf, type LocationCore, type LocationSummary } from '../adapters/locations';
+import { Forecast, Ndvi, Provenance, Scope, Water, Weather } from '../ui/LocationCore';
+import { PlacePicker, type PickItem } from '../ui/PlacePicker';
 import { placesWithData, useCoverageIndex } from '../geo/coverageIndex';
 import { useI18n } from '../i18n';
 
@@ -25,19 +26,39 @@ export function Municipality() {
   const [params, setParams] = useSearchParams(); const ctx = useActiveContext(); const idx = useCoverageIndex();
   // Municipalities with data come from the catalogue; Sorriso and Uberlândia stay available while it loads.
   const placeList = useMemo(() => { const out: [string, string][] = [[SORRISO, placeName(SORRISO)], ['3170206', placeName('3170206')]]; for (const p of placesWithData(idx.index)) if (!out.some(([c]) => c === p.municipality.id)) out.push([p.municipality.id, placeName(p.municipality.id)]); return out; }, [idx.index]); const places = Object.fromEntries(placeList);
-  const resolved = resolvePlace(params, ctx); const place: ResolvedPlace = places[resolved.code] || isKnownPlace(resolved.code) ? resolved : { code: SORRISO, name: placeName(SORRISO), origin: 'demo' }; const code = place.code; const elsewhere = plotElsewhere(place, ctx); const published = useAsync((sg) => locations.list(sg).catch(() => []), []); const coreId = (published.data ?? []).find((l) => l.id === locationIdOf(code))?.id ?? null; const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((x) => x === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const setTab = (x: Tab) => setParams({ mun: code, ...(x === 'clima' ? {} : { aba: x }), ...(x === 'safra' ? keep : {}) });
+  const resolved = resolvePlace(params, ctx); const place: ResolvedPlace = places[resolved.code] || isKnownPlace(resolved.code) ? resolved : { code: SORRISO, name: placeName(SORRISO), origin: 'demo' }; const code = place.code; const elsewhere = plotElsewhere(place, ctx);
+  // One place screen for every country (Docs/2026-11-14-nucleo-global-lugares-design.md): ?id= for any published place, ?mun= for Brazilian codes.
+  const published = useAsync((sg) => locations.list(sg).catch(() => [] as LocationSummary[]), []); const summaries = published.data ?? [];
+  const idParam = params.get('id'); const abroad = idParam && !idParam.startsWith('BR:') ? summaries.find((l) => l.id === idParam) ?? null : null;
+  const coreId = abroad?.id ?? summaries.find((l) => l.id === locationIdOf(code))?.id ?? null;
+  const core = useAsync((sg) => (coreId ? locations.core(coreId, sg).then((r) => r.data) : Promise.resolve(null)), [coreId]);
+  const items: PickItem[] = useMemo(() => { const out = summaries.map((l) => ({ id: l.id, country: l.country, admin1: l.admin1_name, name: l.name, code: l.code, scheme: l.scheme })); for (const [c, label] of placeList) if (!out.some((i) => i.id === `BR:ibge:${c}`)) { const [name, uf = ''] = label.split(', '); out.push({ id: `BR:ibge:${c}`, country: 'BR', admin1: uf, name: name!, code: c, scheme: 'ibge' }); } return out; }, [summaries, placeList]);
+  const tab: Tab = (['clima', 'agua', 'safra', 'imagem'] as const).find((x) => x === params.get('aba')) ?? 'clima'; const keep: Record<string, string> = params.get('cultura') ? { cultura: params.get('cultura')! } : {}; const where: Record<string, string> = abroad ? { id: abroad.id } : { mun: code };
+  const setTab = (x: Tab) => setParams({ ...where, ...(x === 'clima' ? {} : { aba: x }), ...(x === 'safra' ? keep : {}) });
+  const pick = (id: string) => { const next: Record<string, string> = id.startsWith('BR:ibge:') ? { mun: id.slice(8) } : { id }; if (tab !== 'clima') next.aba = tab; setParams(next); };
+  const c = core.data as LocationCore | null | undefined;
+  // An id that is not published is reported, never replaced by another place.
+  const unknownId = !!idParam && !idParam.startsWith('BR:') && published.status !== 'loading' && !abroad;
+  if (unknownId) return <div className="page"><h1>{t('place.notFoundTitle')}</h1><PlacePicker items={items} value={null} onPick={pick} /><Notice tone="risk" title={t('place.notFoundTitle')}>{t('place.notFound', { id: idParam! })}</Notice></div>;
   return (
     <div className="page">
-      <div className="page-head"><div className="stack-2"><h1>{placeName(code)}</h1><p>{t('municipality.subtitle', { code })}</p></div>
-        <Seg legend={t('municipality.choose')} name="mun" value={code} onChange={(v) => setParams({ mun: v, ...(tab === 'clima' ? {} : { aba: tab }), ...(tab === 'safra' ? keep : {}) })} options={placeList.map(([value, label]) => ({ value, label }))} /></div>
-      <ScopeStrip place={place} elsewhere={elsewhere} />
-      {coreId && <div className="row"><LinkBtn sm to={`/local?id=${encodeURIComponent(coreId)}`}>{t('location.nav')}</LinkBtn></div>}
+      <div className="page-head"><div className="stack-2"><h1>{abroad ? `${abroad.name}, ${abroad.admin1_name}` : placeName(code)}</h1><p>{abroad ? t('location.subtitle') : t('municipality.subtitle', { code })}</p></div></div>
+      <PlacePicker items={items} value={abroad?.id ?? `BR:ibge:${code}`} onPick={pick} />
+      {abroad ? (c ? <Scope core={c} /> : null) : <ScopeStrip place={place} elsewhere={elsewhere} />}
       <div data-tour="mun-tabs"><Tabs label={t('municipality.tabs')} value={tab} onChange={setTab} tabs={[{ id: 'clima', label: t('municipality.tab.clima'), icon: <CloudRain size={18} aria-hidden /> }, { id: 'agua', label: t('municipality.tab.agua'), icon: <Droplets size={18} aria-hidden /> }, { id: 'safra', label: t('municipality.tab.safra'), icon: <Sprout size={18} aria-hidden /> }, { id: 'imagem', label: t('municipality.tab.imagem'), icon: <Satellite size={18} aria-hidden /> }]} /></div>
-      <TabPanel id={tab} key={code + tab}>{tab === 'clima' ? <Clima code={code} /> : tab === 'agua' ? <Agua code={code} /> : tab === 'safra' ? <Safra code={code} /> : <Imagem code={code} />}</TabPanel>
+      <TabPanel id={tab} key={(abroad?.id ?? code) + tab}>
+        {coreId && core.status === 'error' && <ErrorState error={core.error} onRetry={core.retry} />}
+        {coreId && core.status === 'loading' && <Loading rows={4} />}
+        {tab === 'clima' ? <>{c && <Weather layer={c.layers.weather} />}{!abroad && <Clima code={code} withCore={!!c} />}</>
+          : tab === 'agua' ? <>{c && <><Water layers={c.layers} /><Forecast layer={c.layers.forecast} /></>}{!abroad && <Agua code={code} withCore={!!c} />}</>
+          : tab === 'safra' ? (abroad ? <Notice tone="warn" title={t('place.noYieldTitle')}><span data-testid="no-yield">{t('place.noYield')}</span></Notice> : <Safra code={code} />)
+          : <>{c && <Ndvi layers={c.layers} />}{!abroad && <Imagem code={code} withCore={!!c} />}</>}
+        {c && <Provenance core={c} />}
+      </TabPanel>
     </div>
   );
 }
-function Clima({ code }: { code: string }) {
+function Clima({ code, withCore }: { code: string; withCore: boolean }) {
   const { t } = useI18n();
   const d = useAsync((s) => (code === '5107925' ? weather.dailySeries(code, s) : Promise.resolve(null)), [code]);
   // Daily rain of the published field, where the municipality has one; no field is not an error.
@@ -52,13 +73,13 @@ function Clima({ code }: { code: string }) {
       <DualChart dates={im.data.data.rainfall.map((r) => r.date)} bars={im.data.data.rainfall.map((r) => r.rain_mm)} barsLabel={t('chart.rainDaily')} ariaLabel={t('municipality.clima.rainChart', { place: placeName(code) })} />
       <Stat label={t('municipality.clima.total')} value={n0(im.data.data.rainfall.reduce((a, r) => a + (r.rain_mm ?? 0), 0))} unit="mm" note={im.data.data.rainfall.some((r) => r.rain_mm == null) ? t('municipality.clima.missingDays') : undefined} />
       <Source meta={{ kind: 'publicacao', source: im.data.data.sources.rain }} extra={[im.data.data.sources.weather_scope, im.data.data.sources.rain_validation].filter(Boolean).join(' ') || undefined} /></section>}
-    <Notice tone="warn" title={t('municipality.clima.gapsTitle')}>{t('municipality.clima.gaps')}</Notice>
+    {!withCore && <Notice tone="warn" title={t('municipality.clima.gapsTitle')}>{t('municipality.clima.gaps')}</Notice>}
   </>;
 }
-function Agua({ code }: { code: string }) {
+function Agua({ code, withCore }: { code: string; withCore: boolean }) {
   const { t } = useI18n();
   const fsd = useAsync((s) => simulations.fieldShift(code, s), [code]); const d = useAsync((s) => weather.dailySeries(code, s), [code]); const [year, setYear] = useState('2020/2021');
-  if ((fsd.error as any)?.code === 'municipality_not_covered') return <Empty title={t('municipality.agua.noneTitle')}>{t('municipality.agua.none')}</Empty>;
+  if ((fsd.error as any)?.code === 'municipality_not_covered') return withCore ? null : <Empty title={t('municipality.agua.noneTitle')}>{t('municipality.agua.none')}</Empty>;
   if (fsd.status === 'error' || d.status === 'error') return <ErrorState error={fsd.error ?? d.error} onRetry={() => { fsd.retry(); d.retry(); }} />;
   if (!fsd.data || !d.data) return <Loading rows={5} />;
   const s = d.data.data.scenarios.reference_fallow; const a = s.agricultural_year.indexOf(year), b = s.agricultural_year.lastIndexOf(year) + 1;
@@ -97,10 +118,10 @@ function SafraCrop({ code, crop }: { code: string; crop: CropId }) {
     <Notice tone="warn" title={t('municipality.safra.pamTitle')}>{t('municipality.safra.pam')}</Notice>
   </div>;
 }
-function Imagem({ code }: { code: string }) {
+function Imagem({ code, withCore }: { code: string; withCore: boolean }) {
   const { t } = useI18n();
   const im = useAsync((s) => imagery.series(code, s), [code]); const idx = useCoverageIndex(); const withField = placesWithData(idx.index).filter((p) => p.fields.length).map((p) => placeName(p.municipality.id));
-  if ((im.error as any)?.code === 'municipality_not_covered') return <Empty title={t('municipality.imagem.noneTitle')}>{withField.length ? t('municipality.imagem.none', { list: withField.join('; ') }) : t('municipality.imagem.noCatalog')}</Empty>;
+  if ((im.error as any)?.code === 'municipality_not_covered') return withCore ? null : <Empty title={t('municipality.imagem.noneTitle')}>{withField.length ? t('municipality.imagem.none', { list: withField.join('; ') }) : t('municipality.imagem.noCatalog')}</Empty>;
   if (im.status === 'error') return <ErrorState error={im.error} onRetry={im.retry} />; if (!im.data) return <Loading rows={5} />;
   const d = im.data.data; const byDate = new Map<string, (typeof d.observations)[number]>(); for (const o of d.observations) { const prev = byDate.get(o.date); if (!prev || (prev.ndvi == null && o.ndvi != null) || (o.ndvi != null && o.valid_fraction > prev.valid_fraction)) byDate.set(o.date, o); } const dates = d.rainfall.map((r) => r.date); const valid = d.observations.filter((o) => o.ndvi != null);
   const ndviAt = byDate.get(d.image.date)?.ndvi;

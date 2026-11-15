@@ -59,3 +59,21 @@ describe('LocationCore v1', () => {
     expect(routes).toContain('GET /v1/places true');
   });
 });
+
+describe('published location cores', () => {
+  it('no US county carries Brazilian values: weather rows, satellite scenes and FAO-56 sets are its own', async () => {
+    const { locationCore, locationSummaries } = await import('./locations.js');
+    const sorriso = locationCore('BR:ibge:5107925')!;
+    const key = (r: { date: string; rain_mm: number; et0_mm: number }) => `${r.date}|${r.rain_mm}|${r.et0_mm}`;
+    const brWeather = new Set(sorriso.layers.weather.status === 'available' ? sorriso.layers.weather.rows.map(key) : []);
+    const brScenes = new Set(sorriso.layers.ndvi.status === 'available' ? sorriso.layers.ndvi.rows.map((r) => r.scene_id) : []);
+    const us = locationSummaries().filter((l) => l.country === 'US');
+    expect(us.map((l) => l.id)).toEqual(['US:fips:19169', 'US:fips:20191', 'US:fips:31185']);
+    for (const { id } of us) {
+      const core = locationCore(id)!;
+      if (core.layers.weather.status === 'available') expect(core.layers.weather.rows.filter((r) => brWeather.has(key(r))), id).toEqual([]);
+      if (core.layers.ndvi.status === 'available') expect(core.layers.ndvi.rows.filter((r) => brScenes.has(r.scene_id)), id).toEqual([]);
+      if (core.layers.water_balance.status === 'available') expect(core.layers.water_balance.seasons.every((s) => s.parameter_set.endsWith('_us')), id).toBe(true);
+    }
+  });
+});

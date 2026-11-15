@@ -260,3 +260,11 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
   .tour-bar--float { top: auto; bottom: 12px; right: 12px; }
   .tour-pop--sheet { bottom: calc(var(--nav-h, 64px) + 12px + env(safe-area-inset-bottom)); }
 }
+
+/* Place picker: country → state → place, plus search (scales to many places in many countries). */
+.place-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); gap: var(--s3); align-items: end; }
+.place-picker .field-inline { display: grid; gap: 4px; font-size: 14px; color: var(--text-2); min-width: 0; }
+.place-picker__search { position: relative; min-width: 0; }
+.place-picker__results { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control); box-shadow: var(--overlay-shadow); max-height: 320px; overflow: auto; }
+@media (max-width: 900px) { .place-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); } .place-picker__search { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .place-picker { grid-template-columns: 1fr; } }

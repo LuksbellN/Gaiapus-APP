@@ -1,16 +1,21 @@
 // Location core in the frontend: US counties and Brazilian municipalities with the same data core.
 import { test, expect } from '../helpers';
 
-const local = (id: string) => `/#/local?id=${encodeURIComponent(id)}`;
+const local = (id: string) => `/#/municipio?id=${encodeURIComponent(id)}&aba=agua`;
 
 test.describe('RT-26 núcleo global (EUA)', () => {
   test('Story County abre com clima, água no solo e NDVI, sem nenhum dado de Sorriso', async ({ page, errors }) => {
     await page.goto(local('US:fips:19169'));
     await expect(page.getByRole('heading', { level: 1, name: 'Story County, Iowa' })).toBeVisible();
-    for (const id of ['location-weather', 'location-water', 'location-ndvi', 'location-forecast', 'location-scope']) await expect(page.getByTestId(id)).toBeVisible();
+    for (const id of ['location-water', 'location-forecast', 'location-scope']) await expect(page.getByTestId(id)).toBeVisible();
+    await page.getByRole('tab', { name: 'Clima' }).click();
+    await expect(page.getByTestId('location-weather')).toBeVisible();
+    await page.getByRole('tab', { name: 'Imagem orbital' }).click();
+    await expect(page.getByTestId('location-ndvi')).toBeVisible();
     await expect(page.getByTestId('location-scope')).toContainText('não observado');
     await expect(page.locator('main')).not.toContainText('Sorriso');
     // Monthly ET0 is drawn as a line on its own scale (not the 0–1 NDVI default).
+    await page.getByRole('tab', { name: 'Clima' }).click();
     expect(await page.getByTestId('location-weather').locator('svg path[d^="M"]').count()).toBeGreaterThan(0);
     await expect(page.getByTestId('location-scope')).toContainText('não é limite de propriedade');
     expect(errors).toEqual([]);
@@ -35,12 +40,11 @@ test.describe('RT-26 núcleo global (EUA)', () => {
     await expect(page.getByTestId('country-detail')).not.toContainText('existem para alguns municípios do Brasil');
   });
 
-  test('município brasileiro com núcleo mostra o atalho; id malformado mostra erro', async ({ page }) => {
-    await page.goto('/#/municipio?mun=5218805');
-    await page.getByRole('link', { name: 'Ver núcleo de dados' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Rio Verde, Goiás' })).toBeVisible();
+  test('município brasileiro mostra o núcleo na própria tela; id malformado não inventa lugar', async ({ page }) => {
+    await page.goto('/#/municipio?mun=5218805&aba=agua');
+    await expect(page.getByTestId('location-water')).toBeVisible();
     await page.goto(local('US:fips:9169'));
-    await expect(page.getByRole('button', { name: 'Tentar de novo' })).toBeVisible();
+    await expect(page.getByTestId('location-water')).toHaveCount(0);
   });
 
   for (const lang of ['de', 'fr']) {
