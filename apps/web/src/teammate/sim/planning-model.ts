@@ -86,3 +86,36 @@ export function planningHref(locationId: string, crop?: string | null): string {
 }
 /** True when a place has something to show in the planning: a daily simulation or a yield result. */
 export const hasPlanningResult = (capabilities: readonly CapabilityLike[] | undefined) => !!capabilities?.some((c) => { const s = coverageOf(c).state; return s === 'daily_series' || s === 'yield_only'; });
+
+type SeasonMembers = { members?: Record<string, Record<string, number | null | undefined>> | null };
+const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+/**
+ * Water satisfaction of one crop season: for each climate member, water used ÷ water needed inside the cycle
+ * (sum of ETa ÷ sum of ETc); the members are summarised afterwards by their median. The median of the ratios is not
+ * the ratio of the medians, so the published quantiles of ETa and of the deficit cannot be combined instead.
+ * Runs without ETc publish ETa and the deficit, and the deficit is ETc − ETa day by day, so ETc = ETa + deficit.
+ * Any member without a positive need or with a missing or non-finite value makes the season "not calculated".
+ */
+export function waterSatisfaction(season: SeasonMembers | null | undefined): { value: number; members: number } | null {
+  const all = Object.values(season?.members ?? {}); if (!all.length) return null;
+  const ratios: number[] = [];
+  for (const m of all) {
+    const eta = m.crop_eta_mm; const need = finite(m.crop_etc_mm) ? m.crop_etc_mm : finite(eta) && finite(m.crop_deficit_mm) ? eta + m.crop_deficit_mm : null;
+    if (!finite(eta) || eta < 0 || need == null || !(need > 0)) return null;
+    ratios.push(eta / need);
+  }
+  ratios.sort((a, b) => a - b); const mid = ratios.length >> 1;
+  return { value: ratios.length % 2 ? ratios[mid] : (ratios[mid - 1] + ratios[mid]) / 2, members: ratios.length };
+}
+/** The crop with the highest water satisfaction, only when at least two were calculated and the highest is alone at the displayed precision (whole percent). */
+export function highestSatisfaction(rows: readonly { id: string; supply: number | null }[]): string | null {
+  const known = rows.filter((r): r is { id: string; supply: number } => r.supply != null).map((r) => ({ id: r.id, shown: Math.round(r.supply * 100) }));
+  if (known.length < 2) return null;
+  const top = Math.max(...known.map((r) => r.shown)); const first = known.filter((r) => r.shown === top);
+  return first.length === 1 ? first[0].id : null;
+}
+type RunScope = { location_id: string; soil: { profile_id: string; capacity_mm: number }; ensemble: { analog_years: readonly number[] } };
+/** Two runs can be put side by side only with the same place, soil hypothesis and climate ensemble. */
+export function comparableRuns(a: RunScope, b: RunScope): boolean {
+  return a.location_id === b.location_id && a.soil.profile_id === b.soil.profile_id && a.soil.capacity_mm === b.soil.capacity_mm && a.ensemble.analog_years.join(',') === b.ensemble.analog_years.join(',');
+}

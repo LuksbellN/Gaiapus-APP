@@ -21,7 +21,7 @@ test.describe('Jornada região → dados → simulação', () => {
     await expect(page.getByRole('heading', { level: 1, name: /Soja em Uberlândia/ })).toBeVisible();
     await page.getByLabel('Cultura').selectOption('maize2');
     await expect(page.getByRole('heading', { level: 1, name: /Milho 2ª safra \(safrinha\) em Uberlândia/ })).toBeVisible();
-    await expect(page.getByTestId('planning-compare').getByText('Melhor atendimento hídrico')).toHaveCount(1);
+    await expect(page.getByTestId('planning-compare').getByText('Maior atendimento hídrico')).toHaveCount(1);
     await page.getByLabel('Estado').selectOption('MT');
     await expect(page.getByRole('heading', { level: 1, name: /em Sorriso/ })).toBeVisible();
     await expect(page.getByTestId('planning-day')).toBeVisible();
@@ -61,5 +61,22 @@ test.describe('Jornada no celular', () => {
     await page.getByRole('tab', { name: 'Indicadores' }).click();
     await expect(page.getByTestId('planning-season')).toContainText('2027/2028');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  });
+});
+
+test.describe('Identidade da execução com rede lenta', () => {
+  test('trocar de lugar não mostra a execução anterior sob o título novo', async ({ page }) => {
+    await page.goto('/#/simulador?modo=planejamento&mun=3170206&cultura=soy&safra=2027&vista=perfil&semwebgl=1');
+    const runId = page.getByTestId('planning-run').locator('code').first();
+    await expect(runId).toBeVisible();
+    const uberlandia = await runId.innerText();
+    await page.route('**/v1/simulations/**', async (route) => { await new Promise((r) => setTimeout(r, 1500)); await route.continue(); });
+    await page.getByLabel('Estado').selectOption('MT');
+    await expect(page.getByRole('heading', { level: 1, name: /em Sorriso/ })).toBeVisible();
+    await expect(page.getByTestId('planning-run')).toHaveCount(0);
+    await expect(page.getByTestId('planning-day')).toHaveCount(0);
+    await expect(runId).toBeVisible({ timeout: 15000 });
+    expect(await runId.innerText()).not.toBe(uberlandia);
+    await expect(page.getByRole('heading', { level: 1, name: /em Sorriso/ })).toBeVisible();
   });
 });

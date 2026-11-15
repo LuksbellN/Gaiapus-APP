@@ -133,4 +133,6 @@ Também mudou: tutorial próprio do planejamento (4 passos, 5 idiomas); os atalh
 
 Verificação: 277 testes unitários do web, 111 testes de navegador (5 novos em `tests/e2e/regressao/jornada.spec.ts`), typecheck e build.
 
+> Correção de 15/11/2026 (sprint final): a contagem do lote 1 no commit `aa5ba36` era **280** testes unitários do web, não 277. A comparação de culturas descrita acima usava a razão das medianas e foi corrigida no marco M0 do sprint final; contagens e evidências atuais ficam em `Docs/sprint-final/ESTADO.md`.
+
 Não entrou neste lote: itens 11, 14, 15, 16 e 17 da seção 4.

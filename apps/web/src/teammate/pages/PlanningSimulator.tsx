@@ -13,7 +13,7 @@ import { ErrorState, Field, Loading, Notice, Pill, Seg, Tabs, useAsync, useMedia
 import { PhaseTimeline, type TimelineSeries } from '../ui/PhaseTimeline';
 import { PlacePicker, type PickItem } from '../ui/PlacePicker';
 import { Field2D, webglAvailable, type FieldState } from '../sim/field-state';
-import { coverageOf, cycleDay, dayInfo, memberOf, memberRows, planningHref, planningPlaceId, seasonIndex, seasonOf, selectPublication, type MemberRole } from '../sim/planning-model';
+import { comparableRuns, coverageOf, cycleDay, dayInfo, highestSatisfaction, memberOf, memberRows, planningHref, planningPlaceId, seasonIndex, seasonOf, selectPublication, waterSatisfaction, type MemberRole } from '../sim/planning-model';
 import { profileLayers } from '../sim/profile-model';
 import { Profile2D } from '../sim/Profile2D';
 import { toSceneState, LEGACY_SCENE_CAPS } from '../sim/scene-adapter';
@@ -71,7 +71,9 @@ export function PlanningSimulator() {
   const year = Number(params.get('safra')) || years.find((y) => coverageOf(capOf(y)).dailySeries) || years.find((y) => coverageOf(capOf(y)).yieldResult) || years[0] || 2027;
   const cap = capOf(year); const cover = coverageOf(cap);
   const pubs = useAsync((s) => (place ? simulations.regional({ location_id: locationId }, s) : Promise.resolve(null)), [locationId, !!place]);
-  const chosen = cover.dailySeries && pubs.data ? selectPublication(pubs.data.items, crop, year) : null;
+  // While a new place loads, the hook still holds the previous answer: only publications of this place are eligible.
+  const own = useMemo(() => (pubs.data?.items ?? []).filter((p) => p.location_id === locationId), [pubs.data, locationId]);
+  const chosen = cover.dailySeries ? selectPublication(own, crop, year) : null;
   const run = useAsync((s) => (chosen ? simulations.run(chosen.run_id, s) : Promise.resolve(null)), [chosen?.run_id]);
   const series = useAsync((s) => (chosen ? simulations.series(chosen.run_id, s) : Promise.resolve(null)), [chosen?.run_id]);
   const placeLabel = place ? placeLabelOf(place) : locationId.startsWith('BR:') ? placeName(codeOf(locationId)) : locationId;
@@ -126,10 +128,13 @@ export function PlanningSimulator() {
     );
   }
   if (run.status === 'error' || series.status === 'error' || pubs.status === 'error') return shell(<ErrorState error={run.error ?? series.error ?? pubs.error} onRetry={() => { run.retry(); series.retry(); pubs.retry(); }} />);
-  if (!run.data || !series.data) return shell(<Loading rows={5} label={t('sim.planning.loading')} />);
+  if (!chosen && pubs.status === 'ok') return shell(<div data-testid="planning-unavailable"><Notice tone="warn" title={t('sim.planning.unavailableTitle')}>{cropLabel}: {t('sim.planning.reasons.source_unavailable')}.</Notice></div>);
+  // One identity on screen: the chosen publication, its run and its series, for this place, crop and harvest year. Anything else is a late answer.
+  const current = chosen && run.data && series.data && run.data.run_id === chosen.run_id && series.data.run_id === chosen.run_id && run.data.location_id === locationId && seasonOf(run.data, crop, year) ? { run: run.data, series: series.data } : null;
+  if (!current) return shell(<Loading rows={5} label={t('sim.planning.loading')} />);
   const siblings = place.capabilities.filter((c) => c.harvest_year === year && coverageOf(c).dailySeries).map((c) => c.crop_id);
-  return <PlanningView key={`${run.data.run_id}:${crop}:${year}`} run={run.data} series={series.data} crop={crop} year={year} title={title} placeLabel={placeLabel} cropLabel={cropLabel}
-    put={put} params={params} where={where} tab={tab} mobile={mobile} locationId={locationId} siblings={siblings} publications={pubs.data?.items ?? []} />;
+  return <PlanningView key={`${current.run.run_id}:${crop}:${year}`} run={current.run} series={current.series} crop={crop} year={year} title={title} placeLabel={placeLabel} cropLabel={cropLabel}
+    put={put} params={params} where={where} tab={tab} mobile={mobile} locationId={locationId} siblings={siblings} publications={own} />;
 }
 
 type Run = NonNullable<Awaited<ReturnType<typeof simulations.run>>>;
@@ -284,15 +289,16 @@ function CropComparison({ run, crop, year, placeLabel, locationId, siblings, pub
   const { t } = useI18n(); const cropName = useCropName();
   const others = siblings.filter((id) => id !== crop).map((id) => ({ id, pub: selectPublication(publications, id, year) })).filter((x) => x.pub);
   const loaded = useAsync((s) => Promise.all(others.map(async (o) => ({ id: o.id, run: o.pub!.run_id === run.run_id ? run : await simulations.run(o.pub!.run_id, s) }))), [run.run_id, year, others.map((o) => o.pub!.run_id).join(',')]);
-  const rows = [{ id: crop, run }, ...(loaded.data ?? [])].map(({ id, run: r }) => {
-    const s = seasonOf(r, id, year); const qs = s?.quantiles ?? {};
-    // Water the crop used ÷ water it needed. Runs without ETc publish ETa and the deficit: ETc = ETa + deficit.
-    const need = qs.crop_etc_mm?.p50 ?? (qs.crop_eta_mm && qs.crop_deficit_mm ? qs.crop_eta_mm.p50 + qs.crop_deficit_mm.p50 : null);
-    const supply = qs.crop_eta_mm && need != null && need > 0 ? qs.crop_eta_mm.p50 / need : null;
-    const y = s?.yield;
-    return { id, supply, stress: qs.stress_days?.p50 ?? qs.reproductive_stress_days?.p50 ?? null, deficit: qs.crop_deficit_mm?.p50 ?? null, yieldValue: y && y.status !== 'unavailable' ? y.value_kg_ha : null };
+  // Late answers of another set of runs are dropped: each sibling must be the run its publication names.
+  const fresh = (loaded.data ?? []).filter((x) => others.some((o) => o.id === x.id && o.pub!.run_id === x.run.run_id));
+  const rows = [{ id: crop, run }, ...fresh].map(({ id, run: r }) => {
+    const s = seasonOf(r, id, year); const qs = s?.quantiles ?? {}; const y = s?.yield;
+    const comparable = comparableRuns(run, r);
+    return { id, comparable, supply: comparable ? waterSatisfaction(s)?.value ?? null : null, stress: qs.stress_days?.p50 ?? null, stressRepro: qs.reproductive_stress_days?.p50 ?? null, deficit: qs.crop_deficit_mm?.p50 ?? null,
+      yieldValue: y && y.status !== 'unavailable' ? y.value_kg_ha : null, season: s };
   });
-  const best = rows.filter((r) => r.supply != null).sort((a, b) => b.supply! - a.supply!)[0]?.id;
+  const best = loaded.status === 'ok' ? highestSatisfaction(rows) : null;
+  const none = <span className="meta-13">{t('sim.planning.compareNotCalculated')}</span>;
   return (
     <div className="card" data-testid="planning-compare" data-tour="plan-compare"><h2 className="h3">{t('sim.planning.compareTitle', { place: placeLabel, year })}</h2>
       {siblings.length < 2 ? <p className="meta-13">{t('sim.planning.compareOne', { crop: cropName(crop) })}</p>
@@ -301,8 +307,12 @@ function CropComparison({ run, crop, year, placeLabel, locationId, siblings, pub
           {/* One block per crop: the panel is narrow, and a wide table would hide the numbers behind a sideways scroll. */}
           <ul className="compare-list">{rows.map((r) => <li key={r.id} data-current={r.id === crop} data-crop={r.id}>
             <div className="compare-list__head">{r.id === crop ? <span><b>{cropName(r.id)}</b> <span className="meta-13">{t('sim.planning.compareCurrent')}</span></span> : <a href={`${planningHref(locationId, r.id)}&safra=${year}`}><b>{cropName(r.id)}</b></a>}{r.id === best && <Pill tone="ok">{t('sim.planning.compareBest')}</Pill>}</div>
-            <dl className="kv"><dt>{t('sim.planning.compareSupply')}</dt><dd>{r.supply == null ? '—' : pct(r.supply)}</dd><dt>{t('sim.planning.compareStress')}</dt><dd>{r.stress == null ? '—' : n0(r.stress)}</dd>
-              <dt>{t('sim.planning.compareDeficit')}</dt><dd>{r.deficit == null ? '—' : n0(r.deficit)}</dd><dt>{t('sim.planning.compareYield')}</dt><dd>{r.yieldValue == null ? '—' : n0(r.yieldValue)}</dd></dl></li>)}</ul>
+            {r.season && <p className="meta-13" data-testid="compare-calendar">{t('sim.planning.compareCalendar', { sowing: dFull(r.season.sowing_date), harvest: dFull(r.season.expected_harvest_date), days: r.season.cycle_days })}</p>}
+            {!r.comparable && <p className="meta-13" data-testid="compare-incompatible">{t('sim.planning.compareIncompatible')}</p>}
+            <dl className="kv"><dt>{t('sim.planning.compareSupply')}</dt><dd data-metric="supply">{r.supply == null ? none : pct(r.supply)}</dd>
+              <dt>{t('sim.planning.compareStress')}</dt><dd data-metric="stress">{r.stress == null ? none : n0(r.stress)}</dd>
+              <dt>{t('sim.planning.compareStressRepro')}</dt><dd data-metric="stress-repro">{r.stressRepro == null ? none : n0(r.stressRepro)}</dd>
+              <dt>{t('sim.planning.compareDeficit')}</dt><dd data-metric="deficit">{r.deficit == null ? none : n0(r.deficit)}</dd><dt>{t('sim.planning.compareYield')}</dt><dd data-metric="yield">{r.yieldValue == null ? none : n0(r.yieldValue)}</dd></dl></li>)}</ul>
           {loaded.status === 'loading' && <p className="meta-13" role="status">{t('sim.planning.compareLoading')}</p>}
           <p className="meta-13">{t('sim.planning.compareRule')}</p>
           <p className="meta-13"><b>{t('sim.planning.compareNot')}</b></p>

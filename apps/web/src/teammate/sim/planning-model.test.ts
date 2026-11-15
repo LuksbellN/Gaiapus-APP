@@ -89,3 +89,43 @@ describe('planning links and place of the screen', () => {
     expect(hasPlanningResult(undefined)).toBe(false);
   });
 });
+
+// Water satisfaction of a crop season: per climate member, water used ÷ water needed; the members are summarised afterwards.
+import { comparableRuns, highestSatisfaction, waterSatisfaction } from './planning-model';
+describe('water satisfaction per member, then summarised', () => {
+  const season = (members: Record<string, Record<string, number | null>>) => ({ members }) as any;
+  it('is the median of the member ratios, not the ratio of the medians', () => {
+    const s = season({ a: { crop_eta_mm: 10, crop_deficit_mm: 90 }, b: { crop_eta_mm: 80, crop_deficit_mm: 20 }, c: { crop_eta_mm: 60, crop_deficit_mm: 10 } });
+    const r = waterSatisfaction(s);
+    expect(r?.value).toBeCloseTo(0.8, 12);
+    expect(r?.value).not.toBeCloseTo(0.75, 6); // p50(ETa) / (p50(ETa) + p50(deficit)) = 60 / 80
+    expect(r?.members).toBe(3);
+  });
+  it('uses the published crop need (ETc) when the run has it', () => {
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: 30, crop_etc_mm: 60, crop_deficit_mm: 30 }, b: { crop_eta_mm: 50, crop_etc_mm: 50, crop_deficit_mm: 0 } }))?.value).toBeCloseTo(0.75, 12);
+  });
+  it('is not calculated when a member has no need, a missing value or a non-finite value: absence is not zero', () => {
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: 0, crop_etc_mm: 0 }, b: { crop_eta_mm: 5, crop_etc_mm: 10 } }))).toBeNull();
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: 5 }, b: { crop_eta_mm: 5, crop_etc_mm: 10 } }))).toBeNull();
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: Number.NaN, crop_etc_mm: 10 } }))).toBeNull();
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: null, crop_deficit_mm: 4 } }))).toBeNull();
+    expect(waterSatisfaction(season({ a: { crop_eta_mm: -1, crop_etc_mm: 10 } }))).toBeNull();
+    expect(waterSatisfaction(season({}))).toBeNull();
+    expect(waterSatisfaction(null)).toBeNull();
+    expect(waterSatisfaction({} as any)).toBeNull();
+  });
+  it('marks the highest value only when it is alone at the displayed precision', () => {
+    expect(highestSatisfaction([{ id: 'soy', supply: 0.71 }, { id: 'maize', supply: 0.64 }])).toBe('soy');
+    expect(highestSatisfaction([{ id: 'soy', supply: 0.712 }, { id: 'maize', supply: 0.708 }])).toBeNull(); // both read 71%
+    expect(highestSatisfaction([{ id: 'soy', supply: null }, { id: 'maize', supply: 0.64 }])).toBeNull(); // nothing to compare with
+    expect(highestSatisfaction([{ id: 'soy', supply: null }, { id: 'maize', supply: 0.64 }, { id: 'wheat', supply: 0.5 }])).toBe('maize');
+    expect(highestSatisfaction([])).toBeNull();
+  });
+  it('compares only runs of the same place, soil and climate ensemble', () => {
+    const r = (o: object = {}) => ({ location_id: 'US:fips:19169', soil: { profile_id: 'p', capacity_mm: 120 }, ensemble: { analog_years: [2000, 2001] }, ...o }) as any;
+    expect(comparableRuns(r(), r())).toBe(true);
+    expect(comparableRuns(r(), r({ location_id: 'US:fips:20191' }))).toBe(false);
+    expect(comparableRuns(r(), r({ soil: { profile_id: 'p', capacity_mm: 90 } }))).toBe(false);
+    expect(comparableRuns(r(), r({ ensemble: { analog_years: [2000, 2002] } }))).toBe(false);
+  });
+});

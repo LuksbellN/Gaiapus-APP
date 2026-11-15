@@ -150,8 +150,26 @@ it('compares the calculated crops of the place by water supply, stating it is no
   expect(await within(card).findByRole('link', { name: /Milho 2ª safra/ })).toBeInTheDocument();
   const items = within(card).getAllByRole('listitem');
   expect(items.map((li) => li.getAttribute('data-crop'))).toEqual(['soy', 'maize2']);
-  for (const li of items) expect(li).toHaveTextContent(/Atendimento hídrico\d+\s?%/);
-  expect(within(card).getAllByText('Melhor atendimento hídrico')).toHaveLength(1);
+  // Per climate member: ETa ÷ ETc of the cycle; the card shows the median of those ratios (not the ratio of the published medians).
+  const expected = (crop: string) => {
+    const pub = index.publications.find((p: any) => p.location_id === 'BR:ibge:3170206' && p.crops[p.crops.length - 1] === crop);
+    const season = runOf(pub.run_id).seasons.find((x: any) => x.crop_id === crop && x.harvest_year === 2027);
+    const ratios = Object.values(season.members as Record<string, any>).map((m) => m.crop_eta_mm / m.crop_etc_mm).sort((a, b) => a - b);
+    expect(ratios).toHaveLength(22);
+    return Math.round(((ratios[10] + ratios[11]) / 2) * 100);
+  };
+  for (const li of items) {
+    const crop = li.getAttribute('data-crop')!;
+    expect(li.querySelector('[data-metric="supply"]')).toHaveTextContent(new RegExp(`^${expected(crop)}\\s?%$`));
+    expect(li.querySelector('[data-metric="stress"]')).toHaveTextContent(/^\d+$/);
+    expect(li.querySelector('[data-metric="stress-repro"]')).toHaveTextContent(/^\d+$/);
+    expect(within(li).getByTestId('compare-calendar')).toHaveTextContent(/Semeadura em .* ciclo de \d+ dias/);
+    expect(li).toHaveTextContent('Dias com estresse (ciclo inteiro)');
+    expect(li).toHaveTextContent('Dias com estresse na fase reprodutiva');
+  }
+  expect(within(card).getAllByText('Maior atendimento hídrico')).toHaveLength(1);
+  expect(card).not.toHaveTextContent(/Melhor/);
+  expect(card).toHaveTextContent(/não indica maior rendimento/);
   expect(card).toHaveTextContent(/não é recomendação/i);
   expect(within(card).getByRole('link', { name: /Milho 2ª safra/ })).toHaveAttribute('href', expect.stringContaining('cultura=maize2'));
 });
