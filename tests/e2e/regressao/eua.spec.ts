@@ -28,12 +28,17 @@ test.describe('RT-26 núcleo global (EUA)', () => {
     await expect(page.getByTestId('forecast-issued')).toContainText('Emitida em');
   });
 
-  test('Regiões com dados: EUA aparecem uma vez, Sorriso uma vez; o país EUA lista os condados', async ({ page }) => {
+  // Desde "países primeiro" (PR #10) o atalho abre a lista de países; as regiões aparecem dentro de cada país.
+  test('Regiões com dados: EUA e Brasil aparecem uma vez como países, Sorriso uma vez no Brasil; o país EUA lista os condados', async ({ page }) => {
     await page.goto('/#/explorar?semwebgl=1');
     await page.getByRole('button', { name: /Regiões com dados/ }).click();
+    const countries = page.getByRole('list', { name: 'Países', exact: true });
+    await expect(countries.getByRole('button', { name: /Estados Unidos/ })).toHaveCount(1);
+    await expect(countries.getByRole('button', { name: /Brasil/ })).toHaveCount(1);
+    await countries.getByRole('button', { name: /Brasil/ }).click();
     const list = page.getByTestId('with-data');
-    await expect(list.getByText('Story County', { exact: true })).toHaveCount(1);
     await expect(list.getByText(/^Sorriso/)).toHaveCount(1);
+    await expect(list).not.toContainText('Story County');
     await page.goto('/#/explorar?semwebgl=1&pais=USA');
     await expect(page.getByTestId('abroad-list').getByText('Sumner County', { exact: true })).toBeVisible();
     await expect(page.locator('main')).not.toContainText('sem análise nesta versão');
