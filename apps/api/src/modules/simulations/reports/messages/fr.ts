@@ -90,7 +90,7 @@ const fr: ReportMessages = {
     tableCaption: 'Statistiques de campagne sur les scénarios — {season}',
     colIndicator: 'Indicateur', colUnit: 'Unité', colP10: 'P10', colP50: 'P50 (médiane)', colP90: 'P90', colN: 'Scénarios (n)',
     notes: {
-      quantiles: 'P10, P50 et P90 sont des quantiles de chaque indicateur sur les scénarios. P10 n’est pas toujours le côté défavorable : un déficit plus faible est favorable, une pluie plus faible ne l’est pas.',
+      quantiles: 'P10, P50 et P90 sont des quantiles de chaque indicateur sur les scénarios. P10 est le côté bas de cet indicateur, non un « mauvais scénario » : pour le déficit, le côté bas est celui de la moindre limitation hydrique.',
       spread: 'La plage P10–P90 est la dispersion des scénarios simulés ({method}). Ce n’est pas un intervalle de confiance à 80 % calibré.',
       etc: 'ETc est la demande d’évapotranspiration de la culture dans les conditions du modèle.',
       eta: 'ETa est l’évapotranspiration que le modèle estime réellement survenue avec l’eau disponible.',
@@ -116,11 +116,11 @@ const fr: ReportMessages = {
   metric: {
     precipitation_mm: 'Précipitations sur le cycle de la culture', rain_mm: 'Précipitations sur le cycle de la culture', crop_etc_mm: 'Demande d’évapotranspiration de la culture (ETc)', crop_eta_mm: 'Évapotranspiration réelle de la culture (ETa)',
     crop_deficit_mm: 'Déficit d’évapotranspiration de la culture (ETc − ETa)', mean_storage_mm: 'Stock moyen d’eau du sol', stress_days: 'Jours avec stress hydrique (Ks < 1)',
-    reproductive_stress_days: 'Jours avec stress hydrique en phase reproductive', max_dry_spell_days: 'Plus longue séquence sèche (jours consécutifs avec pluie < 1 mm)', yield_kg_ha: 'Rendement modélisé sur les scénarios',
+    reproductive_stress_days: 'Jours avec stress hydrique en phase reproductive', max_dry_spell_days: 'Plus longue séquence sèche sur le cycle de la culture', yield_kg_ha: 'Rendement modélisé sur les scénarios',
   },
   event: {
     reproductive_stress_days_ge_10: 'au moins 10 jours de culture en phase reproductive avec stress hydrique (Ks < 1), pas nécessairement consécutifs',
-    reproductive_stress_ge_20d: 'au moins 20 jours de culture en phase reproductive avec stress hydrique (Ks < 1), pas nécessairement consécutifs',
+    reproductive_stress_ge_20d: 'au moins 20 jours de culture en phase reproductive avec stress hydrique (Ks < 1)',
     crop_deficit_mm_ge_100: 'somme sur la campagne de ETc − ETa pendant les jours de culture d’au moins 100 mm',
     dry_spell_ge_15_days_in_season: 'au moins une séquence de 15 jours de culture consécutifs avec des précipitations inférieures à 1 mm par jour',
   },
@@ -147,7 +147,7 @@ const fr: ReportMessages = {
   },
   yield: {
     seasonHeading: 'Rendement — {season}',
-    unavailable: 'Rendement indisponible : {reason}. Aucune valeur de substitution n’est affichée. Il sera disponible lorsque la source de données de la référence de rendement couvrira ce lieu.',
+    unavailable: 'Rendement indisponible : {reason}. Aucune valeur de substitution n’est affichée. Un rendement n’apparaîtra ici que lorsqu’une publication ultérieure en fournira un pour ce lieu et cette culture.',
     kind: 'Type de résultat', kindReference: 'Référence historique municipale (pas une prévision pour cette récolte)', kindModel: 'Résultat de modèle',
     value: 'Valeur', valueText: '{value} kg/ha',
     method: 'Méthode', scale: 'Échelle spatiale', scaleMunicipal: 'municipalité — pas une estimation pour une parcelle', scaleCounty: 'comté — pas une estimation pour une parcelle ou une exploitation', scaleOther: 'telle que déclarée par la source : {original}',

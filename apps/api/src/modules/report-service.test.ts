@@ -97,7 +97,8 @@ describe('POST /v1/simulations/:id/report', () => {
 
   it('accepts ids, scope, locale and time zone only, with size limits; anything else is refused', async () => {
     const { app, post } = harness();
-    for (const body of [{ facts: { seasons: [] } }, { locale: 'x'.repeat(300) }, { quantiles: { crop_deficit_mm: { p50: 1 } } }, { template_version: '0' }, { scope: { kind: 'season', crop_id: 'soy' } }, { scope: 'run' }, { display_profile: { time_zone: 'UTC', units: 'imperial' } }]) {
+    // A regional public report cannot be enriched by the request (review focus 1): private budget, prices or area are refused.
+    for (const body of [{ budget: { currency: 'BRL', costs: [{ item: 'seed', value: 900 }] } }, { area_ha: 120 }, { price_per_kg: 2.1 }, { notes: 'private note' }, { facts: { seasons: [] } }, { locale: 'x'.repeat(300) }, { quantiles: { crop_deficit_mm: { p50: 1 } } }, { template_version: '0' }, { scope: { kind: 'season', crop_id: 'soy' } }, { scope: 'run' }, { display_profile: { time_zone: 'UTC', units: 'imperial' } }]) {
       const response = await post(UBERLANDIA_ROTATION, body);
       expect([response.statusCode, response.json().error.code], JSON.stringify(body)).toEqual([422, 'invalid_input']);
       expect(response.headers['cache-control']).toBe('private, no-store');

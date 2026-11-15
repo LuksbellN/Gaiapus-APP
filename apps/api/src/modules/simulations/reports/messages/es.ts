@@ -89,7 +89,7 @@ const es: ReportMessages = {
     tableCaption: 'Estadísticas de la campaña en los escenarios — {season}',
     colIndicator: 'Indicador', colUnit: 'Unidad', colP10: 'P10', colP50: 'P50 (mediana)', colP90: 'P90', colN: 'Escenarios (n)',
     notes: {
-      quantiles: 'P10, P50 y P90 son cuantiles de cada indicador en los escenarios. P10 no siempre es el lado desfavorable: un déficit menor es favorable, una lluvia menor no lo es.',
+      quantiles: 'P10, P50 y P90 son cuantiles de cada indicador en los escenarios. P10 es el extremo bajo de ese indicador, no un «escenario malo»: en el déficit, el extremo bajo es el de menor limitación hídrica.',
       spread: 'El rango P10–P90 es la dispersión de los escenarios simulados ({method}). No es un intervalo de confianza del 80% calibrado.',
       etc: 'ETc es la demanda de evapotranspiración del cultivo en las condiciones del modelo.',
       eta: 'ETa es la evapotranspiración que el modelo estima que ocurrió realmente con el agua disponible.',
@@ -115,11 +115,11 @@ const es: ReportMessages = {
   metric: {
     precipitation_mm: 'Precipitación en el ciclo del cultivo', rain_mm: 'Precipitación en el ciclo del cultivo', crop_etc_mm: 'Demanda de evapotranspiración del cultivo (ETc)', crop_eta_mm: 'Evapotranspiración real del cultivo (ETa)',
     crop_deficit_mm: 'Déficit de evapotranspiración del cultivo (ETc − ETa)', mean_storage_mm: 'Almacenamiento medio de agua en el suelo', stress_days: 'Días con estrés hídrico (Ks < 1)',
-    reproductive_stress_days: 'Días con estrés hídrico en la fase reproductiva', max_dry_spell_days: 'Racha seca más larga (días consecutivos con lluvia < 1 mm)', yield_kg_ha: 'Rendimiento modelado en los escenarios',
+    reproductive_stress_days: 'Días con estrés hídrico en la fase reproductiva', max_dry_spell_days: 'Racha seca más larga en el ciclo del cultivo', yield_kg_ha: 'Rendimiento modelado en los escenarios',
   },
   event: {
     reproductive_stress_days_ge_10: 'al menos 10 días del cultivo en la fase reproductiva con estrés hídrico (Ks < 1), no necesariamente consecutivos',
-    reproductive_stress_ge_20d: 'al menos 20 días del cultivo en la fase reproductiva con estrés hídrico (Ks < 1), no necesariamente consecutivos',
+    reproductive_stress_ge_20d: 'al menos 20 días del cultivo en la fase reproductiva con estrés hídrico (Ks < 1)',
     crop_deficit_mm_ge_100: 'suma en la campaña de ETc − ETa en los días del cultivo de al menos 100 mm',
     dry_spell_ge_15_days_in_season: 'al menos una secuencia de 15 días consecutivos del cultivo con precipitación inferior a 1 mm por día',
   },
@@ -146,7 +146,7 @@ const es: ReportMessages = {
   },
   yield: {
     seasonHeading: 'Rendimiento — {season}',
-    unavailable: 'Rendimiento no disponible: {reason}. No se muestra ningún valor sustituto. Estará disponible cuando la fuente de datos de la referencia de rendimiento cubra este lugar.',
+    unavailable: 'Rendimiento no disponible: {reason}. No se muestra ningún valor sustituto. Aquí solo aparecerá un rendimiento cuando una publicación posterior lo proporcione para este lugar y este cultivo.',
     kind: 'Tipo de resultado', kindReference: 'Referencia histórica municipal (no es un pronóstico para esta cosecha)', kindModel: 'Resultado de modelo',
     value: 'Valor', valueText: '{value} kg/ha',
     method: 'Método', scale: 'Escala espacial', scaleMunicipal: 'municipio — no es una estimación para una parcela', scaleCounty: 'condado — no es una estimación para una parcela o una finca', scaleOther: 'según la declara la fuente: {original}',

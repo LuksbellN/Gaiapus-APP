@@ -12,7 +12,7 @@ import { REPORT_LOCALES } from './locale.js';
 import { precomputeReports } from './precompute.js';
 import { PINNED_REPORTS_DIR } from './repository.js';
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2).filter(arg => arg !== '--');
 const value = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
 const known = new Set(['--check', '--prune', '--source', '--out', '--locales']);
 for (const [i, arg] of args.entries()) if (arg.startsWith('--') ? !known.has(arg) : !['--source', '--out', '--locales'].includes(args[i - 1] ?? '')) throw new Error(`Unknown argument: ${arg}`);

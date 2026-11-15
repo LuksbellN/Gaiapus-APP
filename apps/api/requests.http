@@ -26,3 +26,10 @@ Idempotency-Key: replace-with-a-new-unique-save-key
 Content-Type: application/json
 
 {"source":{"kind":"example","example_id":"yield-soy-5107925-day75"},"title":"Sorriso retrospective example"}
+### Ensure the technical report of a future simulation (idempotent; locale of the interface, English when absent)
+POST {{base}}/v1/simulations/sim_fd61ab4118a4e32398a12156/report
+Content-Type: application/json
+
+{"locale":"pt-BR","scope":{"kind":"season","crop_id":"soy","harvest_year":2027}}
+### Read a saved report (format=json|html|md); take report_id from the response above
+GET {{base}}/v1/simulations/sim_fd61ab4118a4e32398a12156/report?report_id={{reportId}}&format=md

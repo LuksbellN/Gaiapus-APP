@@ -90,7 +90,7 @@ const en = {
     tableCaption: 'Seasonal statistics across the scenarios — {season}',
     colIndicator: 'Indicator', colUnit: 'Unit', colP10: 'P10', colP50: 'P50 (median)', colP90: 'P90', colN: 'Scenarios (n)',
     notes: {
-      quantiles: 'P10, P50 and P90 are quantiles of each indicator across the scenarios. P10 is not always the unfavourable side: a smaller deficit is favourable, a smaller rainfall is not.',
+      quantiles: 'P10, P50 and P90 are quantiles of each indicator across the scenarios. P10 is the low end of that indicator, not a “bad scenario”: for the deficit, the low end is the side with less water limitation.',
       spread: 'The P10–P90 range is the spread of the simulated scenarios ({method}). It is not a calibrated 80% confidence interval.',
       etc: 'ETc is the evapotranspiration demand of the crop under the conditions of the model.',
       eta: 'ETa is the evapotranspiration the model estimates actually happened with the water available.',
@@ -116,11 +116,11 @@ const en = {
   metric: {
     precipitation_mm: 'Precipitation in the crop cycle', rain_mm: 'Precipitation in the crop cycle', crop_etc_mm: 'Crop evapotranspiration demand (ETc)', crop_eta_mm: 'Actual crop evapotranspiration (ETa)',
     crop_deficit_mm: 'Crop evapotranspiration deficit (ETc − ETa)', mean_storage_mm: 'Mean soil water storage', stress_days: 'Days with water stress (Ks < 1)',
-    reproductive_stress_days: 'Days with water stress in the reproductive phase', max_dry_spell_days: 'Longest dry spell (consecutive days with rain < 1 mm)', yield_kg_ha: 'Modelled yield across the scenarios',
+    reproductive_stress_days: 'Days with water stress in the reproductive phase', max_dry_spell_days: 'Longest dry spell in the crop cycle', yield_kg_ha: 'Modelled yield across the scenarios',
   },
   event: {
     reproductive_stress_days_ge_10: 'at least 10 crop days in the reproductive phase with water stress (Ks < 1), not necessarily consecutive',
-    reproductive_stress_ge_20d: 'at least 20 crop days in the reproductive phase with water stress (Ks < 1), not necessarily consecutive',
+    reproductive_stress_ge_20d: 'at least 20 crop days in the reproductive phase with water stress (Ks < 1)',
     crop_deficit_mm_ge_100: 'seasonal sum of ETc − ETa on crop days of at least 100 mm',
     dry_spell_ge_15_days_in_season: 'at least one run of 15 consecutive crop days with precipitation below 1 mm per day',
   },
@@ -147,7 +147,7 @@ const en = {
   },
   yield: {
     seasonHeading: 'Yield — {season}',
-    unavailable: 'Yield unavailable: {reason}. No substitute value is shown. It becomes available when the data source of the yield reference covers this place.',
+    unavailable: 'Yield unavailable: {reason}. No substitute value is shown. A yield appears here only when a later publication provides one for this place and crop.',
     kind: 'Kind of result', kindReference: 'Historical municipal reference (not a forecast for this harvest)', kindModel: 'Model result',
     value: 'Value', valueText: '{value} kg/ha',
     method: 'Method', scale: 'Spatial scale', scaleMunicipal: 'municipality — not an estimate for a field', scaleCounty: 'county — not an estimate for a field or a farm', scaleOther: 'as declared by the source: {original}',

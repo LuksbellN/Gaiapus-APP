@@ -89,7 +89,7 @@ const de: ReportMessages = {
     tableCaption: 'Saisonstatistiken über die Szenarien — {season}',
     colIndicator: 'Kennzahl', colUnit: 'Einheit', colP10: 'P10', colP50: 'P50 (Median)', colP90: 'P90', colN: 'Szenarien (n)',
     notes: {
-      quantiles: 'P10, P50 und P90 sind Quantile jeder Kennzahl über die Szenarien. P10 ist nicht immer die ungünstige Seite: Ein kleineres Defizit ist günstig, ein geringerer Niederschlag nicht.',
+      quantiles: 'P10, P50 und P90 sind Quantile jeder Kennzahl über die Szenarien. P10 ist das untere Ende dieser Kennzahl, kein „schlechtes Szenario“: Beim Defizit ist das untere Ende die Seite mit weniger Wasserlimitierung.',
       spread: 'Der Bereich P10–P90 ist die Streuung der simulierten Szenarien ({method}). Er ist kein kalibriertes 80-%-Konfidenzintervall.',
       etc: 'ETc ist der Evapotranspirationsbedarf der Kultur unter den Bedingungen des Modells.',
       eta: 'ETa ist die Evapotranspiration, die nach Schätzung des Modells mit dem verfügbaren Wasser tatsächlich stattfand.',
@@ -115,11 +115,11 @@ const de: ReportMessages = {
   metric: {
     precipitation_mm: 'Niederschlag im Zyklus der Kultur', rain_mm: 'Niederschlag im Zyklus der Kultur', crop_etc_mm: 'Evapotranspirationsbedarf der Kultur (ETc)', crop_eta_mm: 'Tatsächliche Evapotranspiration der Kultur (ETa)',
     crop_deficit_mm: 'Evapotranspirationsdefizit der Kultur (ETc − ETa)', mean_storage_mm: 'Mittlerer Bodenwasserspeicher', stress_days: 'Tage mit Wasserstress (Ks < 1)',
-    reproductive_stress_days: 'Tage mit Wasserstress in der generativen Phase', max_dry_spell_days: 'Längste Trockenperiode (aufeinanderfolgende Tage mit Regen < 1 mm)', yield_kg_ha: 'Modellierter Ertrag über die Szenarien',
+    reproductive_stress_days: 'Tage mit Wasserstress in der generativen Phase', max_dry_spell_days: 'Längste Trockenperiode im Zyklus der Kultur', yield_kg_ha: 'Modellierter Ertrag über die Szenarien',
   },
   event: {
     reproductive_stress_days_ge_10: 'mindestens 10 Tage der Kultur in der generativen Phase mit Wasserstress (Ks < 1), nicht unbedingt aufeinanderfolgend',
-    reproductive_stress_ge_20d: 'mindestens 20 Tage der Kultur in der generativen Phase mit Wasserstress (Ks < 1), nicht unbedingt aufeinanderfolgend',
+    reproductive_stress_ge_20d: 'mindestens 20 Tage der Kultur in der generativen Phase mit Wasserstress (Ks < 1)',
     crop_deficit_mm_ge_100: 'Saisonsumme von ETc − ETa an den Tagen der Kultur von mindestens 100 mm',
     dry_spell_ge_15_days_in_season: 'mindestens eine Folge von 15 aufeinanderfolgenden Tagen der Kultur mit weniger als 1 mm Niederschlag pro Tag',
   },
@@ -146,7 +146,7 @@ const de: ReportMessages = {
   },
   yield: {
     seasonHeading: 'Ertrag — {season}',
-    unavailable: 'Ertrag nicht verfügbar: {reason}. Es wird kein Ersatzwert gezeigt. Er wird verfügbar, sobald die Datenquelle der Ertragsreferenz diesen Ort abdeckt.',
+    unavailable: 'Ertrag nicht verfügbar: {reason}. Es wird kein Ersatzwert gezeigt. Ein Ertrag erscheint hier erst, wenn eine spätere Veröffentlichung einen für diesen Ort und diese Kultur liefert.',
     kind: 'Art des Ergebnisses', kindReference: 'Historische kommunale Referenz (keine Prognose für diese Ernte)', kindModel: 'Modellergebnis',
     value: 'Wert', valueText: '{value} kg/ha',
     method: 'Methode', scale: 'Räumlicher Maßstab', scaleMunicipal: 'Gemeinde — keine Schätzung für einen Schlag', scaleCounty: 'County — keine Schätzung für einen Schlag oder einen Betrieb', scaleOther: 'wie von der Quelle angegeben: {original}',

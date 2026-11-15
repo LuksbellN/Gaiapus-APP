@@ -1,0 +1,209 @@
+{
+ "environment": {
+  "node": "v22.23.2",
+  "platform": "win32 10.0.26300",
+  "cpu": "Intel(R) Core(TM) i9-14900K",
+  "logical_cpus": 32,
+  "memory_gb": 64,
+  "measured_at": "2026-11-15T23:41:36.705Z",
+  "note": "shared developer machine with other processes running; single measurement session"
+ },
+ "per_run": [
+  {
+   "run_id": "sim_9cd555885306ffcd15715546",
+   "place": "Barreiras",
+   "plan": "soy",
+   "seasons": 2,
+   "first_report_ms": 126.57,
+   "generation_ms_median": 10.02,
+   "generation_ms_max": 15.88,
+   "reuse_ms_median": 0.04,
+   "reuse_ms_max": 0.25,
+   "bytes_en": {
+    "html": 68549,
+    "md": 20185,
+    "json": 57807
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 70504,
+    "en": 68549,
+    "es": 71208,
+    "fr": 72054,
+    "de": 70635
+   }
+  },
+  {
+   "run_id": "sim_88fd3ea122a8ad02ced3f899",
+   "place": "Uberlândia",
+   "plan": "soy",
+   "seasons": 2,
+   "first_report_ms": 61.87,
+   "generation_ms_median": 9.45,
+   "generation_ms_max": 14.96,
+   "reuse_ms_median": 0.04,
+   "reuse_ms_max": 0.18,
+   "bytes_en": {
+    "html": 70291,
+    "md": 22274,
+    "json": 60379
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 72429,
+    "en": 70291,
+    "es": 73209,
+    "fr": 74236,
+    "de": 72602
+   }
+  },
+  {
+   "run_id": "sim_fd61ab4118a4e32398a12156",
+   "place": "Uberlândia",
+   "plan": "soy>maize2",
+   "seasons": 4,
+   "first_report_ms": 73.61,
+   "generation_ms_median": 14.71,
+   "generation_ms_max": 24.12,
+   "reuse_ms_median": 0.04,
+   "reuse_ms_max": 1.55,
+   "bytes_en": {
+    "html": 126932,
+    "md": 34522,
+    "json": 105645
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 130279,
+    "en": 126932,
+    "es": 131786,
+    "fr": 132925,
+    "de": 130497
+   }
+  },
+  {
+   "run_id": "sim_0ef0f2562258c91c5a13ffff",
+   "place": "Sorriso",
+   "plan": "soy",
+   "seasons": 2,
+   "first_report_ms": 69.36,
+   "generation_ms_median": 10.92,
+   "generation_ms_max": 15.37,
+   "reuse_ms_median": 0.03,
+   "reuse_ms_max": 0.12,
+   "bytes_en": {
+    "html": 69914,
+    "md": 22034,
+    "json": 59989
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 72018,
+    "en": 69914,
+    "es": 72775,
+    "fr": 73780,
+    "de": 72186
+   }
+  },
+  {
+   "run_id": "sim_9ddd1c9949dbe442b92e9ac5",
+   "place": "Sorriso",
+   "plan": "soy>maize2",
+   "seasons": 4,
+   "first_report_ms": 66.66,
+   "generation_ms_median": 13.53,
+   "generation_ms_max": 15.32,
+   "reuse_ms_median": 0.03,
+   "reuse_ms_max": 1.18,
+   "bytes_en": {
+    "html": 126408,
+    "md": 34346,
+    "json": 105118
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 129718,
+    "en": 126408,
+    "es": 131204,
+    "fr": 132369,
+    "de": 129952
+   }
+  },
+  {
+   "run_id": "sim_33af8558ac1ce3bd53f064ec",
+   "place": "Rio Verde",
+   "plan": "soy",
+   "seasons": 2,
+   "first_report_ms": 56.97,
+   "generation_ms_median": 8.59,
+   "generation_ms_max": 22.36,
+   "reuse_ms_median": 0.03,
+   "reuse_ms_max": 0.11,
+   "bytes_en": {
+    "html": 68238,
+    "md": 20188,
+    "json": 57504
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 70187,
+    "en": 68238,
+    "es": 70870,
+    "fr": 71762,
+    "de": 70307
+   }
+  },
+  {
+   "run_id": "sim_e269df77be6e76cb588194fc",
+   "place": "Rio Verde",
+   "plan": "soy>maize2",
+   "seasons": 4,
+   "first_report_ms": 68.45,
+   "generation_ms_median": 12.9,
+   "generation_ms_max": 15.04,
+   "reuse_ms_median": 0.03,
+   "reuse_ms_max": 1.51,
+   "bytes_en": {
+    "html": 122558,
+    "md": 30829,
+    "json": 100172
+   },
+   "bytes_html_by_locale": {
+    "pt-BR": 125569,
+    "en": 122558,
+    "es": 126964,
+    "fr": 127843,
+    "de": 125710
+   }
+  }
+ ],
+ "totals": {
+  "runs": 7,
+  "generation_ms_median_of_medians": 10.92,
+  "generation_ms_max": 24.12,
+  "reuse_ms_median_of_medians": 0.03,
+  "first_report_ms_median": 68.45,
+  "first_report_ms_max": 126.57
+ },
+ "http_inject": {
+  "post_pinned_reuse_ms": {
+   "median": 8.26,
+   "max": 18.59,
+   "samples": 210
+  },
+  "post_new_variant_ms": {
+   "median": 69.04,
+   "max": 193.48,
+   "samples": 7
+  },
+  "get_html_ms": {
+   "median": 1.29,
+   "max": 3.05,
+   "samples": 210
+  },
+  "get_md_ms": {
+   "median": 0.75,
+   "max": 1.38,
+   "samples": 210
+  },
+  "get_json_ms": {
+   "median": 2.69,
+   "max": 16.24,
+   "samples": 210
+  }
+ }
+}

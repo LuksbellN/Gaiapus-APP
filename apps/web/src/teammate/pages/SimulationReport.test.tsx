@@ -22,6 +22,8 @@ const result = (representation: ReportRepresentation, extra: Partial<ReportGener
 const api = vi.hoisted(() => ({ ensure: vi.fn(), get: vi.fn(), markdown: vi.fn(), exportUrl: vi.fn((run: string, id: string, format: string) => `/v1/simulations/${run}/report?report_id=${id}&format=${format}`) }));
 vi.mock('../../features/auth/client', () => ({ supabase: { auth: {} }, currentAccessToken: () => null }));
 vi.mock('../adapters/simulation-reports', () => ({ simulationReports: api }));
+// The German catalogue fails to load in this file (as it would offline): the app then keeps rendering English.
+vi.mock('../i18n/messages/de', () => { throw new Error('offline'); });
 import { SimulationReport } from './SimulationReport';
 import { setLocale } from '../i18n';
 import { setPrefs } from '../prefs';
@@ -180,4 +182,27 @@ it('without a valid run in the address nothing is requested', async () => {
   expect(await screen.findByText(/Nenhuma simulação foi indicada/)).toBeInTheDocument();
   expect(api.ensure).not.toHaveBeenCalled();
   expect(screen.getByRole('link', { name: /Abrir o planejamento da safra/ })).toBeInTheDocument();
+});
+
+// Review focus 3: the chosen language and the rendered language differ while a catalogue loads (or when it fails).
+it('while the chosen language is still loading nothing is requested in the fallback language; the report follows what is rendered', async () => {
+  open(`?run=${RUN}`);
+  await screen.findByTestId('report-document');
+  expect(api.ensure.mock.calls.map((c) => c[1].locale)).toEqual(['pt-BR']);
+  // French is loaded on demand: for a moment the app renders English while "fr" is the choice.
+  act(() => setLocale('fr'));
+  expect(api.ensure.mock.calls.map((c) => c[1].locale)).toEqual(['pt-BR']);
+  expect(screen.queryByTestId('report-document')).not.toBeInTheDocument();
+  await waitFor(() => expect(api.ensure.mock.calls.map((c) => c[1].locale)).toEqual(['pt-BR', 'fr']));
+  expect(await screen.findByRole('heading', { level: 1, name: 'Report in fr' })).toBeInTheDocument();
+  expect(document.querySelector('[data-testid="report-document"]')).toHaveAttribute('lang', 'fr');
+});
+
+it('when the chosen catalogue cannot be loaded the app stays in English and so does the report', async () => {
+  open(`?run=${RUN}`);
+  await screen.findByTestId('report-document');
+  act(() => setLocale('de'));
+  await waitFor(() => expect(api.ensure.mock.calls.map((c) => c[1].locale)).toEqual(['pt-BR', 'en']));
+  expect(await screen.findByRole('heading', { level: 1, name: english.document.title })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Print or save as PDF' })).toBeInTheDocument();
 });

@@ -90,7 +90,7 @@ const ptBR: ReportMessages = {
     tableCaption: 'Estatísticas da safra nos cenários — {season}',
     colIndicator: 'Indicador', colUnit: 'Unidade', colP10: 'P10', colP50: 'P50 (mediana)', colP90: 'P90', colN: 'Cenários (n)',
     notes: {
-      quantiles: 'P10, P50 e P90 são quantis de cada indicador nos cenários. P10 nem sempre é o lado desfavorável: déficit menor é favorável, chuva menor não é.',
+      quantiles: 'P10, P50 e P90 são quantis de cada indicador nos cenários. P10 é o lado baixo daquele indicador, não um “cenário ruim”: no déficit, o lado baixo é o de menor limitação hídrica.',
       spread: 'A faixa P10–P90 é a dispersão dos cenários simulados ({method}). Não é um intervalo de confiança de 80% calibrado.',
       etc: 'ETc é a demanda de evapotranspiração da cultura nas condições do modelo.',
       eta: 'ETa é a evapotranspiração que o modelo estima ter efetivamente ocorrido com a água disponível.',
@@ -116,11 +116,11 @@ const ptBR: ReportMessages = {
   metric: {
     precipitation_mm: 'Precipitação no ciclo da cultura', rain_mm: 'Precipitação no ciclo da cultura', crop_etc_mm: 'Demanda de evapotranspiração da cultura (ETc)', crop_eta_mm: 'Evapotranspiração real da cultura (ETa)',
     crop_deficit_mm: 'Déficit de evapotranspiração da cultura (ETc − ETa)', mean_storage_mm: 'Armazenamento médio de água no solo', stress_days: 'Dias com estresse hídrico (Ks < 1)',
-    reproductive_stress_days: 'Dias com estresse hídrico na fase reprodutiva', max_dry_spell_days: 'Maior veranico (dias consecutivos com chuva < 1 mm)', yield_kg_ha: 'Rendimento modelado nos cenários',
+    reproductive_stress_days: 'Dias com estresse hídrico na fase reprodutiva', max_dry_spell_days: 'Maior veranico no ciclo da cultura', yield_kg_ha: 'Rendimento modelado nos cenários',
   },
   event: {
     reproductive_stress_days_ge_10: 'pelo menos 10 dias da cultura na fase reprodutiva com estresse hídrico (Ks < 1), não necessariamente consecutivos',
-    reproductive_stress_ge_20d: 'pelo menos 20 dias da cultura na fase reprodutiva com estresse hídrico (Ks < 1), não necessariamente consecutivos',
+    reproductive_stress_ge_20d: 'pelo menos 20 dias da cultura na fase reprodutiva com estresse hídrico (Ks < 1)',
     crop_deficit_mm_ge_100: 'soma na safra de ETc − ETa nos dias da cultura de pelo menos 100 mm',
     dry_spell_ge_15_days_in_season: 'pelo menos uma sequência de 15 dias consecutivos da cultura com precipitação abaixo de 1 mm por dia',
   },
@@ -147,7 +147,7 @@ const ptBR: ReportMessages = {
   },
   yield: {
     seasonHeading: 'Rendimento — {season}',
-    unavailable: 'Rendimento indisponível: {reason}. Nenhum valor substituto é mostrado. Ele passa a existir quando a fonte de dados da referência de rendimento cobrir este local.',
+    unavailable: 'Rendimento indisponível: {reason}. Nenhum valor substituto é mostrado. Um rendimento só aparece aqui quando uma publicação posterior trouxer um para este local e esta cultura.',
     kind: 'Tipo de resultado', kindReference: 'Referência histórica municipal (não é uma previsão para esta safra)', kindModel: 'Resultado de modelo',
     value: 'Valor', valueText: '{value} kg/ha',
     method: 'Método', scale: 'Escala espacial', scaleMunicipal: 'município — não é uma estimativa para um talhão', scaleCounty: 'condado — não é uma estimativa para um talhão ou uma fazenda', scaleOther: 'como declarada pela fonte: {original}',
