@@ -312,6 +312,30 @@
       "date": "2026-11-15",
       "reason": "US counties: map attribution names the 2017 Census boundary; county panel separates boundary, agricultural data and scenarios",
       "sha256": "f610ca75a86be6ecd2620e1bc62766d74a385e80cb49b9fa7d9655456aef4838"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "UX journey batch 1: simulator opens on season planning with place/crop pickers, season window, climate trajectory explained, phone tabs, crop comparison; simulate actions in Municipality and Explore; context chip without a fixed place",
+      "sha256": "7d5a17e4ca7e5d36f430508aab86541b7c2a1bc5580dbc74bc957faa7f2276e7"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-15",
+      "reason": "UX journey batch 1: simulator opens on season planning with place/crop pickers, season window, climate trajectory explained, phone tabs, crop comparison; simulate actions in Municipality and Explore; context chip without a fixed place",
+      "sha256": "4e704bd220cce2bb6e5b260973b71578b0f97d57fec9e708ab3214d434a07f0d"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "UX journey batch 1: simulator opens on season planning with place/crop pickers, season window, climate trajectory explained, phone tabs, crop comparison; simulate actions in Municipality and Explore; context chip without a fixed place",
+      "sha256": "69c0f6b80100b98dd09c4995e0e252af87db17ac18733f7bdb7ac0a7feb74546"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "UX journey batch 1: simulator opens on season planning with place/crop pickers, season window, climate trajectory explained, phone tabs, crop comparison; simulate actions in Municipality and Explore; context chip without a fixed place",
+      "sha256": "0acc840f2a6b59960bfdbd8218d8265478e9044b703639b2a1100bc4ff34b402"
     }
   ]
 }

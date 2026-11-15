@@ -20,7 +20,8 @@ import { useActiveContext } from '../App';
 import { isKnownPlace, placeName, plotElsewhere } from '../context';
 const loadField3D = () => import('../sim/Field3D');
 const loadProfile3D = () => import('../sim/SoilProfile3D');
-import { PlanningSimulator } from './PlanningSimulator';
+import { PlanningSimulator, SimulatorSwitch } from './PlanningSimulator';
+import { planningHref } from '../sim/planning-model';
 
 type Mode = 'historico' | 'cenario' | 'previsao' | 'climatologia';
 const MODE: Record<Mode, { tone: 'soil' | 'warn' | 'water' | undefined }> = { historico: { tone: 'soil' }, cenario: { tone: 'warn' }, previsao: { tone: 'water' }, climatologia: { tone: undefined } };
@@ -34,8 +35,10 @@ export function Simulator() {
   const { t, tn } = useI18n();
   const [params, setParams] = useSearchParams(); const crop: CropId = isCropId(params.get('cultura')) ? (params.get('cultura') as CropId) : 'soy'; const mun = /^\d{7}$/.test(params.get('mun') ?? '') ? params.get('mun')! : SORRISO;
   const setCrop = (c: string) => setParams((prev) => { const p = new URLSearchParams(prev); if (c === 'soy') p.delete('cultura'); else p.set('cultura', c); return p; });
-  // Season planning 2027/2028 comes from published calculated runs (any place/crop in the catalog), not from fixtures.
-  if (params.get('modo') === 'planejamento') return <PlanningSimulator />;
+  // The simulator opens on season planning (published calculated runs, any place and crop of the catalogue).
+  // Past seasons — the Sorriso example and its "no series" explanation — are the explicit ?modo=historico (or another data type).
+  const modo = params.get('modo');
+  if (modo === 'planejamento' || !(modo && modo in MODE)) return <PlanningSimulator />;
   if (hasDailySeries(crop, mun)) return <SorrisoSimulator onCrop={setCrop} />;
   const place = placeName(mun); const coffee = isCoffee(crop); const stage = params.get('cafezal') === 'implantacao' ? 'implantacao' : 'producao';
   return (
@@ -47,7 +50,7 @@ export function Simulator() {
           <section className="card"><h2>{t('sim.unavailable.choose')}</h2>
             <div className="form-grid"><Field label={t('crops.label')} hint={isPlainCrop(crop) ? undefined : CROPS[crop].role}>{(a) => <select className="input" {...a} name="cultura" value={crop} onChange={(e) => setCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
               <Field label={t('sim.place')} hint={t('sim.placeHint')}>{(a) => <select className="input" {...a} name="local" value={mun} onChange={(e) => setParams((prev) => { const p = new URLSearchParams(prev); if (e.target.value === SORRISO) p.delete('mun'); else p.set('mun', e.target.value); return p; })}>{[...new Set([SORRISO, '3170206', mun])].map((m) => <option key={m} value={m}>{placeName(m)}</option>)}</select>}</Field></div>
-            <div className="row"><a className="btn" href="#/simulador">{t('sim.unavailable.openDemo')}</a><a className="btn btn--primary" href={`#/simulador?modo=planejamento&mun=${mun}&cultura=${crop}`}>{t('sim.planning.open')}</a></div>
+            <div className="row"><a className="btn" href="#/simulador?modo=historico">{t('sim.unavailable.openDemo')}</a><a className="btn btn--primary" href={planningHref(`BR:ibge:${mun}`, crop)}>{t('sim.planning.open')}</a></div>
           </section>
           {crop === 'maize2' && mun === SORRISO && <Notice title={t('sim.unavailable.maizeTitle')}>{t('sim.unavailable.maize')}</Notice>}
           {coffee && <section className="card" aria-labelledby="h-cafe"><h2 id="h-cafe">{t('sim.coffee.title')}</h2>
@@ -70,7 +73,7 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
   const daily = useAsync((s) => weather.dailySeries('5107925', s), []); const proj = useAsync((s) => weather.waterProjection('5107925', s), []); const yld = useAsync((s) => crops.yieldEstimate({ crop: 'soy', municipalityCode: '5107925' }, s), []);
   // Configuração na URL (?modo=&ano=&ab=&secao=): o link reabre o mesmo cenário e voltar/avançar percorre as trocas.
   const [params, setParams] = useSearchParams(); const put = (kv: Record<string, string | null>) => setParams((prev) => { const p = new URLSearchParams(prev); for (const [k, v] of Object.entries(kv)) { if (v == null) p.delete(k); else p.set(k, v); } return p; });
-  const mode: Mode = (Object.keys(MODE) as Mode[]).find((m) => m === params.get('modo')) ?? 'historico'; const setMode = (m: Mode) => put({ modo: m === 'historico' ? null : m });
+  const mode: Mode = (Object.keys(MODE) as Mode[]).find((m) => m === params.get('modo')) ?? 'historico'; const setMode = (m: Mode) => put({ modo: m });
   const year = YEARS.find((y) => y.replace('/', '-') === params.get('ano')) ?? '2020/2021'; const setYear = (y: string) => put({ ano: y === '2020/2021' ? null : y.replace('/', '-') });
   const compare = params.get('ab') === '1'; const setCompare = (v: boolean) => put({ ab: v ? '1' : null }); const [cursor, setCursor] = useState(() => Math.max(0, (Number(params.get('dia')) || 1) - 1)); const [playing, setPlaying] = useState(false); const [speed, setSpeed] = useState(14);
   const [collapsed, setCollapsed] = useState(false); const tab = (['campo', 'indicadores', 'configurar'] as const).find((t) => t === params.get('secao')) ?? 'campo'; const setTab = (t: 'campo' | 'indicadores' | 'configurar') => put({ secao: t === 'campo' ? null : t }); const mobile = useMedia('(max-width: 760px)'); const [gl] = useState(webglAvailable); const view = params.get('vista') === 'perfil' ? 'perfil' : 'talhao'; const setView = (v: 'talhao' | 'perfil') => put({ vista: v === 'talhao' ? null : v }); const stake = params.get('estaca') !== '0'; const setStake = (on: boolean) => put({ estaca: on ? null : '0' }); const showRoots = params.get('raizes') !== '0'; const cutaway = params.get('corte') !== '0'; const field3d = useLazy(loadField3D, gl && view === 'talhao'); const profile3d = useLazy(loadProfile3D, gl && view === 'perfil'); const reduced = useMedia('(prefers-reduced-motion: reduce)');
@@ -116,13 +119,13 @@ function SorrisoSimulator({ onCrop }: { onCrop: (c: string) => void }) {
       <aside className="sim__config" id="panel-configurar" data-collapsed={collapsed && !mobile} aria-label={t('sim.config')}>
         {!mobile && <button className={collapsed ? 'icon-btn' : 'btn btn--sm'} aria-expanded={!collapsed} aria-label={collapsed ? t('sim.openConfig') : undefined} onClick={() => setCollapsed(!collapsed)}>{collapsed ? <SlidersHorizontal size={20} aria-hidden /> : <><ChevronsLeft size={16} aria-hidden />{t('sim.collapseConfig')}</>}</button>}
         {(!collapsed || mobile) && <>
+          <SimulatorSwitch active="historico" />
           <FromPlan />
           {elsewhere && <div data-testid="scope-strip"><Notice tone="warn" title={t('sim.demoTitle')}>{t('sim.elsewhere', { plot: elsewhere.plot, place: elsewhere.place })}</Notice></div>}
           <Field label={t('crops.label')} hint={t('sim.cropHint')}>{(p) => <select className="input" {...p} name="cultura" value="soy" onChange={(e) => onCrop(e.target.value)}>{PLANTABLE.map((id) => <option key={id} value={id}>{CROPS[id].name}</option>)}</select>}</Field>
           <Field label={t('sim.place')}>{(p) => <select className="input" {...p} defaultValue="5107925"><option value="5107925">{placeName(SORRISO)} (IBGE 5107925)</option><option disabled>{t('sim.otherPlaces')}</option></select>}</Field>
           <div data-tour="sim-mode"><Seg legend={t('sim.dataType')} name="modo" value={mode} onChange={(m) => { setMode(m); setCursor(0); }} options={(Object.keys(MODE) as Mode[]).map((m) => ({ value: m, label: t(`sim.mode.${m}`) }))} /></div>
           <p className="meta">{modeDesc}</p>
-          <a className="btn btn--primary btn--sm" data-testid="open-planning" href="#/simulador?modo=planejamento&mun=5107925&cultura=soy">{t('sim.planning.open')}</a>
           {long && <div data-tour="sim-year"><Field label={t('municipality.clima.year')} hint={t('sim.yearHint')}>{(p) => <select className="input" {...p} value={year} onChange={(e) => { setYear(e.target.value); setCursor(0); }}>{YEARS.map((y) => <option key={y}>{y}</option>)}</select>}</Field></div>}
           <label className="check" data-tour="sim-ab"><input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} /><span><b>{t('sim.compare')}</b><br /><span className="meta-13">{t('sim.compareWith', { a: model.names[0], b: model.names[1] })}</span></span></label>
           <div className="card card--flat"><h3>{t('sim.hyp.title')}</h3><dl className="kv"><dt>{t('sim.hyp.rotation')}</dt><dd>{t('sim.hyp.rotationValue')}</dd><dt>{t('sim.hyp.soil')}</dt><dd>AD4 · 55 mm</dd><dt>{t('sim.hyp.reserve')}</dt><dd>{long ? t('sim.hyp.continuous') : t('sim.hyp.assumed')}</dd><dt>{t('sim.hyp.irrigation')}</dt><dd>{t('sim.hyp.noIrrigation')}</dd></dl><p className="meta-13">{t('sim.hyp.note')}</p></div>

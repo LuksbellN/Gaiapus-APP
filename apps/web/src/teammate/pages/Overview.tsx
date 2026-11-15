@@ -94,7 +94,7 @@ function Actions() {
   return <section className="card" data-tour="overview-actions" aria-labelledby="h-acoes">
     <h2 id="h-acoes">{t('overview.actions.title')}</h2>
     <LinkBtn primary to="/planejar"><CalendarDays size={18} aria-hidden />{t('overview.actions.plan')}</LinkBtn>
-    <LinkBtn to="/simulador"><Sprout size={18} aria-hidden />{t('overview.actions.follow')}</LinkBtn>
+    <LinkBtn to="/simulador?modo=historico"><Sprout size={18} aria-hidden />{t('overview.actions.follow')}</LinkBtn>
     <LinkBtn to="/registros?novo=evento"><Tractor size={18} aria-hidden />{t('overview.actions.record')}</LinkBtn>
     <LinkBtn to="/explorar"><Globe size={18} aria-hidden />{t('overview.actions.explore')}</LinkBtn>
   </section>;

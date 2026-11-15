@@ -65,3 +65,27 @@ describe('publication selection and coverage per product', () => {
     expect(coverageOf(undefined)).toEqual({ state: 'not_published', dailySeries: false, yieldResult: null, reason: null });
   });
 });
+
+import { hasPlanningResult, planningHref, planningPlaceId } from './planning-model';
+describe('planning links and place of the screen', () => {
+  const q = (s: string) => new URLSearchParams(s);
+  it('reads the place from ?local=, from the older ?mun=, and falls back to the default place', () => {
+    expect(planningPlaceId(q('local=US:fips:19169'))).toBe('US:fips:19169');
+    expect(planningPlaceId(q('mun=3170206'))).toBe('BR:ibge:3170206');
+    expect(planningPlaceId(q('local=US:fips:19169&mun=3170206'))).toBe('US:fips:19169');
+    expect(planningPlaceId(q('local=XX:foo:1'))).toBe('BR:ibge:5107925');
+    expect(planningPlaceId(q('mun=123'))).toBe('BR:ibge:5107925');
+  });
+  it('builds the same link for every "simulate here" action, keeping codes with leading zeros', () => {
+    expect(planningHref('US:fips:01001', 'soy')).toBe('#/simulador?modo=planejamento&local=US:fips:01001&cultura=soy');
+    expect(planningHref('BR:ibge:3170206')).toBe('#/simulador?modo=planejamento&local=BR:ibge:3170206');
+    expect(planningPlaceId(q(planningHref('US:fips:01001').split('?')[1]!))).toBe('US:fips:01001');
+  });
+  it('a place can be simulated when it has a daily simulation or a yield result', () => {
+    const cap = (status: string, extra: object = {}) => ({ status, reason_code: null, run_ids: [] as string[], ...extra });
+    expect(hasPlanningResult([cap('unsupported'), cap('ready', { run_ids: ['sim_x'] })])).toBe(true);
+    expect(hasPlanningResult([cap('missing_data', { yield_result: { status: 'research' } })])).toBe(true);
+    expect(hasPlanningResult([cap('unsupported')])).toBe(false);
+    expect(hasPlanningResult(undefined)).toBe(false);
+  });
+});

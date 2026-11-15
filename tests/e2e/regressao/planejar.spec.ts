@@ -30,7 +30,7 @@ test.describe('RT-09 planos', () => {
 
 test.describe('RT-10 simulador', () => {
   test('modos, ano, A/B na URL; cursor por teclado; reproduzir e pausar', async ({ page }) => {
-    await page.goto('/#/simulador');
+    await page.goto('/#/simulador?modo=historico');
     await expect(page.getByRole('slider')).toBeVisible({ timeout: 20000 });
     await page.getByLabel('Previsão disponível').check();
     await expect(page).toHaveURL(/modo=previsao/);
@@ -50,7 +50,7 @@ test.describe('RT-10 simulador', () => {
   });
 
   test('D-27: o dia escolhido entra na URL e o link reabre no mesmo dia', async ({ page }) => {
-    await page.goto('/#/simulador?dia=120');
+    await page.goto('/#/simulador?modo=historico&dia=120');
     const slider = page.getByRole('slider');
     await expect(slider).toHaveAttribute('aria-valuenow', '119', { timeout: 20000 });
     await slider.focus(); await page.keyboard.press('PageUp');

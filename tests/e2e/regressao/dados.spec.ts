@@ -62,7 +62,7 @@ test.describe('RT-08 culturas e capacidades', () => {
     await expect(page).toHaveURL(/cultura=coffee_arabica/);
     await expect(page.getByTestId('safra')).toHaveAttribute('data-crop', 'coffee_arabica');
     await expect(page.getByTestId('capabilities').locator('[data-cap=cena3d]')).toHaveAttribute('data-status', 'sem_suporte');
-    await page.goto('/#/simulador?cultura=coffee_arabica&mun=3170206');
+    await page.goto('/#/simulador?modo=historico&cultura=coffee_arabica&mun=3170206');
     await expect(page.getByTestId('sim-unavailable')).toBeVisible();
     await expect(page.locator('canvas')).toHaveCount(0);
     await page.getByLabel('Implantação de cafezal novo').check();

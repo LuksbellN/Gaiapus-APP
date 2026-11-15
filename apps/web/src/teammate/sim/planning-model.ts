@@ -72,3 +72,17 @@ export function coverageOf<C extends CapabilityLike>(capability: C | undefined |
   const state: CoverageState = dailySeries ? 'daily_series' : yieldResult ? 'yield_only' : 'unavailable';
   return { state, dailySeries, yieldResult: dailySeries ? null : yieldResult, reason: dailySeries ? null : capability.reason_code };
 }
+
+const DEFAULT_PLACE = 'BR:ibge:5107925';
+const LOCATION = /^(BR:ibge:\d{7}|US:fips:\d{5})$/;
+/** Place of the planning screen: ?local=<location id>, or the older ?mun=<IBGE code>. */
+export function planningPlaceId(params: URLSearchParams): string {
+  const local = params.get('local'); if (local && LOCATION.test(local)) return local;
+  const mun = params.get('mun'); return mun && /^\d{7}$/.test(mun) ? `BR:ibge:${mun}` : DEFAULT_PLACE;
+}
+/** Link to the season planning of a place (and crop), used by every "simulate here" action. */
+export function planningHref(locationId: string, crop?: string | null): string {
+  return `#/simulador?modo=planejamento&local=${locationId}${crop ? `&cultura=${encodeURIComponent(crop)}` : ''}`;
+}
+/** True when a place has something to show in the planning: a daily simulation or a yield result. */
+export const hasPlanningResult = (capabilities: readonly CapabilityLike[] | undefined) => !!capabilities?.some((c) => { const s = coverageOf(c).state; return s === 'daily_series' || s === 'yield_only'; });
