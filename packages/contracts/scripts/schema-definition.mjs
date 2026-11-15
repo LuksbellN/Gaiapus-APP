@@ -81,7 +81,48 @@ defs.EvidenceQuery = obj({ context_key: { ...text, maxLength: 4096 } });
 defs.PrivateIdParams = obj({ id: uuid });
 defs.ExampleIdParams = obj({ id: text });
 defs.ErrorResponse = obj({ error: obj({ code: text, message: text, field_errors: { type: 'object', additionalProperties: str(1000) } }, ['code', 'message']), meta: ref('ResponseMeta') });
-const responseNames = ['GeographyPage', 'CoverageResult', 'ObservationsResult', 'ExamplePage', 'ExampleDetail', 'MeResult', 'MonitoredPlace', 'MonitoredPlacePage', 'ComparisonPage', 'ComparisonDetail', 'EvidenceReview', 'EvidenceReviewResult', 'ScientificCatalog'];
+// LocationCore v1: one data core per place in any supported country (Docs/2026-11-14-nucleo-global-lugares-design.md).
+// Additive: existing area ids, coverage, observations, examples and the private /v1/places are unchanged.
+defs.LocationId = { type: 'string', pattern: '^(BR:ibge:[0-9]{7}|US:fips:[0-9]{5})$' };
+defs.LocationIdParams = obj({ id: ref('LocationId') });
+defs.LocationCropId = en('soy', 'maize1', 'maize2', 'wheat_winter');
+defs.LocationReason = en('no_field_imagery', 'too_few_clear_scenes', 'forecast_not_in_publication', 'crop_calendar_unknown', 'out_of_season', 'source_unavailable');
+defs.LocationLayerStatus = en('available', 'unavailable');
+const lonLat = { type: 'array', items: number, minItems: 2, maxItems: 2 };
+const nonEmpty = item => ({ ...arr(item), minItems: 1 });
+const unavailable = obj({ status: { const: 'unavailable' }, reason_code: ref('LocationReason'), source: text }, ['status', 'reason_code']);
+const available = (content, extra = {}, optional = []) => {
+  const properties = { status: { const: 'available' }, source: text, method: str(1000), period, ...content, ...extra };
+  return obj(properties, Object.keys(properties).filter(k => k !== 'method' && !optional.includes(k)));
+};
+const layer = (...args) => ({ oneOf: [available(...args), unavailable] });
+const stage = en('establishment', 'vegetative', 'reproductive', 'maturation');
+defs.LocationWeatherRow = obj({ date, rain_mm: number, et0_mm: number, tmin_c: number, tmax_c: number });
+defs.LocationWaterRow = obj({ date, storage_mm: number, available_fraction: number, etc_mm: number, eta_mm: number, deficit_mm: number, drainage_mm: number, ks: number, stage });
+defs.LocationWaterSeason = obj({ crop: ref('LocationCropId'), season: text, sowing_date: date, harvest_date: date, initial_fraction: number, rows: nonEmpty(ref('LocationWaterRow')) });
+defs.LocationNdviRow = obj({ date, ndvi: nullable(number), valid_fraction: number, scene_id: text, collection: en('hls2-l30', 'hls2-s30') });
+defs.LocationForecastRow = obj({ date, rain_mm: number, et0_mm: number, storage_mm: number, stress: { type: 'boolean' } });
+defs.LocationPlace = obj({ id: ref('LocationId'), country: en('BR', 'US'), scheme: en('ibge', 'fips'), code: text, name: text, admin1_code: { type: 'string', pattern: '^(BR|US)-[A-Z]{2}$' }, admin1_name: text, legacy_area_id: nullable(text), centroid: lonLat, bbox: { type: 'array', items: number, minItems: 4, maxItems: 4 }, boundary_url: text });
+defs.LocationField = obj({ polygon: obj({ type: { const: 'Polygon' }, coordinates: nonEmpty(nonEmpty(lonLat)) }), area_ha: number, rationale: str(1000), inside_boundary: { const: true } });
+defs.LocationCrop = obj({ crop: ref('LocationCropId'), season: text, sowing_date: nullable(date), harvest_date: nullable(date), calendar_source: nullable(str(1000)), is_hypothesis: { const: true } });
+defs.LocationLayerStatuses = obj({ weather: ref('LocationLayerStatus'), water_balance: ref('LocationLayerStatus'), ndvi: ref('LocationLayerStatus'), forecast: ref('LocationLayerStatus') });
+defs.LocationCore = obj({
+  schema_version: { const: 'location-core.v1' },
+  place: ref('LocationPlace'),
+  field: nullable(ref('LocationField')),
+  crops: nonEmpty(ref('LocationCrop')),
+  soil: obj({ capacity_mm: number, source: str(1000), is_hypothesis: { type: 'boolean' } }),
+  layers: obj({
+    weather: layer({ rows: nonEmpty(ref('LocationWeatherRow')) }),
+    water_balance: layer({ seasons: nonEmpty(ref('LocationWaterSeason')) }),
+    ndvi: layer({ rows: nonEmpty(ref('LocationNdviRow')) }),
+    forecast: layer({ rows: nonEmpty(ref('LocationForecastRow')) }, { issued_at: instant, crop: ref('LocationCropId'), season: text }),
+  }),
+  provenance: obj({ generated_at: instant, generator: text, inputs: nonEmpty(obj({ source: text, dataset: str(1000), retrieved_at: instant, sha256: nullable({ type: 'string', pattern: '^[0-9a-f]{64}$' }) })) }),
+});
+defs.LocationSummary = obj({ ...Object.fromEntries(Object.entries(defs.LocationPlace.properties).filter(([k]) => k !== 'boundary_url')), layers: ref('LocationLayerStatuses') });
+defs.LocationPage = page(ref('LocationSummary'));
+const responseNames = ['LocationPage', 'LocationCore', 'GeographyPage', 'CoverageResult', 'ObservationsResult', 'ExamplePage', 'ExampleDetail', 'MeResult', 'MonitoredPlace', 'MonitoredPlacePage', 'ComparisonPage', 'ComparisonDetail', 'EvidenceReview', 'EvidenceReviewResult', 'ScientificCatalog'];
 for (const name of responseNames) defs[`${name}Response`] = obj({ data: ref(name), meta: ref('ResponseMeta') });
 export const schema = { $schema: 'https://json-schema.org/draft/2020-12/schema', $id: 'https://gaiapus.local/app/0.1.0', title: 'GaiapusContracts', type: 'object', additionalProperties: false, properties: {}, $defs: defs };
 export const routes = [
@@ -91,6 +132,8 @@ export const routes = [
   ['GET', '/v1/observations', null, 'ObservationsQuery', 'ObservationsResultResponse', false],
   ['GET', '/v1/examples', null, 'ExamplesQuery', 'ExamplePageResponse', false],
   ['GET', '/v1/examples/:id', null, 'ExampleIdParams', 'ExampleDetailResponse', false],
+  ['GET', '/v1/locations', null, 'PageQuery', 'LocationPageResponse', false],
+  ['GET', '/v1/locations/:id/core', null, 'LocationIdParams', 'LocationCoreResponse', false],
   ['GET', '/v1/me', null, null, 'MeResultResponse', true],
   ['PATCH', '/v1/me', 'UpdateAccountRequest', null, 'MeResultResponse', true],
   ['GET', '/v1/places', null, 'PageQuery', 'MonitoredPlacePageResponse', true],

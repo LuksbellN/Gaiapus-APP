@@ -23,6 +23,32 @@ export type ScientificEnvelope = YieldEstimateResponse | WaterRiskProjectionResp
  * via the `definition` "EvidenceReviewResult".
  */
 export type EvidenceReviewResult = EvidenceReview | null;
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationId".
+ */
+export type LocationId = string;
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationCropId".
+ */
+export type LocationCropId = 'soy' | 'maize1' | 'maize2' | 'wheat_winter';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationReason".
+ */
+export type LocationReason =
+  | 'no_field_imagery'
+  | 'too_few_clear_scenes'
+  | 'forecast_not_in_publication'
+  | 'crop_calendar_unknown'
+  | 'out_of_season'
+  | 'source_unavailable';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationLayerStatus".
+ */
+export type LocationLayerStatus = 'available' | 'unavailable';
 
 export interface GaiapusContracts {
   YieldPayload?: YieldPayload;
@@ -80,6 +106,25 @@ export interface GaiapusContracts {
   PrivateIdParams?: PrivateIdParams;
   ExampleIdParams?: ExampleIdParams;
   ErrorResponse?: ErrorResponse;
+  LocationId?: LocationId;
+  LocationIdParams?: LocationIdParams;
+  LocationCropId?: LocationCropId;
+  LocationReason?: LocationReason;
+  LocationLayerStatus?: LocationLayerStatus;
+  LocationWeatherRow?: LocationWeatherRow;
+  LocationWaterRow?: LocationWaterRow;
+  LocationWaterSeason?: LocationWaterSeason;
+  LocationNdviRow?: LocationNdviRow;
+  LocationForecastRow?: LocationForecastRow;
+  LocationPlace?: LocationPlace;
+  LocationField?: LocationField;
+  LocationCrop?: LocationCrop;
+  LocationLayerStatuses?: LocationLayerStatuses;
+  LocationCore?: LocationCore;
+  LocationSummary?: LocationSummary;
+  LocationPage?: LocationPage;
+  LocationPageResponse?: LocationPageResponse;
+  LocationCoreResponse?: LocationCoreResponse;
   GeographyPageResponse?: GeographyPageResponse;
   CoverageResultResponse?: CoverageResultResponse;
   ObservationsResultResponse?: ObservationsResultResponse;
@@ -1145,6 +1190,296 @@ export interface ErrorResponse {
       [k: string]: string;
     };
   };
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationIdParams".
+ */
+export interface LocationIdParams {
+  id: LocationId;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationWeatherRow".
+ */
+export interface LocationWeatherRow {
+  date: string;
+  rain_mm: number;
+  et0_mm: number;
+  tmin_c: number;
+  tmax_c: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationWaterRow".
+ */
+export interface LocationWaterRow {
+  date: string;
+  storage_mm: number;
+  available_fraction: number;
+  etc_mm: number;
+  eta_mm: number;
+  deficit_mm: number;
+  drainage_mm: number;
+  ks: number;
+  stage: 'establishment' | 'vegetative' | 'reproductive' | 'maturation';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationWaterSeason".
+ */
+export interface LocationWaterSeason {
+  crop: LocationCropId;
+  season: string;
+  sowing_date: string;
+  harvest_date: string;
+  initial_fraction: number;
+  /**
+   * @minItems 1
+   */
+  rows: [LocationWaterRow, ...LocationWaterRow[]];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationNdviRow".
+ */
+export interface LocationNdviRow {
+  date: string;
+  ndvi: number | null;
+  valid_fraction: number;
+  scene_id: string;
+  collection: 'hls2-l30' | 'hls2-s30';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationForecastRow".
+ */
+export interface LocationForecastRow {
+  date: string;
+  rain_mm: number;
+  et0_mm: number;
+  storage_mm: number;
+  stress: boolean;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationPlace".
+ */
+export interface LocationPlace {
+  id: LocationId;
+  country: 'BR' | 'US';
+  scheme: 'ibge' | 'fips';
+  code: string;
+  name: string;
+  admin1_code: string;
+  admin1_name: string;
+  legacy_area_id: string | null;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  centroid: [number, number];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  bbox: [number, number, number, number];
+  boundary_url: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationField".
+ */
+export interface LocationField {
+  polygon: {
+    type: 'Polygon';
+    /**
+     * @minItems 1
+     */
+    coordinates: [[[number, number], ...[number, number][]], ...[[number, number], ...[number, number][]][]];
+  };
+  area_ha: number;
+  rationale: string;
+  inside_boundary: true;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationCrop".
+ */
+export interface LocationCrop {
+  crop: LocationCropId;
+  season: string;
+  sowing_date: string | null;
+  harvest_date: string | null;
+  calendar_source: string | null;
+  is_hypothesis: true;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationLayerStatuses".
+ */
+export interface LocationLayerStatuses {
+  weather: LocationLayerStatus;
+  water_balance: LocationLayerStatus;
+  ndvi: LocationLayerStatus;
+  forecast: LocationLayerStatus;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationCore".
+ */
+export interface LocationCore {
+  schema_version: 'location-core.v1';
+  place: LocationPlace;
+  field: LocationField | null;
+  /**
+   * @minItems 1
+   */
+  crops: [LocationCrop, ...LocationCrop[]];
+  soil: {
+    capacity_mm: number;
+    source: string;
+    is_hypothesis: boolean;
+  };
+  layers: {
+    weather:
+      | {
+          status: 'available';
+          source: string;
+          method?: string;
+          period: Period;
+          /**
+           * @minItems 1
+           */
+          rows: [LocationWeatherRow, ...LocationWeatherRow[]];
+        }
+      | {
+          status: 'unavailable';
+          reason_code: LocationReason;
+          source?: string;
+        };
+    water_balance:
+      | {
+          status: 'available';
+          source: string;
+          method?: string;
+          period: Period;
+          /**
+           * @minItems 1
+           */
+          seasons: [LocationWaterSeason, ...LocationWaterSeason[]];
+        }
+      | {
+          status: 'unavailable';
+          reason_code: LocationReason;
+          source?: string;
+        };
+    ndvi:
+      | {
+          status: 'available';
+          source: string;
+          method?: string;
+          period: Period;
+          /**
+           * @minItems 1
+           */
+          rows: [LocationNdviRow, ...LocationNdviRow[]];
+        }
+      | {
+          status: 'unavailable';
+          reason_code: LocationReason;
+          source?: string;
+        };
+    forecast:
+      | {
+          status: 'available';
+          source: string;
+          method?: string;
+          period: Period;
+          /**
+           * @minItems 1
+           */
+          rows: [LocationForecastRow, ...LocationForecastRow[]];
+          issued_at: string;
+          crop: LocationCropId;
+          season: string;
+        }
+      | {
+          status: 'unavailable';
+          reason_code: LocationReason;
+          source?: string;
+        };
+  };
+  provenance: {
+    generated_at: string;
+    generator: string;
+    /**
+     * @minItems 1
+     */
+    inputs: [
+      {
+        source: string;
+        dataset: string;
+        retrieved_at: string;
+        sha256: string | null;
+      },
+      ...{
+        source: string;
+        dataset: string;
+        retrieved_at: string;
+        sha256: string | null;
+      }[]
+    ];
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationSummary".
+ */
+export interface LocationSummary {
+  id: LocationId;
+  country: 'BR' | 'US';
+  scheme: 'ibge' | 'fips';
+  code: string;
+  name: string;
+  admin1_code: string;
+  admin1_name: string;
+  legacy_area_id: string | null;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  centroid: [number, number];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  bbox: [number, number, number, number];
+  layers: LocationLayerStatuses;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationPage".
+ */
+export interface LocationPage {
+  items: LocationSummary[];
+  next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationPageResponse".
+ */
+export interface LocationPageResponse {
+  data: LocationPage;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "LocationCoreResponse".
+ */
+export interface LocationCoreResponse {
+  data: LocationCore;
   meta: ResponseMeta;
 }
 /**

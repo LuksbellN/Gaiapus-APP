@@ -314,6 +314,94 @@
         }
       }
     },
+    "/v1/locations": {
+      "get": {
+        "operationId": "get__v1_locations",
+        "security": [],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationPageResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/locations/{id}/core": {
+      "get": {
+        "operationId": "get__v1_locations__id_core",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LocationId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationCoreResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "get__v1_me",
@@ -3895,6 +3983,1040 @@
         },
         "required": [
           "error",
+          "meta"
+        ]
+      },
+      "LocationId": {
+        "type": "string",
+        "pattern": "^(BR:ibge:[0-9]{7}|US:fips:[0-9]{5})$"
+      },
+      "LocationIdParams": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/LocationId"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "LocationCropId": {
+        "enum": [
+          "soy",
+          "maize1",
+          "maize2",
+          "wheat_winter"
+        ]
+      },
+      "LocationReason": {
+        "enum": [
+          "no_field_imagery",
+          "too_few_clear_scenes",
+          "forecast_not_in_publication",
+          "crop_calendar_unknown",
+          "out_of_season",
+          "source_unavailable"
+        ]
+      },
+      "LocationLayerStatus": {
+        "enum": [
+          "available",
+          "unavailable"
+        ]
+      },
+      "LocationWeatherRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "rain_mm": {
+            "type": "number"
+          },
+          "et0_mm": {
+            "type": "number"
+          },
+          "tmin_c": {
+            "type": "number"
+          },
+          "tmax_c": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "rain_mm",
+          "et0_mm",
+          "tmin_c",
+          "tmax_c"
+        ]
+      },
+      "LocationWaterRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "storage_mm": {
+            "type": "number"
+          },
+          "available_fraction": {
+            "type": "number"
+          },
+          "etc_mm": {
+            "type": "number"
+          },
+          "eta_mm": {
+            "type": "number"
+          },
+          "deficit_mm": {
+            "type": "number"
+          },
+          "drainage_mm": {
+            "type": "number"
+          },
+          "ks": {
+            "type": "number"
+          },
+          "stage": {
+            "enum": [
+              "establishment",
+              "vegetative",
+              "reproductive",
+              "maturation"
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "storage_mm",
+          "available_fraction",
+          "etc_mm",
+          "eta_mm",
+          "deficit_mm",
+          "drainage_mm",
+          "ks",
+          "stage"
+        ]
+      },
+      "LocationWaterSeason": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "crop": {
+            "$ref": "#/components/schemas/LocationCropId"
+          },
+          "season": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "sowing_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "harvest_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "initial_fraction": {
+            "type": "number"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationWaterRow"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "crop",
+          "season",
+          "sowing_date",
+          "harvest_date",
+          "initial_fraction",
+          "rows"
+        ]
+      },
+      "LocationNdviRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "ndvi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid_fraction": {
+            "type": "number"
+          },
+          "scene_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "collection": {
+            "enum": [
+              "hls2-l30",
+              "hls2-s30"
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "ndvi",
+          "valid_fraction",
+          "scene_id",
+          "collection"
+        ]
+      },
+      "LocationForecastRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "rain_mm": {
+            "type": "number"
+          },
+          "et0_mm": {
+            "type": "number"
+          },
+          "storage_mm": {
+            "type": "number"
+          },
+          "stress": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "date",
+          "rain_mm",
+          "et0_mm",
+          "storage_mm",
+          "stress"
+        ]
+      },
+      "LocationPlace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "country": {
+            "enum": [
+              "BR",
+              "US"
+            ]
+          },
+          "scheme": {
+            "enum": [
+              "ibge",
+              "fips"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "admin1_code": {
+            "type": "string",
+            "pattern": "^(BR|US)-[A-Z]{2}$"
+          },
+          "admin1_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "legacy_area_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "centroid": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "boundary_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "id",
+          "country",
+          "scheme",
+          "code",
+          "name",
+          "admin1_code",
+          "admin1_name",
+          "legacy_area_id",
+          "centroid",
+          "bbox",
+          "boundary_url"
+        ]
+      },
+      "LocationField": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "polygon": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "Polygon"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "minItems": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "type",
+              "coordinates"
+            ]
+          },
+          "area_ha": {
+            "type": "number"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "inside_boundary": {
+            "const": true
+          }
+        },
+        "required": [
+          "polygon",
+          "area_ha",
+          "rationale",
+          "inside_boundary"
+        ]
+      },
+      "LocationCrop": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "crop": {
+            "$ref": "#/components/schemas/LocationCropId"
+          },
+          "season": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "sowing_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "harvest_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calendar_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_hypothesis": {
+            "const": true
+          }
+        },
+        "required": [
+          "crop",
+          "season",
+          "sowing_date",
+          "harvest_date",
+          "calendar_source",
+          "is_hypothesis"
+        ]
+      },
+      "LocationLayerStatuses": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "weather": {
+            "$ref": "#/components/schemas/LocationLayerStatus"
+          },
+          "water_balance": {
+            "$ref": "#/components/schemas/LocationLayerStatus"
+          },
+          "ndvi": {
+            "$ref": "#/components/schemas/LocationLayerStatus"
+          },
+          "forecast": {
+            "$ref": "#/components/schemas/LocationLayerStatus"
+          }
+        },
+        "required": [
+          "weather",
+          "water_balance",
+          "ndvi",
+          "forecast"
+        ]
+      },
+      "LocationCore": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "location-core.v1"
+          },
+          "place": {
+            "$ref": "#/components/schemas/LocationPlace"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocationField"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationCrop"
+            },
+            "minItems": 1
+          },
+          "soil": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "capacity_mm": {
+                "type": "number"
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "is_hypothesis": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "capacity_mm",
+              "source",
+              "is_hypothesis"
+            ]
+          },
+          "layers": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "weather": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "available"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "method": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "period": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "start": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "end": {
+                            "type": "string",
+                            "format": "date"
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ]
+                      },
+                      "rows": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/LocationWeatherRow"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "source",
+                      "period",
+                      "rows"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable"
+                      },
+                      "reason_code": {
+                        "$ref": "#/components/schemas/LocationReason"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "reason_code"
+                    ]
+                  }
+                ]
+              },
+              "water_balance": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "available"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "method": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "period": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "start": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "end": {
+                            "type": "string",
+                            "format": "date"
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ]
+                      },
+                      "seasons": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/LocationWaterSeason"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "source",
+                      "period",
+                      "seasons"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable"
+                      },
+                      "reason_code": {
+                        "$ref": "#/components/schemas/LocationReason"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "reason_code"
+                    ]
+                  }
+                ]
+              },
+              "ndvi": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "available"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "method": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "period": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "start": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "end": {
+                            "type": "string",
+                            "format": "date"
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ]
+                      },
+                      "rows": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/LocationNdviRow"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "source",
+                      "period",
+                      "rows"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable"
+                      },
+                      "reason_code": {
+                        "$ref": "#/components/schemas/LocationReason"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "reason_code"
+                    ]
+                  }
+                ]
+              },
+              "forecast": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "available"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "method": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "period": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "start": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "end": {
+                            "type": "string",
+                            "format": "date"
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ]
+                      },
+                      "rows": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/LocationForecastRow"
+                        },
+                        "minItems": 1
+                      },
+                      "issued_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "crop": {
+                        "$ref": "#/components/schemas/LocationCropId"
+                      },
+                      "season": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "source",
+                      "period",
+                      "rows",
+                      "issued_at",
+                      "crop",
+                      "season"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "const": "unavailable"
+                      },
+                      "reason_code": {
+                        "$ref": "#/components/schemas/LocationReason"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "reason_code"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "weather",
+              "water_balance",
+              "ndvi",
+              "forecast"
+            ]
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "generated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "generator": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "dataset": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "retrieved_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "sha256": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "dataset",
+                    "retrieved_at",
+                    "sha256"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "generated_at",
+              "generator",
+              "inputs"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "place",
+          "field",
+          "crops",
+          "soil",
+          "layers",
+          "provenance"
+        ]
+      },
+      "LocationSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/LocationId"
+          },
+          "country": {
+            "enum": [
+              "BR",
+              "US"
+            ]
+          },
+          "scheme": {
+            "enum": [
+              "ibge",
+              "fips"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "admin1_code": {
+            "type": "string",
+            "pattern": "^(BR|US)-[A-Z]{2}$"
+          },
+          "admin1_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "legacy_area_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "centroid": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "layers": {
+            "$ref": "#/components/schemas/LocationLayerStatuses"
+          }
+        },
+        "required": [
+          "id",
+          "country",
+          "scheme",
+          "code",
+          "name",
+          "admin1_code",
+          "admin1_name",
+          "legacy_area_id",
+          "centroid",
+          "bbox",
+          "layers"
+        ]
+      },
+      "LocationPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationSummary"
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "LocationPageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LocationPage"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "LocationCoreResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LocationCore"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
           "meta"
         ]
       },

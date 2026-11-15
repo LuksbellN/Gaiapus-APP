@@ -50,6 +50,22 @@ export const routeContracts = [
   ],
   [
     "GET",
+    "/v1/locations",
+    null,
+    "PageQuery",
+    "LocationPageResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/locations/:id/core",
+    null,
+    "LocationIdParams",
+    "LocationCoreResponse",
+    false
+  ],
+  [
+    "GET",
     "/v1/me",
     null,
     null,
