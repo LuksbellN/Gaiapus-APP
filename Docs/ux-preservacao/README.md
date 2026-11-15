@@ -1,7 +1,7 @@
 ---
 title: Gaiapus-APP — preservação de funções, UX, tutoriais, mundo e idiomas
 date: 2026-11-14
-status: planejamento concluído; implementação aguardando autorização
+status: implementado na branch local ux-preservacao (ver 09-status-implementacao.md); revisão linguística nativa e testes com Supabase real pendentes
 revisao_auditada: 2cf2881992c2226483f05045b28e45236cab0680 (main, "Frontend integration")
 ---
 

@@ -34,7 +34,8 @@ Data: 14/11/2026. Branch local `ux-preservacao`, sem push e sem deploy. Escopo t
 
 ## Testes
 
-- Unitários (Vitest): ver contagem no último commit.
+- Unitários (Vitest): 179 passando (início: 64).
+- E2E: 77 passando (início: 6).
 - E2E (Playwright, Chrome instalado): `frontend.spec.ts` + `regressao/{explorar,dados,planejar,registros,navegacao,idiomas,tutoriais}.spec.ts`.
 - Rodar: API (`pnpm dev:api`), web (`pnpm --filter @gaiapus/web dev`), depois `GAIAPUS_WEB_URL=http://127.0.0.1:5173 npx playwright test` em `apps/web`.
 
