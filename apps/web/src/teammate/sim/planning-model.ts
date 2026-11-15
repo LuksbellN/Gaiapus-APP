@@ -47,3 +47,28 @@ export function cycleDay(run: PlanningRun, crop: string, harvestYear: number, da
 export function dayInfo(series: PlanningSeries, i: number) {
   return { kind: series.day_kind[i], simDay: i + 1, simDays: series.dates.length };
 }
+
+type PublicationRef = { run_id: string; crops: string[]; harvest_years: number[] };
+/**
+ * The regional publication to open for a crop and a harvest year. A publication may group several years (Brazil)
+ * or hold exactly one (US): the year is always part of the choice, so one year never opens another year's run.
+ * Among matches, the plan whose last crop is the requested one wins (a rotation is opened through its last crop).
+ */
+export function selectPublication<T extends PublicationRef>(items: readonly T[], crop: string, harvestYear: number): T | null {
+  const matches = items.filter((p) => p.crops.includes(crop) && p.harvest_years.includes(harvestYear));
+  return matches.find((p) => p.crops[p.crops.length - 1] === crop) ?? matches[0] ?? null;
+}
+
+type CapabilityLike = { status: string; reason_code: string | null; run_ids: string[]; yield_result?: unknown };
+export type CoverageState = 'daily_series' | 'yield_only' | 'unavailable' | 'not_published';
+/**
+ * Coverage of one place × crop × harvest year, per product. The daily series and the yield result are different
+ * products: a post-harvest estimate has a yield and no series, and that is shown as such, never as a missing place.
+ */
+export function coverageOf<C extends CapabilityLike>(capability: C | undefined | null) {
+  if (!capability) return { state: 'not_published' as CoverageState, dailySeries: false, yieldResult: null, reason: null };
+  const dailySeries = capability.status === 'ready' && capability.run_ids.length > 0;
+  const yieldResult = (capability.yield_result ?? null) as C['yield_result'] | null;
+  const state: CoverageState = dailySeries ? 'daily_series' : yieldResult ? 'yield_only' : 'unavailable';
+  return { state, dailySeries, yieldResult: dailySeries ? null : yieldResult, reason: dailySeries ? null : capability.reason_code };
+}
