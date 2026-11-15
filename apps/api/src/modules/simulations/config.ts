@@ -5,6 +5,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { LocalPublicationSource, PublicationStore, pinnedBrazilSource, type PublicationSource } from './publication-store.js';
 import { SupabasePublicationSource } from './supabase-publication-store.js';
+import { defaultReportRepository } from './reports/repository.js';
+import { ReportService, type ReportLogEvent } from './reports/service.js';
 
 type Env = Record<string, string | undefined>;
 const bounded = (env: Env, name: string, fallback: number, min: number, max: number) => {
@@ -29,4 +31,16 @@ export function simulationStoreFromEnv(env: Env): PublicationStore {
       onError: (source, message) => console.warn(`simulation source ${source} unavailable: ${message}`) }));
   } else if (mode !== 'off') throw new Error('SIMULATION_US_SOURCE must be off, local or supabase');
   return new PublicationStore(sources, { cacheBytes: bounded(env, 'SIMULATION_CACHE_MB', 64, 1, 1024) * 1024 * 1024 });
+}
+
+/**
+ * Technical reports of the simulations. Deployment configuration only:
+ *   REPORT_STORE_DIR                  writable directory where new reports survive a restart (default: process memory)
+ *   REPORT_CACHE_MB                   memory budget of reports that are not on disk (default 64)
+ *   REPORT_GENERATIONS_PER_MINUTE     new representations per minute for the whole process (default 120; reuse is free)
+ * The reports precomputed for the pinned Brazilian publication are always read first.
+ */
+export function reportServiceFromEnv(env: Env, store: PublicationStore, log?: (event: ReportLogEvent) => void): ReportService {
+  const repository = defaultReportRepository({ ...(env.REPORT_STORE_DIR ? { storeDir: resolve(env.REPORT_STORE_DIR) } : {}), cacheBytes: bounded(env, 'REPORT_CACHE_MB', 64, 1, 1024) * 1024 * 1024 });
+  return new ReportService(store, { repository, generationsPerMinute: bounded(env, 'REPORT_GENERATIONS_PER_MINUTE', 120, 1, 100_000), ...(log ? { log } : {}) });
 }
