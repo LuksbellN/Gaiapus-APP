@@ -37,26 +37,28 @@ sql(`insert into public.simulation_runs(id,run_key,kind,location_id,plan_id,crop
 const brazil = () => sql(`select md5(string_agg(p.run_id::text||p.is_current::text||coalesce(p.batch_id::text,'-'), ',' order by p.run_id)) from public.regional_simulation_publications p where p.location_id like 'BR:%'`);
 const before = brazil();
 
-const pub = loadPublication(fileURLToPath(new URL('../../packages/contracts/fixtures/us-simulation-v2/', import.meta.url)));
+// PUBLICATION_DIR=<dir> runs the same checks over another publication (e.g. the full extracted package).
+const pub = loadPublication(process.env.PUBLICATION_DIR ?? fileURLToPath(new URL('../../packages/contracts/fixtures/us-simulation-v2/', import.meta.url)));
+const n = pub.index.publications.length, staged = `${n + 1},${2 * n},${n + 1},1`;
 const staging = metadataSql(pub);
 sql(staging);
-assert.equal(counts(), '6,10,6,1');
+assert.equal(counts(), staged);
 assert.equal(anon("select count(*) from simulation_runs where location_id like 'US:%'"), '0', 'staged runs are invisible');
 sql(staging); // retried import
-assert.equal(counts(), '6,10,6,1', 'second application inserts nothing');
-assert.equal(sql(`select count(*) from public.simulation_artifacts where storage_path like '${pub.prefix}/runs/sim_%/%/%' and storage_bucket='simulation-public'`), '10');
+assert.equal(counts(), staged, 'second application inserts nothing');
+assert.equal(sql(`select count(*) from public.simulation_artifacts where storage_path like '${pub.prefix}/runs/sim_%/%/%' and storage_bucket='simulation-public'`), String(2 * n));
 
 const out = sql(activateSql(pub)).split('\n');
 assert.equal(out[0], out[2], 'current publications of other countries are identical before and after activation');
-assert.equal(anon("select count(*) from regional_simulation_publications where location_id like 'US:%' and is_current"), '5');
+assert.equal(anon("select count(*) from regional_simulation_publications where location_id like 'US:%' and is_current"), String(n));
 assert.equal(anon("select string_agg(harvest_years::text, ',' order by harvest_years) from regional_simulation_publications where location_id='US:fips:19169' and plan_id='us_soy' and is_current"), '{2027},{2028}');
 assert.equal(anon("select summary->'yield'->>'research_status' is not null from simulation_runs where location_id='US:fips:20191'"), 't');
-assert.equal(anon(`select storage_prefix||'|'||runs||'|'||places from simulation_publication_batches where status='active'`), `${pub.prefix}|5|2`);
+assert.equal(anon(`select storage_prefix||'|'||runs||'|'||places from simulation_publication_batches where status='active'`), `${pub.prefix}|${n}|${pub.catalog.places.length}`);
 assert.equal(brazil(), before);
 
 sql(rollbackSql(pub));
 assert.equal(anon("select count(*) from regional_simulation_publications where location_id like 'US:%'"), '0');
-assert.equal(counts(), '6,10,6,1', 'rollback deletes nothing');
+assert.equal(counts(), staged, 'rollback deletes nothing');
 assert.equal(brazil(), before);
 assert.equal(anon("select count(*) from regional_simulation_publications where location_id like 'BR:%' and is_current"), '1');
-console.log('publication tool SQL: all assertions passed');
+console.log(`publication tool SQL: all assertions passed (${n} runs, ${pub.catalog.places.length} places, batch ${pub.batchKey})`);

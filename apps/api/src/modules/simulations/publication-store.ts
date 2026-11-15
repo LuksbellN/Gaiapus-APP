@@ -56,6 +56,8 @@ export function pinnedBrazilSource(): PublicationSource {
 
 type Loaded = { source: PublicationSource; index: Index; catalog: Catalog };
 type Entry = { value: unknown; bytes: number };
+// Parsed JSON held in memory costs several times its serialized size (measured ~4x on Node 22 with these series).
+const HEAP_FACTOR = 4;
 export interface StoreOptions { cacheBytes?: number; maxInflatedBytes?: number }
 
 export class PublicationStore {
@@ -165,7 +167,7 @@ export class PublicationStore {
     const artifact = this.artifactOf(publication, 'run');
     return this.remember(`run:${artifact.sha256}`, async () => {
       const bytes = await this.verified(source, artifact);
-      return { value: JSON.parse(bytes.toString('utf8')) as { run_id: string; representative: { central: string; dry: string; wet: string } }, bytes: bytes.length };
+      return { value: JSON.parse(bytes.toString('utf8')) as { run_id: string; representative: { central: string; dry: string; wet: string } }, bytes: bytes.length * HEAP_FACTOR };
     });
   }
 
@@ -184,7 +186,7 @@ export class PublicationStore {
       const value = { run_id: id, dates: full.dates, capacity_mm: full.capacity_mm, day_kind: full.day_kind, bands: full.bands,
         members: [pick('central'), pick('dry'), pick('wet')], full_members_artifact: artifact };
       // Only three of the members are kept: account roughly for what stays in memory.
-      return { value, bytes: Math.ceil(inflated.length * Math.min(1, 4 / Math.max(1, full.members.length))) };
+      return { value, bytes: Math.ceil(HEAP_FACTOR * inflated.length * Math.min(1, 4 / Math.max(1, full.members.length))) };
     });
   }
 }
