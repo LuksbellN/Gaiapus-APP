@@ -42,26 +42,30 @@ export function USStatesPanel(p: Props) {
     {p.stateCode && !selected && <Notice tone="warn">{copy.unknown}</Notice>}
     {p.stateCode && p.counties && (() => {
       // Every county of the state, like every municipality of a Brazilian state: published ones first, the rest selectable.
-      const withData = new Set([...counties.map(l => l.id), ...(p.extraCovered ?? [])]);
+      // Three different things: every county has a boundary; some have a published data core; some have published scenario runs.
+      const core = new Set(counties.map(l => l.id)); const sims = new Set(p.extraCovered ?? []);
+      const withData = new Set([...core, ...sims]); const rank = (code: string) => (core.has(code) ? 0 : sims.has(code) ? 1 : 2);
       const name = (id: string) => counties.find(l => l.id === id)?.name ?? p.counties!.features.find(f => f.properties.code === id)?.properties.name ?? id;
       const all = p.counties.features.map(f => ({ code: String(f.properties.code), name: String(f.properties.name), fips: String(f.properties.code).slice(-5) }))
         .filter(c => norm(`${c.name} ${c.fips}`).includes(norm(countyFilter)))
-        .sort((a, b) => Number(withData.has(b.code)) - Number(withData.has(a.code)) || byName(a.name, b.name));
+        .sort((a, b) => rank(a.code) - rank(b.code) || byName(a.name, b.name));
       const sel = p.countyCode ? p.counties.features.find(f => f.properties.code === p.countyCode) : undefined;
       return <>
         {sel && <div className="card card--flat" data-testid="us-county-detail"><h3>{name(String(sel.properties.code))}</h3>
           <p className="meta-13">{t('location.code', { scheme: 'FIPS', code: String(sel.properties.code).slice(-5) })}</p>
-          {withData.has(String(sel.properties.code))
+          <ul className="plain meta-13"><li>{copy.geoLine}</li><li>{core.has(String(sel.properties.code)) ? copy.dataYes : copy.dataNo}</li><li>{sims.has(String(sel.properties.code)) ? copy.simYes : copy.simNo}</li></ul>
+          {core.has(String(sel.properties.code))
             ? <a className="btn btn--primary btn--sm" href={`#/municipio?id=${encodeURIComponent(String(sel.properties.code))}`}>{copy.countyOpen}</a>
-            : <Notice>{copy.countyNone}</Notice>}
+            : !sims.has(String(sel.properties.code)) && <Notice>{copy.countyNone}</Notice>}
+          <p className="meta-13">{copy.notValidated}</p>
         </div>}
         <h3>{copy.countiesAll} ({p.counties.features.length})</h3>
         <label className="sr-only" htmlFor="us-county-filter">{copy.countySearch}</label>
         <input id="us-county-filter" className="input" value={countyFilter} onChange={e => setCountyFilter(e.target.value)} placeholder={copy.countySearch} aria-label={copy.countySearch} />
         <ul className="list list--long" aria-label={copy.countiesAll} data-testid="us-county-list">{all.map(c => <li key={c.code}>
-          <button aria-current={p.countyCode === c.code} onClick={() => p.onPickCounty?.(c.code)}><span>{withData.has(c.code) ? <b>{name(c.code)}</b> : c.name} <span className="meta-13">{c.fips}</span></span>{withData.has(c.code) ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button>
+          <button aria-current={p.countyCode === c.code} onClick={() => p.onPickCounty?.(c.code)}><span>{withData.has(c.code) ? <b>{name(c.code)}</b> : c.name} <span className="meta-13">{c.fips}</span></span>{core.has(c.code) || sims.has(c.code) ? <span className="row" style={{ gap: 4 }}>{core.has(c.code) && <Pill tone="water">{copy.pillData}</Pill>}{sims.has(c.code) && <Pill>{copy.pillScenarios}</Pill>}</span> : <ChevronRight size={18} aria-hidden />}</button>
         </li>)}</ul>
-        <p className="meta-13">{US_COUNTIES_SOURCE}</p>
+        <p className="meta-13" data-testid="us-county-source" title={US_COUNTIES_SOURCE}>{copy.countySource}</p>
       </>;
     })()}
     <p className="meta-13">{copy.scope}</p>

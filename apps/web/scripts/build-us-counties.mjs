@@ -45,6 +45,13 @@ for (const [iso, features] of Object.entries(byState).sort()) {
 }
 writeFileSync(new URL('manifest.json', out), JSON.stringify({
   source: 'us-atlas@3.0.1 counties-10m.json (U.S. Census Bureau cartographic boundary files, 1:10,000,000)',
+  // us-atlas 3.0.1 builds from cb_2017_us_county_5m (its prepublish script): a 2017 vintage, not necessarily current limits.
+  vintage: 2017, census_file: 'cb_2017_us_county_5m (GENZ2017)',
+  vintage_notes: ['Connecticut replaced its 8 counties with 9 planning regions in 2022 (new FIPS 09110–09190); the 2017 counties are kept here.',
+    'Alaska split Valdez-Cordova (02261) into Chugach (02063) and Copper River (02066) in 2019; the 2017 area is kept here.'],
+  // Checked on 2026-11-15 against the agricultural catalogues that reference counties (IA, NE, KS; no CT/AK county involved).
+  compatibility: { us_v2_universe: { checked: 245, missing: 0, source: 'Gaiapus_nasa data/processed/us_training_v2/counties_v2.json (read only)' },
+    location_cores: { checked: 3, missing: 0, ids: ['US:fips:19169', 'US:fips:31185', 'US:fips:20191'] } },
   source_url: 'https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/counties-10m.json', source_sha256: SOURCE_SHA256, licence: 'ISC', licence_text: licence,
   transform: 'TopoJSON decoded to GeoJSON, coordinates rounded to 1e-4 degree, split by state (FIPS → ISO 3166-2)', files,
 }, null, 2) + '\n');

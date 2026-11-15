@@ -11,6 +11,8 @@ describe('US county boundaries', () => {
     expect((await loadUSCounties('US-NE'))!.features).toHaveLength(93);
     expect((await loadUSCounties('US-KS'))!.features).toHaveLength(105);
     expect(manifest.licence).toBe('ISC');
+    expect(manifest.vintage).toBe(2017);
+    expect(manifest.compatibility.us_v2_universe).toMatchObject({ checked: 245, missing: 0 });
   });
   it('identify counties by namespaced FIPS with leading zeros and their state', async () => {
     const al = await loadUSCounties('US-AL');

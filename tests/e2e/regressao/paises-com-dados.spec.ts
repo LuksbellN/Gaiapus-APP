@@ -21,7 +21,7 @@ test('EUA têm o mesmo nível do Brasil: estado → todos os condados (Census), 
   const counties = page.getByTestId('us-county-list').getByRole('listitem');
   await expect(counties).toHaveCount(99);
   await expect(counties.first()).toContainText('Story');
-  await expect(counties.first()).toContainText('Com dados');
+  await expect(counties.first()).toContainText('Dados agrícolas');
   await page.getByLabel('Buscar condado').fill('Polk');
   await page.getByTestId('us-county-list').getByRole('button', { name: /Polk/ }).click();
   await expect(page).toHaveURL(/mun=US%3Afips%3A19153|mun=US:fips:19153/);

@@ -13,7 +13,8 @@ export async function loadUSCounties(stateCode: string): Promise<FC | null> {
   const load = COUNTY_FILES[`../data/geo/us-counties/${stateCode}.json`];
   return load ? ((await load()).default as FC) : null;
 }
-export const US_COUNTIES_SOURCE = 'U.S. Census Bureau cartographic boundaries 1:10M via us-atlas 3.0.1 (ISC)';
+export const US_COUNTIES_SOURCE = 'U.S. Census Bureau cartographic boundary 2017 (cb_2017_us_county_5m) via us-atlas 3.0.1, ISC';
+export const US_COUNTIES_VINTAGE = 2017;
 export function stateSelection(code: string): Selection {
   return { pais: code.startsWith('US-') ? 'USA' : 'BR', uf: code, mun: null };
 }

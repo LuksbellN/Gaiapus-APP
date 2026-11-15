@@ -15,7 +15,7 @@ const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
 const C = { ocean: '#0a1a21', land: '#1a2c24', landLine: '#3d5648', brazil: '#28503a', line: '#7d9a89', munLine: '#4f6a5b', action: '#87C98F', text: '#EAF2EB', water: '#79BDD8' };
 const style: StyleSpecification = {
   version: 8, projection: { type: 'globe' } as any, glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE / Natural Earth Admin 1' } },
+  sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth) · Limites: IBGE / Natural Earth Admin 1 · Condados EUA: U.S. Census Bureau 2017 (us-atlas 3.0.1)' } },
   sky: { 'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 5, 0] } as any,
   layers: [
     { id: 'bg', type: 'background', paint: { 'background-color': C.ocean } },
