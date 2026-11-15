@@ -5,10 +5,12 @@ import { createApp, type Dependencies } from './app.js';
 import { supabaseDependencies } from './plugins/supabase.js';
 import { LiveExecutor } from './modules/analysis/executor.js';
 import { loadLiveCapabilities } from './modules/analysis/capabilities.js';
+import { simulationStoreFromEnv } from './modules/simulations/config.js';
 const env = process.env;
 const dependencies: Dependencies = { logger: true };
 if (!!env.SUPABASE_URL !== !!env.SUPABASE_PUBLISHABLE_KEY) throw new Error('Configure both SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY');
 if (env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY) Object.assign(dependencies, supabaseDependencies({ url: env.SUPABASE_URL, publishableKey: env.SUPABASE_PUBLISHABLE_KEY, signingKey: env.APP_STORAGE_SIGNING_KEY }));
+dependencies.simulations = simulationStoreFromEnv(env);
 const mode = env.SCIENCE_MODE ?? 'fixture';
 if (mode !== 'fixture' && mode !== 'live') throw new Error('SCIENCE_MODE must be fixture or live');
 if (mode === 'live') {

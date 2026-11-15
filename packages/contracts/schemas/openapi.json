@@ -5385,6 +5385,31 @@
           "capabilities"
         ]
       },
+      "SimulationSourceStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "unavailable"
+            ]
+          },
+          "shadowed_places": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "source",
+          "status"
+        ]
+      },
       "SimulationCatalog": {
         "type": "object",
         "additionalProperties": false,
@@ -5413,6 +5438,12 @@
           "inputs": {
             "type": "object",
             "description": "Reproduction inputs of the publication (places, seed, member limit)"
+          },
+          "source_status": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationSourceStatus"
+            }
           }
         },
         "required": [
@@ -5617,6 +5648,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SimulationPublication"
+            }
+          },
+          "source_status": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulationSourceStatus"
             }
           }
         },

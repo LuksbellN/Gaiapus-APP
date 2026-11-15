@@ -5,6 +5,7 @@ import { extname } from 'node:path';
 import { validators, routeContracts } from '@gaiapus/contracts';
 import { publicHandlers } from './modules/geography/public.js';
 import { simulationHandlers } from './modules/simulations/public.js';
+import type { PublicationStore } from './modules/simulations/publication-store.js';
 import { ApiError } from './plugins/errors.js';
 import { personalHandlers, type PrivateRequest } from './modules/account/personal.js';
 import type { Identity, Repository } from './plugins/repository.js';
@@ -24,6 +25,8 @@ export interface Dependencies {
   logger?: boolean;
   capabilities?: Capabilities;
   capabilitiesProvider?: () => Promise<Capabilities>;
+  /** Regional simulation publications; defaults to the Brazilian publication pinned in the repository. */
+  simulations?: PublicationStore;
 }
 export function createApp(dependencies: Dependencies = {}) {
   const app = Fastify({ logger: dependencies.logger ? { redact: ['req.headers.authorization', 'req.body', 'res.body'] } : false, bodyLimit: 65536, genReqId: () => crypto.randomUUID() });
@@ -61,7 +64,7 @@ export function createApp(dependencies: Dependencies = {}) {
     })().finally(() => { refreshPending = null; });
     await refreshPending;
   });
-  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers(), ...simulationHandlers() };
+  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers(), ...simulationHandlers(dependencies.simulations) };
   for (const [method, url, bodySchema, parameterSchema, responseSchema, privateRoute] of routeContracts) {
     const handler = handlers[`${method} ${url}` as keyof typeof handlers];
     if (!handler) continue;

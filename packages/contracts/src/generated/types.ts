@@ -245,6 +245,7 @@ export interface GaiapusContracts {
   SimulationQuery?: SimulationQuery;
   SimulationCapability?: SimulationCapability;
   SimulationPlaceCapabilities?: SimulationPlaceCapabilities;
+  SimulationSourceStatus?: SimulationSourceStatus;
   SimulationCatalog?: SimulationCatalog;
   SimulationArtifact?: SimulationArtifact;
   SimulationPublication?: SimulationPublication;
@@ -1646,6 +1647,15 @@ export interface SimulationPlaceCapabilities {
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSourceStatus".
+ */
+export interface SimulationSourceStatus {
+  source: string;
+  status: 'ok' | 'unavailable';
+  shadowed_places?: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "SimulationCatalog".
  */
 export interface SimulationCatalog {
@@ -1657,6 +1667,7 @@ export interface SimulationCatalog {
    * Reproduction inputs of the publication (places, seed, member limit)
    */
   inputs: {};
+  source_status?: SimulationSourceStatus[];
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -1703,6 +1714,7 @@ export interface SimulationPublication {
 export interface SimulationPublicationList {
   as_of: string;
   items: SimulationPublication[];
+  source_status?: SimulationSourceStatus[];
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema

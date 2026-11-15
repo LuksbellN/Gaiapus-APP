@@ -31,10 +31,12 @@ export function addSimulationDefs(defs, h) {
   defs.SimulationPlaceCapabilities = obj({
     location_id: ref('LocationId'), name: text, state_code: text, history_years: integer(0), observed_until: nullable(date), capabilities: arr(ref('SimulationCapability')),
   });
+  // Present when more than one publication source is configured: a source that is down never hides another one.
+  defs.SimulationSourceStatus = obj({ source: text, status: en('ok', 'unavailable'), shadowed_places: integer(1) }, ['source', 'status']);
   defs.SimulationCatalog = obj({
     contract: { const: 'future-simulation-capabilities.v1' }, as_of: instant, harvest_years: arr(year), places: arr(ref('SimulationPlaceCapabilities')),
-    inputs: loose('Reproduction inputs of the publication (places, seed, member limit)'),
-  });
+    inputs: loose('Reproduction inputs of the publication (places, seed, member limit)'), source_status: arr(ref('SimulationSourceStatus')),
+  }, ['contract', 'as_of', 'harvest_years', 'places', 'inputs']);
 
   defs.SimulationArtifact = obj({ kind: en('run', 'series', 'members'), path: str(512), sha256: sha, bytes: integer(1), compression: nullable(en('gzip')) });
   defs.SimulationPublication = obj({
@@ -44,7 +46,7 @@ export function addSimulationDefs(defs, h) {
     // seconds / peak_python_mib: null = not measured for this run (batch-level figures live in the publication manifest); never zero.
     measured: obj({ seconds: nullable({ type: 'number', minimum: 0 }), peak_python_mib: nullable({ type: 'number', minimum: 0 }), series_bytes_raw: integer(1), series_bytes_gzip: integer(1), members: integer(1), days: integer(1), note: str(1000) }),
   });
-  defs.SimulationPublicationList = obj({ as_of: instant, items: arr(ref('SimulationPublication')) });
+  defs.SimulationPublicationList = obj({ as_of: instant, items: arr(ref('SimulationPublication')), source_status: arr(ref('SimulationSourceStatus')) }, ['as_of', 'items']);
 
   defs.SimulationYield = {
     oneOf: [
