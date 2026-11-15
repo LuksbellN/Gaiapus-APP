@@ -15,8 +15,14 @@ const LINES: Record<Priority, Line[]> = {
 };
 const LINE_METRIC: Record<Exclude<Line, 'maize'>, MetricId> = { covered: 'covered_days', reserve: 'storage_at_next_sowing_mm', use: 'year_water_use_mm', drain: 'year_drainage_mm', soy: 'soy_deficit_mm' };
 
-export function PriorityPicker({ priority, source, planDate, onChange }: { priority: Priority; source: PrioritySource; planDate: string | null; onChange: (p: Priority) => void }) {
+export function PriorityPicker({ priority, source, planDate, onChange, input }: { priority: Priority; source: PrioritySource; planDate: string | null; onChange: (p: Priority) => void; input?: PublishedComparison | null }) {
   const { t } = useI18n();
+  // One sentence with the numbers of the comparison on screen (same rain point as the table); it orders reading, never scores.
+  const m = (s: StrategyId, k: MetricId) => { const v = input?.scenarios[s].mean[k]; return v == null ? '—' : nMax(v, 1); };
+  const n = input?.scenarios.reference_fallow.valid_years ?? 0;
+  const sentence = !input ? null : priority === 'margem' ? t('fieldShift.v2.priority.sentence.margem')
+    : priority === 'producao' ? t('fieldShift.v2.priority.sentence.producao', { n, a: m('reference_fallow', 'soy_deficit_mm'), b: m('brachiaria', 'soy_deficit_mm'), c: m('soy_long_fallow', 'soy_deficit_mm'), ma: m('reference_fallow', 'maize_deficit_mm'), mb: m('brachiaria', 'maize_deficit_mm') })
+    : t('fieldShift.v2.priority.sentence.conservacao', { n, a: m('reference_fallow', 'bare_days'), b: m('brachiaria', 'bare_days'), c: m('soy_long_fallow', 'bare_days'), da: m('reference_fallow', 'year_drainage_mm'), db: m('brachiaria', 'year_drainage_mm'), dc: m('soy_long_fallow', 'year_drainage_mm') });
   return (
     <section className="card" data-testid="fs-priority" data-priority={priority} data-source={source}>
       <Seg legend={t('fieldShift.v2.priority.legend')} name="prioridade" value={priority} onChange={onChange} options={PRIORITIES.map((p) => ({ value: p, label: t(`options.priority.${p}` as MessageKey) }))} />
@@ -24,6 +30,7 @@ export function PriorityPicker({ priority, source, planDate, onChange }: { prior
         {source === 'plan' && planDate ? `${t('fieldShift.v2.priority.fromPlan', { date: dFull(planDate) })} ` : source === 'default' ? `${t('fieldShift.v2.priority.default')} ` : source === 'plan_missing' ? `${t('fieldShift.v2.priority.planMissing')} ` : ''}
         {t('fieldShift.v2.priority.effect')}{priority === 'producao' ? ` ${t('fieldShift.v2.priority.production')}` : ''}
       </p>
+      {sentence && <p data-testid="fs-priority-sentence">{sentence}</p>}
       {priority === 'margem' && <div data-testid="fs-margin"><Notice title={t('fieldShift.v2.margin.title')}>{t('fieldShift.v2.margin.text')} <a href="#/planejar">{t('fieldShift.v2.margin.link')}</a></Notice></div>}
     </section>
   );
@@ -47,6 +54,7 @@ export function StrategyCards({ pkg, input, reference, priority }: { pkg: FieldS
     return t(`fieldShift.v2.card.${l}Line` as MessageKey, { value, note: note(s, k, l === 'covered' ? t('common.days') : 'mm') });
   };
   return (
+    <>
     <div className="grid-3" data-testid="fs-cards" data-priority={priority}>
       {STRATEGIES.map((s) => (
         <article key={s} className="card stack-2" data-strategy={s} data-reference={s === reference || undefined}>
@@ -60,6 +68,8 @@ export function StrategyCards({ pkg, input, reference, priority }: { pkg: FieldS
         </article>
       ))}
     </div>
+    <p className="meta-13" data-testid="fs-cards-footer"><b>{t('fieldShift.v2.card.footer')}</b></p>
+    </>
   );
 }
 

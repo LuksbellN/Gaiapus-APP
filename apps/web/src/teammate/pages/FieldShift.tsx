@@ -49,7 +49,7 @@ export function FieldShiftPage() {
       <ScopeStrip place={place} elsewhere={elsewhere} scale={t('fieldShift.scale')} period={t('fieldShift.period')} />
       {v2 && <StrategyOverview pkg={v2} reference={reference} onReference={(s) => put('ref', s === 'reference_fallow' ? null : STRATEGY_LETTER[s])} />}
       {legacy && <Notice tone="warn" title={t('fieldShift.v2.mismatch.title')}>{t('fieldShift.v2.mismatch.text')}</Notice>}
-      {v2 && <PriorityPicker priority={chosen.priority} source={chosen.source} planDate={chosen.plan?.createdAt.slice(0, 10) ?? null} onChange={(p) => put('prioridade', p)} />}
+      {v2 && <PriorityPicker priority={chosen.priority} source={chosen.source} planDate={chosen.plan?.createdAt.slice(0, 10) ?? null} onChange={(p) => put('prioridade', p)} input={input} />}
       {v2 && point && <RainControl pkg={v2} point={point} onChange={(percent) => put('chuva', percent === '0' ? null : percent)} />}
       {v2 && chosen.priority === 'conservacao' && <BareSoilCard pkg={v2} highlight />}
       {v2 && input && <StrategyCards pkg={v2} input={input} reference={reference} priority={chosen.priority} />}

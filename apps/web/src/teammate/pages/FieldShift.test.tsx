@@ -309,3 +309,16 @@ it('a bare-soil extension that does not match the package shows no number', asyn
   expect(screen.getByTestId('fs-bare')).not.toHaveTextContent(/\d/);
   expect(screen.getByTestId('fs-strategy-table')).toBeInTheDocument();
 });
+
+it('the priority sentence quotes the package numbers on screen and the cards carry the decision footer', async () => {
+  const first = open();
+  const sentence = await screen.findByTestId('fs-priority-sentence');
+  const mean = summary.scenarios;
+  for (const v of [mean.reference_fallow.mean.bare_days!, mean.soy_long_fallow.mean.bare_days!, mean.soy_long_fallow.mean.year_drainage_mm!]) expect(sentence).toHaveTextContent(num(v));
+  expect(screen.getByTestId('fs-cards-footer')).toHaveTextContent('Apoia, não substitui, a decisão do produtor e do agrônomo.');
+  first.unmount();
+  open('?prioridade=producao');
+  const production = await screen.findByTestId('fs-priority-sentence');
+  for (const v of [mean.reference_fallow.mean.soy_deficit_mm!, mean.brachiaria.mean.maize_deficit_mm!]) expect(production).toHaveTextContent(num(v));
+  expect(production).toHaveTextContent('C não cultiva milho');
+});
