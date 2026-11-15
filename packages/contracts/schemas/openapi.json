@@ -5231,7 +5231,16 @@
           "gain_not_confirmed",
           "reference_selected",
           "underpowered",
+          "not_executed",
           "not_evaluated"
+        ]
+      },
+      "SimulationSeasonPosition": {
+        "enum": [
+          "pre_season",
+          "in_season_partial",
+          "post_cutoff",
+          "post_harvest_pre_release"
         ]
       },
       "SimulationOutputMode": {
@@ -5715,7 +5724,7 @@
               "value_kg_ha": {
                 "type": "number"
               },
-              "quantiles": {
+              "scenario_range": {
                 "anyOf": [
                   {
                     "type": "object",
@@ -5729,12 +5738,16 @@
                       },
                       "p90": {
                         "type": "number"
+                      },
+                      "method": {
+                        "const": "ensemble_spread_uncalibrated"
                       }
                     },
                     "required": [
                       "p10",
                       "p50",
-                      "p90"
+                      "p90",
+                      "method"
                     ]
                   },
                   {
@@ -5742,10 +5755,41 @@
                   }
                 ]
               },
-              "interval_method": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 256
+              "predictive_range": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p10": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p90": {
+                        "type": "number"
+                      },
+                      "interval_method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "p10",
+                      "p50",
+                      "p90",
+                      "interval_method"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "position_vs_season": {
+                "$ref": "#/components/schemas/SimulationSeasonPosition"
               },
               "last_label_year": {
                 "type": "integer",
@@ -5785,8 +5829,9 @@
               "method",
               "model_version",
               "value_kg_ha",
-              "quantiles",
-              "interval_method",
+              "scenario_range",
+              "predictive_range",
+              "position_vs_season",
               "last_label_year",
               "history_horizon_years",
               "label_release_rule",

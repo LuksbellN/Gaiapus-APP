@@ -15,7 +15,8 @@ export function addSimulationDefs(defs, h) {
   defs.SimulationReason = en('insufficient_history', 'unsupported_crop_engine', 'unknown_yield_lag', 'model_out_of_domain', 'model_not_validated_for_planning',
     'source_unavailable', 'invalid_calendar', 'insufficient_soil_inputs', 'flooded_system_not_represented', 'perennial_engine_missing',
     'season_already_started_without_observations', 'unsupported');
-  defs.SimulationResearchStatus = en('research_confirmed', 'gain_not_confirmed', 'reference_selected', 'underpowered', 'not_evaluated');
+  defs.SimulationResearchStatus = en('research_confirmed', 'gain_not_confirmed', 'reference_selected', 'underpowered', 'not_executed', 'not_evaluated');
+  defs.SimulationSeasonPosition = en('pre_season', 'in_season_partial', 'post_cutoff', 'post_harvest_pre_release');
   defs.SimulationOutputMode = en('simulation_conditional_on_historical_weather', 'in_season_forecast');
   defs.SimulationScientificStatus = en('physical_experimental', 'reference', 'research', 'unavailable');
   defs.SimulationWeatherKind = en('observed', 'short_forecast', 'seasonal_forecast', 'climatological_scenario');
@@ -51,8 +52,11 @@ export function addSimulationDefs(defs, h) {
         interval_method: { type: 'null' }, scale: text,
       }),
       obj({
-        status: en('research', 'reference'), method: text, model_version: text, value_kg_ha: number, quantiles: nullable(obj({ p10: number, p50: number, p90: number })),
-        interval_method: text, last_label_year: year, history_horizon_years: integer(0), label_release_rule: str(1000), research_status: ref('SimulationResearchStatus'),
+        status: en('research', 'reference'), method: text, model_version: text, value_kg_ha: number,
+        // Two separate ranges: spread across climate members (not calibrated) and a predictive range (with its method).
+        scenario_range: nullable(obj({ p10: number, p50: number, p90: number, method: { const: 'ensemble_spread_uncalibrated' } })),
+        predictive_range: nullable(obj({ p10: number, p50: number, p90: number, interval_method: text })),
+        position_vs_season: ref('SimulationSeasonPosition'), last_label_year: year, history_horizon_years: integer(0), label_release_rule: str(1000), research_status: ref('SimulationResearchStatus'),
         exposure_flags: arr(text), conditional_on_scenario: { type: 'boolean' }, scale: text,
       }),
     ],

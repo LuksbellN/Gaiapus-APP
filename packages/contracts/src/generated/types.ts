@@ -82,7 +82,17 @@ export type SimulationReason =
  * via the `definition` "SimulationResearchStatus".
  */
 export type SimulationResearchStatus =
-  'research_confirmed' | 'gain_not_confirmed' | 'reference_selected' | 'underpowered' | 'not_evaluated';
+  | 'research_confirmed'
+  | 'gain_not_confirmed'
+  | 'reference_selected'
+  | 'underpowered'
+  | 'not_executed'
+  | 'not_evaluated';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeasonPosition".
+ */
+export type SimulationSeasonPosition = 'pre_season' | 'in_season_partial' | 'post_cutoff' | 'post_harvest_pre_release';
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "SimulationOutputMode".
@@ -127,12 +137,19 @@ export type SimulationYield =
       method: string;
       model_version: string;
       value_kg_ha: number;
-      quantiles: {
+      scenario_range: {
         p10: number;
         p50: number;
         p90: number;
+        method: 'ensemble_spread_uncalibrated';
       } | null;
-      interval_method: string;
+      predictive_range: {
+        p10: number;
+        p50: number;
+        p90: number;
+        interval_method: string;
+      } | null;
+      position_vs_season: SimulationSeasonPosition;
       last_label_year: number;
       history_horizon_years: number;
       label_release_rule: string;
@@ -220,6 +237,7 @@ export interface GaiapusContracts {
   SimulationCapabilityStatus?: SimulationCapabilityStatus;
   SimulationReason?: SimulationReason;
   SimulationResearchStatus?: SimulationResearchStatus;
+  SimulationSeasonPosition?: SimulationSeasonPosition;
   SimulationOutputMode?: SimulationOutputMode;
   SimulationScientificStatus?: SimulationScientificStatus;
   SimulationWeatherKind?: SimulationWeatherKind;
