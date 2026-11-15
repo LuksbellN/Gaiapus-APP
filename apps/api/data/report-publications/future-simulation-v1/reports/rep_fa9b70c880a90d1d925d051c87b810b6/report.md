@@ -13,7 +13,7 @@ _Whole run — 2 crop seasons_
 - **Simulated period:** 1 January 2025 to 13 March 2028
 - **Data cutoff:** 31 August 2026 at 23:59 UTC
 - **Simulation issued:** 15 November 2026 at 13:41 UTC
-- **Report generated:** 15 November 2026 at 23:13 UTC
+- **Report generated:** 15 November 2026 at 23:30 UTC
 - **Kind of result:** Simulation conditional on historical weather
 - **Scientific status by component:** weather: climatological scenario; water balance: experimental physical model; crop phases: experimental physical model; yield: unavailable
 

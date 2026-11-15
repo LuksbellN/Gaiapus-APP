@@ -648,6 +648,19 @@ const m: DeepPartial<Messages> = {
     usNote: "Centro global: clima, agua del suelo, NDVI y pronóstico. Sin estimación de rendimiento en Estados Unidos en esta versión.",
   },
   place: { notFoundTitle: "Lugar no encontrado", notFound: "No hay datos publicados para «{id}». Elija un lugar de la lista o búsquelo por nombre.", picker: "Elegir lugar", country: "País", state: "Estado", place: "Lugar", search: "Buscar lugares con datos", searchPh: "Nombre o código oficial (IBGE, FIPS)…", noResult: "No se encontró ningún lugar con datos.", noYieldTitle: "Sin estimación de rendimiento.", noYield: "Esta versión no tiene modelo de rendimiento para este país; sus registros de rendimiento aún no se auditaron. Clima, agua del suelo, NDVI y pronóstico están en las otras pestañas." },
+  report: {
+    title: 'Informe técnico', preparing: 'Preparando el informe técnico…', ready: 'Informe listo',
+    meta: 'Idioma del informe: {language} · generado el {date} · versión {version}',
+    failed: 'No se pudo preparar el informe técnico.', simulationIntact: 'La simulación no se vio afectada: solo falló el informe.', retry: 'Intentar el informe de nuevo',
+    backToSimulation: 'Volver a la simulación', missingRun: 'No se indicó ninguna simulación para el informe.', openPlanning: 'Abrir la planificación de la campaña',
+    scopeLegend: 'Alcance del informe', scopeRun: 'Ejecución completa', scopeSeason: 'Campaña seleccionada — {crop} {year}',
+    actions: 'Acciones del informe', print: 'Imprimir o guardar como PDF', copyMd: 'Copiar en Markdown', mdCopied: 'Markdown copiado', copyFailed: 'No se pudo copiar', downloadMd: 'Descargar Markdown', openHtml: 'Abrir versión en HTML', copyLink: 'Copiar enlace a este informe', linkCopied: 'Enlace copiado',
+    printHint: 'El PDF se guarda desde el diálogo de impresión del navegador; el servidor no genera ningún archivo PDF.',
+    savedLanguage: 'Este informe guardado está en {reportLanguage}; la aplicación está en {appLanguage}.', openInAppLanguage: 'Abrir en {appLanguage}',
+    fallback: 'El informe no está disponible en {appLanguage} ahora; se muestra en {reportLanguage}.', openCurrent: 'Abrir el informe actual de esta simulación',
+    sectionStatus: { partial: 'parcial', unavailable: 'no disponible' },
+    entry: { title: 'Informe técnico', open: 'Abrir informe técnico', preparing: 'Preparando el informe técnico de esta simulación…', ready: 'Informe técnico listo.', failed: 'No se pudo preparar el informe técnico. La simulación no se vio afectada.', scope: { one: 'Ejecución completa — {count} campaña', other: 'Ejecución completa — {count} campañas' } },
+  },
   area,
 };
 export default m;

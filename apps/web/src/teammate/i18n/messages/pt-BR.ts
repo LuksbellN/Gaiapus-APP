@@ -604,6 +604,19 @@ const ptBR = {
     nav: 'Ver núcleo de dados', usTitle: 'Estados Unidos', usNote: 'Núcleo global: clima, água no solo, NDVI e previsão. Sem estimativa de rendimento nos EUA nesta versão.',
   },
   place: { notFoundTitle: "Lugar não encontrado", notFound: "Não há dados publicados para “{id}”. Escolha um lugar na lista ou busque pelo nome.", picker: "Escolher lugar", country: "País", state: "Estado", place: "Lugar", search: "Buscar lugar com dados", searchPh: "Nome ou código oficial (IBGE, FIPS)…", noResult: "Nenhum lugar com dados encontrado.", noYieldTitle: "Sem estimativa de rendimento.", noYield: "Nesta versão não há modelo de rendimento para este país; os rótulos de rendimento ainda não foram auditados. Clima, água no solo, NDVI e previsão estão nas outras abas." },
+  report: {
+    title: 'Relatório técnico', preparing: 'Preparando o relatório técnico…', ready: 'Relatório pronto',
+    meta: 'Idioma do relatório: {language} · gerado em {date} · versão {version}',
+    failed: 'Não foi possível preparar o relatório técnico.', simulationIntact: 'A simulação não foi afetada: só o relatório falhou.', retry: 'Tentar o relatório de novo',
+    backToSimulation: 'Voltar à simulação', missingRun: 'Nenhuma simulação foi indicada para o relatório.', openPlanning: 'Abrir o planejamento da safra',
+    scopeLegend: 'Escopo do relatório', scopeRun: 'Execução completa', scopeSeason: 'Safra selecionada — {crop} {year}',
+    actions: 'Ações do relatório', print: 'Imprimir ou salvar em PDF', copyMd: 'Copiar em Markdown', mdCopied: 'Markdown copiado', copyFailed: 'Não foi possível copiar', downloadMd: 'Baixar Markdown', openHtml: 'Abrir versão em HTML', copyLink: 'Copiar link deste relatório', linkCopied: 'Link copiado',
+    printHint: 'O PDF é salvo pelo diálogo de impressão do navegador; o servidor não gera arquivo PDF.',
+    savedLanguage: 'Este relatório salvo está em {reportLanguage}; o aplicativo está em {appLanguage}.', openInAppLanguage: 'Abrir em {appLanguage}',
+    fallback: 'O relatório não está disponível em {appLanguage} agora; ele é mostrado em {reportLanguage}.', openCurrent: 'Abrir o relatório atual desta simulação',
+    sectionStatus: { partial: 'parcial', unavailable: 'indisponível' },
+    entry: { title: 'Relatório técnico', open: 'Abrir relatório técnico', preparing: 'Preparando o relatório técnico desta simulação…', ready: 'Relatório técnico pronto.', failed: 'Não foi possível preparar o relatório técnico. A simulação não foi afetada.', scope: { one: 'Execução completa — {count} safra', other: 'Execução completa — {count} safras' } },
+  },
   area,
 };
 export default ptBR;

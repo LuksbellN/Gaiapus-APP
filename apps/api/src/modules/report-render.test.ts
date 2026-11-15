@@ -10,7 +10,7 @@ import { REPORT_LOCALES, resolveReportLocale } from './simulations/reports/local
 import { REPORT_CATALOGS, REPORT_TRANSLATION_VERSION, createTranslator } from './simulations/reports/messages/index.js';
 import { escapeMarkdown } from './simulations/reports/markdown.js';
 import { DEFAULT_DISPLAY_PROFILE, renderReportWithExports } from './simulations/reports/render.js';
-import { displayIndices } from './simulations/reports/chart.js';
+import { displayIndices, niceMax } from './simulations/reports/chart.js';
 import { STORY_MAIZE_2027, SUMNER_WHEAT_2028, UBERLANDIA_ROTATION, brIndex, brRun, fullStore, usIndex, usRun, usWithoutSeries } from '../../tests/report-fixtures.js';
 
 const SOY_2027: ReportScope = { kind: 'season', crop_id: 'soy', harvest_year: 2027 };
@@ -332,6 +332,10 @@ describe('charts: representative members only', () => {
     expect(text).toContain('no point was removed');
     expect(text).not.toMatch(/P10 scenario is|member P10/);
     expect(html.match(/<svg viewBox="0 0 720 300" role="img"/g)!.length).toBe(2);
+  });
+  it('the axis maximum covers the data and gives tick labels that are exact at one decimal', () => {
+    expect([55, 18.84, 211.6, 289.8, 456, 0, 1, 9.9, 100].map(niceMax)).toEqual([60, 20, 240, 320, 480, 1.2, 1.2, 10, 120]);
+    for (const value of [0.3, 1, 3.3, 7, 12.5, 55, 61, 99, 455, 1234]) { const max = niceMax(value); expect(max).toBeGreaterThanOrEqual(value); expect(Number((max / 4).toFixed(1))).toBeCloseTo(max / 4, 9); }
   });
   it('a long line is reduced by keeping the extremes of each interval', () => {
     const values = Array.from({ length: 2000 }, (_, i) => Math.sin(i / 7) * 10 + (i === 777 ? 500 : 0) - (i === 1234 ? 500 : 0));

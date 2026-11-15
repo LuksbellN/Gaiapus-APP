@@ -648,6 +648,19 @@ const m: DeepPartial<Messages> = {
     usNote: "Globale Datenzentrale: Klima, Bodenwasser, NDVI und Vorhersage. In dieser Version keine Ertragsschätzung für die USA.",
   },
   place: { notFoundTitle: "Ort nicht gefunden", notFound: "Für „{id}“ gibt es keine veröffentlichten Daten. Wählen Sie einen Ort aus der Liste oder suchen Sie nach dem Namen.", picker: "Ort wählen", country: "Land", state: "Bundesstaat", place: "Ort", search: "Orte mit Daten suchen", searchPh: "Name oder amtlicher Code (IBGE, FIPS) …", noResult: "Kein Ort mit Daten gefunden.", noYieldTitle: "Keine Ertragsschätzung.", noYield: "Diese Version hat für dieses Land kein Ertragsmodell; die Ertragsdaten sind noch nicht geprüft. Klima, Bodenwasser, NDVI und Vorhersage stehen in den anderen Reitern." },
+  report: {
+    title: 'Technischer Bericht', preparing: 'Der technische Bericht wird vorbereitet…', ready: 'Bericht bereit',
+    meta: 'Sprache des Berichts: {language} · erstellt am {date} · Version {version}',
+    failed: 'Der technische Bericht konnte nicht erstellt werden.', simulationIntact: 'Die Simulation ist nicht betroffen: Nur der Bericht ist fehlgeschlagen.', retry: 'Bericht erneut versuchen',
+    backToSimulation: 'Zurück zur Simulation', missingRun: 'Für den Bericht wurde keine Simulation angegeben.', openPlanning: 'Saisonplanung öffnen',
+    scopeLegend: 'Umfang des Berichts', scopeRun: 'Gesamter Lauf', scopeSeason: 'Ausgewählte Saison — {crop} {year}',
+    actions: 'Aktionen des Berichts', print: 'Drucken oder als PDF speichern', copyMd: 'Als Markdown kopieren', mdCopied: 'Markdown kopiert', copyFailed: 'Kopieren nicht möglich', downloadMd: 'Markdown herunterladen', openHtml: 'HTML-Version öffnen', copyLink: 'Link zu diesem Bericht kopieren', linkCopied: 'Link kopiert',
+    printHint: 'Das PDF wird über den Druckdialog des Browsers gespeichert; der Server erzeugt keine PDF-Datei.',
+    savedLanguage: 'Dieser gespeicherte Bericht ist auf {reportLanguage}; die App ist auf {appLanguage}.', openInAppLanguage: 'Auf {appLanguage} öffnen',
+    fallback: 'Der Bericht ist derzeit nicht auf {appLanguage} verfügbar; er wird auf {reportLanguage} angezeigt.', openCurrent: 'Aktuellen Bericht dieser Simulation öffnen',
+    sectionStatus: { partial: 'teilweise', unavailable: 'nicht verfügbar' },
+    entry: { title: 'Technischer Bericht', open: 'Technischen Bericht öffnen', preparing: 'Der technische Bericht dieser Simulation wird vorbereitet…', ready: 'Technischer Bericht bereit.', failed: 'Der technische Bericht konnte nicht erstellt werden. Die Simulation ist nicht betroffen.', scope: { one: 'Gesamter Lauf — {count} Anbausaison', other: 'Gesamter Lauf — {count} Anbausaisons' } },
+  },
   area,
 };
 export default m;

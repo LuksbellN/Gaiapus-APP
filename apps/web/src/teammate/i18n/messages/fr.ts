@@ -648,6 +648,19 @@ const m: DeepPartial<Messages> = {
     usNote: "Centre mondial : climat, eau du sol, NDVI et prévisions. Aucune estimation du rendement aux États-Unis dans cette version.",
   },
   place: { notFoundTitle: "Lieu introuvable", notFound: "Aucune donnée publiée pour « {id} ». Choisissez un lieu dans la liste ou cherchez-le par son nom.", picker: "Choisir un lieu", country: "Pays", state: "État", place: "Lieu", search: "Rechercher un lieu avec données", searchPh: "Nom ou code officiel (IBGE, FIPS)…", noResult: "Aucun lieu avec données trouvé.", noYieldTitle: "Pas d’estimation de rendement.", noYield: "Cette version n’a pas de modèle de rendement pour ce pays ; ses données de rendement n’ont pas encore été auditées. Climat, eau du sol, NDVI et prévision figurent dans les autres onglets." },
+  report: {
+    title: 'Rapport technique', preparing: 'Préparation du rapport technique…', ready: 'Rapport prêt',
+    meta: 'Langue du rapport : {language} · généré le {date} · version {version}',
+    failed: 'Le rapport technique n’a pas pu être préparé.', simulationIntact: 'La simulation n’est pas affectée : seul le rapport a échoué.', retry: 'Réessayer le rapport',
+    backToSimulation: 'Retour à la simulation', missingRun: 'Aucune simulation n’a été indiquée pour le rapport.', openPlanning: 'Ouvrir la planification de la campagne',
+    scopeLegend: 'Périmètre du rapport', scopeRun: 'Exécution complète', scopeSeason: 'Campagne sélectionnée — {crop} {year}',
+    actions: 'Actions du rapport', print: 'Imprimer ou enregistrer en PDF', copyMd: 'Copier en Markdown', mdCopied: 'Markdown copié', copyFailed: 'Copie impossible', downloadMd: 'Télécharger le Markdown', openHtml: 'Ouvrir la version HTML', copyLink: 'Copier le lien de ce rapport', linkCopied: 'Lien copié',
+    printHint: 'Le PDF s’enregistre depuis la boîte d’impression du navigateur ; le serveur ne génère aucun fichier PDF.',
+    savedLanguage: 'Ce rapport enregistré est en {reportLanguage} ; l’application est en {appLanguage}.', openInAppLanguage: 'Ouvrir en {appLanguage}',
+    fallback: 'Le rapport n’est pas disponible en {appLanguage} pour le moment ; il est affiché en {reportLanguage}.', openCurrent: 'Ouvrir le rapport actuel de cette simulation',
+    sectionStatus: { partial: 'partiel', unavailable: 'indisponible' },
+    entry: { title: 'Rapport technique', open: 'Ouvrir le rapport technique', preparing: 'Préparation du rapport technique de cette simulation…', ready: 'Rapport technique prêt.', failed: 'Le rapport technique n’a pas pu être préparé. La simulation n’est pas affectée.', scope: { one: 'Exécution complète — {count} campagne', other: 'Exécution complète — {count} campagnes' } },
+  },
   area,
 };
 export default m;

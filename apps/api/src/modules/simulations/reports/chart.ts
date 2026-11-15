@@ -32,11 +32,11 @@ function scales(days: number, yMax: number) {
   return { x, y };
 }
 const line = (values: readonly number[], x: (i: number) => number, y: (v: number) => number) => displayIndices(values).map((i, k) => `${k ? 'L' : 'M'}${r1(x(i))},${r1(y(values[i]!))}`).join('');
-/** A "nice" axis maximum at or above the data maximum. */
-function niceMax(value: number): number {
-  if (!(value > 0)) return 1;
-  const power = 10 ** Math.floor(Math.log10(value));
-  for (const step of [1, 2, 2.5, 5, 10]) if (step * power >= value) return step * power;
+/** An axis maximum at or above the data maximum whose quarters are exact at one decimal (the tick labels). */
+export function niceMax(value: number): number {
+  const floor = value > 1 ? value : 1;
+  const power = 10 ** Math.floor(Math.log10(floor));
+  for (const step of [1.2, 1.6, 2, 2.4, 3.2, 4, 4.8, 6, 8, 10]) if (step * power >= floor) return Number((step * power).toPrecision(6));
   return 10 * power;
 }
 
