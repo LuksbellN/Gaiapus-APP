@@ -2,7 +2,11 @@
 // drainage/runoff arrows, all read from ProfileLayers — the same data as the 2D fallback.
 // Visual language inspired by the Lara simulator (LaraLLC/Hackathon-Nasa-SpaceApps @ 76aaf46, CropTwin3D.tsx),
 // reimplemented without Drei on the Gaiapus stack (R3F 8 / three 0.170). Nothing here computes water.
-import { useEffect, useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
+import { useI18n } from '../i18n';
+import { STAKE_MODEL, stakePlacement } from './stake-model';
+import type { StakeInstance } from './stake-loader';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { DeviceText } from './Profile2D';
 import { RootSystem3D } from './RootSystem3D';
@@ -68,16 +72,26 @@ function Arrow({ from, dir, length, width, color }: { from: [number, number, num
   const q = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...dir).normalize()), [dir]);
   return <group position={from} quaternion={q}><mesh position={[0, length * 0.4, 0]}><cylinderGeometry args={[width, width, length * 0.8, 6]} /><meshBasicMaterial color={color} /></mesh><mesh position={[0, length * 0.9, 0]}><coneGeometry args={[width * 2.6, length * 0.25, 6]} /><meshBasicMaterial color={color} /></mesh></group>;
 }
-// Stake geometry as in the device: 0.75 m body from 0.30 m above ground, electrodes at 15/40 cm, LED on top.
+// Installation point of the stake: just in front of the cut face, so the probe reads against the profile.
 const STAKE_X = BLOCK.width / 2 - 0.35, STAKE_Z = FRONT_Z + 0.03, RULER_X = -BLOCK.width / 2 - 0.12;
-function Device({ device }: { device: NonNullable<ProfileLayers['device']> }) {
-  const c = LED_COLORS[device.led];
-  return <group position={[STAKE_X, 0, STAKE_Z]}>
-    <mesh position={[0, -0.075, 0]}><cylinderGeometry args={[0.018, 0.018, 0.75, 8]} /><meshLambertMaterial color="#d8d6cf" /></mesh>
-    {device.electrodesM.map((d) => <mesh key={d} position={[0, -d, 0]}><cylinderGeometry args={[0.026, 0.026, 0.035, 10]} /><meshLambertMaterial color="#b98d2c" /></mesh>)}
-    <mesh position={[0, 0.33, 0]}><sphereGeometry args={[0.038, 12, 8]} /><meshBasicMaterial color={c} /></mesh>
-    <mesh position={[0, 0.33, 0]}><sphereGeometry args={[0.07, 12, 8]} /><meshBasicMaterial color={c} transparent opacity={0.25} depthWrite={false} /></mesh>
-  </group>;
+export type StakeStatus = 'loading' | 'ready' | 'failed';
+/**
+ * The stake is the supplied rev G assembly (stake-model.ts), at true scale: probe in the soil, head, solar panel,
+ * antenna and rain gauge above it. It replaces the former cylinder/sphere placeholder — nothing else draws hardware.
+ * Loader and asset arrive on demand; while loading or after a failure nothing is drawn (the caller shows a note).
+ */
+function Device({ device, onStatus }: { device: NonNullable<ProfileLayers['device']>; onStatus: (s: StakeStatus) => void }) {
+  const { invalidate } = useThree(); const [stake, setStake] = useState<StakeInstance | null>(null);
+  const report = useRef(onStatus); report.current = onStatus;
+  useEffect(() => {
+    let alive = true; let made: StakeInstance | null = null; report.current('loading');
+    import('./stake-loader').then((m) => m.createStakeInstance()).then((s) => { if (!alive) { s.dispose(); return; } made = s; setStake(s); report.current('ready'); }).catch(() => { if (alive) report.current('failed'); });
+    return () => { alive = false; made?.dispose(); };
+  }, []);
+  // Only the lens of the simulated LED code is lit; the code comes from the scenario, never from a device.
+  useLayoutEffect(() => { stake?.setLed(device.led); invalidate(); }, [stake, device.led, invalidate]);
+  const place = useMemo(() => stakePlacement([STAKE_X, 0, STAKE_Z]), []);
+  return stake ? <primitive object={stake.object} position={place.position} scale={place.scale} /> : null;
 }
 function Ruler({ ticks }: { ticks: number[] }) {
   return <group position={[RULER_X, 0, FRONT_Z + 0.01]}>
@@ -85,7 +99,7 @@ function Ruler({ ticks }: { ticks: number[] }) {
     {ticks.map((d) => <mesh key={d} position={[0.03, -d, 0]}><boxGeometry args={[0.07, 0.008, 0.008]} /><meshBasicMaterial color="#6b675e" /></mesh>)}
   </group>;
 }
-type Label = { id: string; pos: [number, number, number]; text: string; align: 'left' | 'right' };
+type Label = { id: string; pos: [number, number, number]; text: string; align: 'left' | 'right'; /** Colour dot before the text (simulated LED code). */ swatch?: string };
 /** HTML labels positioned by projecting 3D points on each rendered frame (one overlay, no per-label React root). */
 function LabelProjector({ labels, refs, layer }: { labels: Label[]; refs: MutableRefObject<Map<string, HTMLDivElement>>; layer: MutableRefObject<HTMLDivElement | null> }) {
   const v = useMemo(() => new THREE.Vector3(), []);
@@ -108,16 +122,20 @@ const DOWN: [number, number, number] = [0, -1, 0]; const RIGHT: [number, number,
 
 /** Frames the whole block (and the ruler at its left edge); narrow stages move the camera back instead of cropping. */
 const framing = (aspect: number) => { const k = Math.max(1, 1.1 / Math.max(0.3, aspect)); return new THREE.Vector3(3.9 * k, 1.2 + 0.6 * k, 5.1 * k); };
-function Controls({ label }: { label: string }) {
+/** Close-up preset: the stake is drawn at true scale, so the default framing of the 4 m block shows it small. */
+const STAKE_TARGET = new THREE.Vector3(STAKE_X - 0.05, 0.1, STAKE_Z), STAKE_VIEW = new THREE.Vector3(0.45, 0.3, 1.55);
+function Controls({ label, closeUp }: { label: string; closeUp: boolean }) {
   const { camera, gl, invalidate } = useThree(); const aspect = useThree((st) => st.size.width / Math.max(1, st.size.height)); const narrow = Math.round(Math.min(1.6, aspect) * 4);
   useEffect(() => {
-    const c = new OrbitControls(camera, gl.domElement); c.enablePan = false; c.minDistance = 3; c.minPolarAngle = 0.35; c.maxPolarAngle = 1.5; c.maxDistance = 16; c.target.set(-0.35, -0.45, 0); camera.position.copy(framing(aspect)); c.update(); invalidate();
+    const c = new OrbitControls(camera, gl.domElement); c.enablePan = false; c.minDistance = closeUp ? 0.45 : 3; c.minPolarAngle = 0.35; c.maxPolarAngle = 1.5; c.maxDistance = 16;
+    if (closeUp) { c.target.copy(STAKE_TARGET); camera.position.copy(STAKE_TARGET).addScaledVector(STAKE_VIEW, Math.max(1, 1.1 / Math.max(0.3, aspect))); } else { c.target.set(-0.35, -0.45, 0); camera.position.copy(framing(aspect)); }
+    const minRadius = c.minDistance; c.update(); invalidate();
     const on = () => invalidate(); c.addEventListener('change', on);
     const el = gl.domElement; el.tabIndex = 0; el.setAttribute('role', 'img');
-    const key = (e: KeyboardEvent) => { const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(c.target)); const step = 0.12; if (e.key === 'ArrowLeft') sph.theta -= step; else if (e.key === 'ArrowRight') sph.theta += step; else if (e.key === 'ArrowUp') sph.phi = Math.max(0.35, sph.phi - step); else if (e.key === 'ArrowDown') sph.phi = Math.min(1.5, sph.phi + step); else if (e.key === '+' || e.key === '=') sph.radius = Math.max(3, sph.radius - 0.5); else if (e.key === '-') sph.radius = Math.min(16, sph.radius + 0.5); else return; e.preventDefault(); camera.position.copy(new THREE.Vector3().setFromSpherical(sph).add(c.target)); c.update(); invalidate(); };
+    const key = (e: KeyboardEvent) => { const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(c.target)); const step = 0.12; if (e.key === 'ArrowLeft') sph.theta -= step; else if (e.key === 'ArrowRight') sph.theta += step; else if (e.key === 'ArrowUp') sph.phi = Math.max(0.35, sph.phi - step); else if (e.key === 'ArrowDown') sph.phi = Math.min(1.5, sph.phi + step); else if (e.key === '+' || e.key === '=') sph.radius = Math.max(minRadius, sph.radius - (closeUp ? 0.15 : 0.5)); else if (e.key === '-') sph.radius = Math.min(16, sph.radius + 0.5); else return; e.preventDefault(); camera.position.copy(new THREE.Vector3().setFromSpherical(sph).add(c.target)); c.update(); invalidate(); };
     el.addEventListener('keydown', key);
     return () => { c.removeEventListener('change', on); el.removeEventListener('keydown', key); c.dispose(); };
-  }, [camera, gl, invalidate, narrow]); // eslint-disable-line react-hooks/exhaustive-deps -- reframe only when the aspect band changes
+  }, [camera, gl, invalidate, narrow, closeUp]); // eslint-disable-line react-hooks/exhaustive-deps -- reframe only when the aspect band or the preset changes
   useEffect(() => { gl.domElement.setAttribute('aria-label', label); }, [label, gl]);
   return null;
 }
@@ -126,10 +144,15 @@ const ROOT_Z = (ROWS - 1) * ROW_SPACING / 2; // front plant row
 export default function SoilProfile3D({ layers, label, reducedMotion, deviceText, cutaway = true }: { layers: ProfileLayers; label: string; reducedMotion: boolean; deviceText: DeviceText; cutaway?: boolean }) {
   const zoneBottom = layers.roots ? layers.roots.depthM : PROFILE_DEPTH_M * 0.55;
   const refs = useRef(new Map<string, HTMLDivElement>()); const layer = useRef<HTMLDivElement | null>(null);
+  const { t } = useI18n(); const [stake, setStake] = useState<StakeStatus>('loading'); const [closeUp, setCloseUp] = useState(false);
+  const onStake = useCallback((s: StakeStatus) => { setStake(s); (window as unknown as { __gaiapusStake?: StakeStatus }).__gaiapusStake = s; }, []);
+  const hasDevice = !!layers.device; useEffect(() => { if (!hasDevice) setCloseUp(false); }, [hasDevice]);
+  // Device labels only exist next to the drawn equipment: none while the model loads or if it failed.
+  const device = stake === 'ready' ? layers.device : null;
   const labels = useMemo<Label[]>(() => [
     ...layers.rulerTicksM.map((d): Label => ({ id: `r${d}`, pos: [RULER_X + 0.14, -d, FRONT_Z + 0.01], text: `${Math.round(d * 100)} cm`, align: 'left' })),
-    ...(layers.device ? [...layers.device.electrodesM.map((d): Label => ({ id: `e${d}`, pos: [STAKE_X - 0.06, -d, STAKE_Z], text: deviceText.electrode(Math.round(d * 100)), align: 'right' })),
-      { id: 'led', pos: [STAKE_X - 0.09, 0.33, STAKE_Z], text: deviceText.led, align: 'right' } as Label] : []),
+    ...(device ? [...device.electrodesM.map((d): Label => ({ id: `e${d}`, pos: [STAKE_X - 0.05, -d, STAKE_Z], text: deviceText.electrode(Math.round(d * 100)), align: 'right' })),
+      { id: 'led', pos: [STAKE_X + STAKE_MODEL.lightBar.x + 0.07, STAKE_MODEL.heightAboveSoilM + 0.05, STAKE_Z + STAKE_MODEL.lightBar.z], text: deviceText.led, align: 'left', swatch: LED_COLORS[device.led] } as Label] : []),
     ...(layers.rootSystem ? (() => {
       const r = layers.rootSystem;
       const out: Label[] = [r.depthLabelM != null && r.source !== 'illustrative'
@@ -138,7 +161,7 @@ export default function SoilProfile3D({ layers, label, reducedMotion, deviceText
       if (r.continuesBelow) out.push({ id: 'root-more', pos: [0.1, -r.drawDepthM - 0.08, ROOT_Z], text: deviceText.roots.continues(Math.round(r.drawDepthM * 100)), align: 'left' });
       return out;
     })() : []),
-  ], [layers.rulerTicksM, layers.device, layers.rootSystem, deviceText]);
+  ], [layers.rulerTicksM, device, layers.rootSystem, deviceText]);
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <Canvas frameloop="demand" dpr={[1, 1.75]} camera={{ position: [4.3, 1.9, 5.7], fov: 38 }} gl={{ antialias: true, preserveDrawingBuffer: true }} onCreated={({ gl }) => { (window as unknown as { __gaiapusProfile?: THREE.WebGLRenderer }).__gaiapusProfile = gl; }}>
@@ -150,14 +173,18 @@ export default function SoilProfile3D({ layers, label, reducedMotion, deviceText
       <Particles count={layers.irrigationCount} color={IRRIGATION_COLOR} ymin={0} ymax={0.22} speed={0.35} still={reducedMotion} size={0.04} />
       {layers.drainage && <Arrow from={[-0.6, -zoneBottom + 0.1, FRONT_Z + 0.02]} dir={DOWN} length={layers.drainage.length} width={layers.drainage.width} color={DRAINAGE_COLOR} />}
       {layers.runoff && <Arrow from={[-1.2, 0.04, FRONT_Z + 0.08]} dir={RIGHT} length={1.2 + layers.runoff.length} width={layers.runoff.width} color={RUNOFF_COLOR} />}
-      {layers.device && <Device device={layers.device} />}
+      {layers.device && <Device device={layers.device} onStatus={onStake} />}
       {layers.rulerTicksM.length > 0 && <Ruler ticks={layers.rulerTicksM} />}
       <LabelProjector labels={labels} refs={refs} layer={layer} />
-      <Controls label={label} />
+      <Controls label={label} closeUp={closeUp && !!layers.device} />
     </Canvas>
     <div ref={layer} aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-      {labels.map((l) => <div key={l.id} ref={(el) => { if (el) refs.current.set(l.id, el); else refs.current.delete(l.id); }} style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', whiteSpace: 'nowrap', fontSize: 12, color: '#EAF2EB', background: 'rgba(8,16,12,.72)', padding: '1px 6px', borderRadius: 6 }}>{l.text}</div>)}
+      {labels.map((l) => <div key={l.id} ref={(el) => { if (el) refs.current.set(l.id, el); else refs.current.delete(l.id); }} style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', whiteSpace: 'nowrap', fontSize: 12, color: '#EAF2EB', background: 'rgba(8,16,12,.72)', padding: '1px 6px', borderRadius: 6 }}>{l.swatch && <span data-testid="led-swatch" style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: l.swatch, border: '1px solid #EAF2EB', marginRight: 5 }} />}{l.text}</div>)}
     </div>
+    {layers.device && <div className="sim__stake-tools" data-testid="stake-tools">
+      {stake === 'failed' && <p role="status" data-testid="stake-failed">{t('sim.profile.stakeModelFailed')}</p>}
+      {stake === 'ready' && <button type="button" className="icon-btn" data-testid="stake-closeup" aria-pressed={closeUp} aria-label={t(closeUp ? 'sim.profile.stakeWide' : 'sim.profile.stakeCloseUp')} title={t(closeUp ? 'sim.profile.stakeWide' : 'sim.profile.stakeCloseUp')} onClick={() => setCloseUp((v) => !v)}>{closeUp ? <ZoomOut size={20} aria-hidden /> : <ZoomIn size={20} aria-hidden />}</button>}
+    </div>}
     </div>
   );
 }

@@ -290,3 +290,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .place-picker__results { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control); box-shadow: var(--overlay-shadow); max-height: 320px; overflow: auto; }
 @media (max-width: 900px) { .place-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); } .place-picker__search { grid-column: 1 / -1; } }
 @media (max-width: 560px) { .place-picker { grid-template-columns: 1fr; } }
+/* Stake model tools inside the soil-profile scene: close-up preset and the load-failure note. */
+.sim__stake-tools { position: absolute; right: var(--s4); bottom: 52px; display: grid; gap: 6px; justify-items: end; max-width: min(320px, calc(100% - 2 * var(--s4))); pointer-events: none; }
+.sim__stake-tools > * { pointer-events: auto; margin: 0; }
+.sim__stake-tools p { background: rgba(8, 16, 12, .82); color: #EAF2EB; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--warn); }
