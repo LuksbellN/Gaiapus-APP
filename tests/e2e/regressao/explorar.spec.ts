@@ -86,6 +86,7 @@ test.describe('RT-02 cobertura', () => {
   test('D-09: "Regiões com dados" lista o catálogo da API, incluindo Rio Verde e Barreiras', async ({ page }) => {
     await page.goto('/#/explorar?semwebgl=1');
     await page.getByRole('button', { name: /Regiões com dados/ }).click();
+    await page.getByRole('list', { name: 'Países', exact: true }).getByRole('button', { name: /Brasil/ }).click();
     for (const n of ['Sorriso', 'Uberlândia', 'Rio Verde', 'Barreiras']) await expect(page.getByTestId('with-data')).toContainText(n);
   });
 });

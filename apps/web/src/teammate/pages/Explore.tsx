@@ -59,12 +59,22 @@ export function Explore() {
   const cidx = useCoverageIndex(); const withData = useMemo(() => placesWithData(cidx.index), [cidx.index]); const covered = useMemo(() => coveredMunicipalities(cidx.index), [cidx.index]); const ufWithData = useMemo(() => statesWithData(cidx.index), [cidx.index]);
   const imgMun = sel.mun && fieldOf(cidx.index, sel.mun) ? sel.mun : '3170206';
   const img = useAsync((sg) => (layers.imagem ? imagery.series(imgMun, sg) : Promise.resolve(null)), [layers.imagem, imgMun, cidx.index]);
-  const [showWithData, setShowWithData] = useState(false);
+  const showWithData = params.get('dados') === '1';
+  const seeWithData = () => {
+    const p = new URLSearchParams(params);
+    ['pais', 'uf', 'mun'].forEach((key) => p.delete(key));
+    p.set('dados', '1'); setWorldFilter(''); setParams(p);
+  };
+  const toggleWithData = () => {
+    if (!showWithData) { seeWithData(); return; }
+    const p = new URLSearchParams(params); p.delete('dados'); setParams(p);
+  };
   const [mapDown, setMapDown] = useState<string | null>(null); const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'base-offline'>('loading'); const [geo, setGeo] = useState<string | null>(null); const [sheet, setSheet] = useState<SheetPos>('media'); const [filter, setFilter] = useState('');
   const map = useRef<MapHandle>(null); const mapMod = useLazy(loadMap); const ExplorerMap = mapMod.mod?.default;
   const [munLimit, setMunLimit] = useState(80);
   useEffect(() => { setFilter(''); setMunLimit(80); }, [sel.uf]);
   useEffect(() => { if (mobile && sel.mun) setSheet('media'); }, [sel.mun, mobile]);
+  useEffect(() => { if (mobile && showWithData && !sel.pais) setSheet('expandida'); }, [mobile, showWithData, sel.pais]);
 
   const ufFeature = sel.uf ? mapStates?.features.find((f) => f.properties.code === sel.uf) : undefined;
   const ufCode = (sigla: string | undefined | null) => states.data?.data.features.find((f) => f.properties.sigla === sigla)?.properties.code ?? '';
@@ -93,14 +103,16 @@ export function Explore() {
   const brName = world.data?.data.find((c) => c.code === 'BR'); const brLabel = brName ? countryName(brName, locale) : 'Brasil';
   // US counties are named from the Census boundary (or the published core); the IBGE municipality card does not apply.
   const usCountyName = us && sel.mun ? (abroad.find((l) => l.id === sel.mun)?.name ?? usCounties.data?.features.find((f) => f.properties.code === sel.mun)?.properties.name ?? null) : null;
-  const title = usCountyName ? usCountyName : munFeature ? munFeature.properties.name : sel.mun ? catalogName ?? t('explore.municipality') : ufFeature ? ufFeature.properties.name : br ? brLabel : country ? countryName(country, locale) : sel.pais ? (unknownCountry ? t('explore.countryNotFound') : t('explore.country')) : t('explore.title');
+  const title = usCountyName ? usCountyName : munFeature ? munFeature.properties.name : sel.mun ? catalogName ?? t('explore.municipality') : ufFeature ? ufFeature.properties.name : br ? brLabel : country ? countryName(country, locale) : sel.pais ? (unknownCountry ? t('explore.countryNotFound') : t('explore.country')) : t(showWithData ? 'explore.withData.show' : 'explore.title');
   const next = us ? usStatesCopy[locale][sel.uf ? 'counties' : 'choose'] : sel.mun ? t('explore.next.mun') : sel.uf ? t('explore.next.uf') : br ? t('explore.next.br') : sel.pais ? (country ? t(abroad.some((l) => l.country === country.a2) ? 'location.nextWithData' : 'explore.next.country', { continent: t(`continent.${country.continent}` as MessageKey) }) : '') : t('explore.next.world');
   const searchBox = <PlaceSearch onPick={(p) => select(p.type === 'pais' ? { pais: p.code, uf: null, mun: null } : { pais: p.country ?? 'BR', uf: p.uf, mun: p.type === 'municipio' ? p.code : null })} />;
   // Countries with data come from the catalogues (Brazilian coverage + published location cores abroad), not from a fixed code.
   const dataByCountry = useMemo(() => countriesWithData({ brStates: withData.length ? ufWithData : [], abroad: [...abroad, ...simIds.flatMap((id) => { const st = stateOfCounty(id); return st ? [{ country: 'US', admin1_code: st }] : []; })] }), [withData.length, ufWithData, abroad, simIds]);
-  const worldList = useMemo(() => { const f = norm(worldFilter); const all = world.data?.data ?? []; const hit = f ? all.filter((c) => c.aliases.some((a) => norm(a).includes(f)) || norm(translate(`continent.${c.continent}`)).includes(f)) : all; return orderCountries(hit, dataByCountry, (c) => countryName(c, locale), byName); }, [world.data, worldFilter, locale, dataByCountry]);
-  const detail = sel.mun && !us ? <div data-tour="explore-coverage"><MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }} go={nav} /></div> : null;
-  const withDataBox = <WithData state={cidx.index} places={withData} abroad={abroad} open={showWithData} onToggle={() => setShowWithData((v) => !v)} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
+  const dataLoading = !cidx.index || located.status === 'loading' || simCatalog.status === 'loading';
+  const dataReady = cidx.index?.status === 'ok' && located.status === 'ok' && simCatalog.status === 'ok';
+  const worldList = useMemo(() => { const f = norm(worldFilter); const all = (world.data?.data ?? []).filter((c) => !showWithData || !!c.a2 && dataByCountry.has(c.a2)); const hit = f ? all.filter((c) => c.aliases.some((a) => norm(a).includes(f)) || norm(translate(`continent.${c.continent}`)).includes(f)) : all; return orderCountries(hit, dataByCountry, (c) => countryName(c, locale), byName); }, [world.data, worldFilter, locale, dataByCountry, showWithData]);
+  const detail = sel.mun && !us ? <div data-tour="explore-coverage"><MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={seeWithData} go={nav} /></div> : null;
+  const withDataBox = showWithData && <WithData state={cidx.index} places={withData} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
 
   return (
     <div className="explore">
@@ -120,18 +132,30 @@ export function Explore() {
           <div><h1 style={{ fontSize: 24 }}>{title}</h1><p className="meta">{next}</p></div>
         </div>
         <div className="explore__panel-body" data-tour="explore-lists">
+          <div className="stack-2" data-tour="explore-with-data">
+            <button className="btn btn--sm" aria-pressed={showWithData} onClick={toggleWithData}>{t(showWithData ? 'explore.withData.hide' : 'explore.withData.show')}</button>
+          </div>
           {!sel.pais && (world.status === 'error' ? <ErrorState error={world.error} onRetry={world.retry} /> : !world.data ? <Loading label={t('explore.loadingCountries')} rows={5} /> : <div className="stack-2">
-            {withDataBox}
+            {showWithData && dataLoading && <Loading label={t('explore.withData.loading')} rows={2} />}
+            {showWithData && cidx.index?.status === 'failed' && <Notice tone="warn" title={t('explore.withData.failedTitle')}>{t('explore.withData.failed')} <button className="btn btn--sm" onClick={cidx.retry}>{t('common.retry')}</button></Notice>}
+            {showWithData && located.status === 'error' && <ErrorState error={located.error} onRetry={located.retry} />}
             <label className="sr-only" htmlFor="filtro-pais">{t('explore.filterCountries')}</label>
-            <input id="filtro-pais" className="input" name="filtro-pais" autoComplete="off" spellCheck={false} placeholder={t('explore.filterCountriesPh', { count: world.data.data.length })} value={worldFilter} onChange={(e) => setWorldFilter(e.target.value)} />
-            {worldList.length === 0 ? <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty> : <ul className="list list--long" data-tour="explore-country-list" aria-label={t('explore.countries')}>{worldList.map((c) => <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>{c.code === 'BR' ? <span><b>{countryName(c, locale)}</b><br /><span className="meta-13">{t('explore.brStates')}{ufWithData.length ? ` · ${t('explore.dataIn', { states: ufWithData.join(', ') })}` : ''}</span></span> : (c.a2 && dataByCountry.has(c.a2) ? <span><b>{countryName(c, locale)}</b> <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span><br /><span className="meta-13">{c.a2 === 'US' ? `${usStatesCopy[locale].countryLine} · ` : ''}{t('explore.dataIn', { states: dataByCountry.get(c.a2)!.join(', ') })}</span></span> : <span>{countryName(c, locale)} <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span></span>)}{c.a2 && dataByCountry.has(c.a2) ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>}
+            <input id="filtro-pais" className="input" name="filtro-pais" autoComplete="off" spellCheck={false} placeholder={t('explore.filterCountriesPh', { count: showWithData ? world.data.data.filter((c) => c.a2 && dataByCountry.has(c.a2)).length : world.data.data.length })} value={worldFilter} onChange={(e) => setWorldFilter(e.target.value)} />
+            {worldList.length === 0 ? ((!showWithData || dataReady) && <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty>) : <ul className="list list--long" data-tour="explore-country-list" aria-label={t('explore.countries')}>{worldList.map((c) => {
+              const dataStates = c.a2 ? dataByCountry.get(c.a2) : undefined;
+              const summary = c.a2 === 'BR' ? t('explore.brStates') : c.a2 === 'US' ? usStatesCopy[locale].countryLine : t(`continent.${c.continent}` as MessageKey);
+              return <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>
+                <span className="stack-2" style={{ gap: 2 }}>{dataStates ? <b>{countryName(c, locale)}</b> : <span>{countryName(c, locale)}</span>}<span className="meta-13">{summary}{dataStates?.length ? ` · ${t('explore.dataIn', { states: dataStates.join(', ') })}` : ''}</span></span>
+                {dataStates ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}
+              </button></li>;
+            })}</ul>}
             <Source meta={world.data.meta} />
           </div>)}
           {sel.pais && !br && (world.status === 'error' ? <ErrorState error={world.error} onRetry={world.retry} /> : !world.data ? <Loading label={t('explore.loadingCountry')} rows={3} /> : unknownCountry ? <Notice tone="risk" title={t('explore.countryNotFoundTitle')}>{t('explore.countryNotFoundText', { code: sel.pais })}</Notice> : <div className="stack" data-testid="country-detail" data-code={sel.pais}>
             {us ? <USStatesPanel states={usStates.data ?? null} stateCode={sel.uf} counties={usCounties.data ?? null} countyCode={sel.mun} onPickCounty={(code) => select({ pais: 'USA', uf: sel.uf, mun: code })} extraCovered={simIds} items={abroad} loading={usStates.status === 'loading'} error={usStates.error} retry={usStates.retry} locationsLoading={located.status === 'loading'} locationsError={located.error} retryLocations={located.retry} onPick={code => select(stateSelection(code))} /> : abroad.some((l) => l.country === country?.a2) ? <AbroadList items={abroad.filter((l) => l.country === country?.a2)} /> : <><div><Pill>{t('explore.noAnalysis')}</Pill></div>
             <p>{t('explore.countryText', { country: countryName(country!, locale) })}</p>
             <Notice>{t('explore.countryNotice', { states: ufWithData.length ? ` (${ufWithData.join(', ')})` : '' })}</Notice></>}
-            <div className="row"><button className="btn btn--primary" onClick={() => select({ pais: null, uf: null, mun: null })}>{t('explore.keepExploring')}</button><button className="btn" onClick={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }}>{t('explore.seeWithData')}</button></div>
+            <div className="row"><button className="btn btn--primary" onClick={() => select({ pais: null, uf: null, mun: null })}>{t('explore.keepExploring')}</button><button className="btn" onClick={seeWithData}>{t('explore.seeWithData')}</button></div>
           </div>)}
           {br && !sel.uf && withDataBox}
           {br && !sel.uf && (states.status === 'error' ? <ErrorState error={states.error} onRetry={states.retry} /> : !states.data ? <Loading label={t('explore.loadingStates')} rows={5} /> :
@@ -216,17 +240,15 @@ function AbroadList({ items }: { items: LocationSummary[] }) {
   if (!items.length) return null;
   const countries = [...new Set(items.map((l) => l.country))];
   return <div className="stack-2" data-testid="abroad-list">{countries.map((c) => <div key={c} className="stack-2"><h3>{t(`location.country.${c}` as MessageKey)}</h3><p className="meta-13">{t('location.usNote')}</p>
-    <ul className="list">{items.filter((l) => l.country === c).map((l) => <li key={l.id}><a href={`#/municipio?id=${encodeURIComponent(l.id)}`}><span><b>{l.name}</b>, {l.admin1_name}<br /><span className="meta-13">{t('location.code', { scheme: l.scheme.toUpperCase(), code: l.code })}</span></span></a></li>)}</ul></div>)}</div>;
+    <ul className="list">{items.filter((l) => l.country === c).map((l) => <li key={l.id}><a href={`#/municipio?id=${encodeURIComponent(l.id)}`}><span className="stack-2" style={{ gap: 2 }}><b>{l.name}, {l.admin1_name}</b><span className="meta-13">{t('location.code', { scheme: l.scheme.toUpperCase(), code: l.code })}</span></span><ChevronRight size={18} aria-hidden /></a></li>)}</ul></div>)}</div>;
 }
 
 /** "Regiões com dados": places listed by the API catalogue, with what each one has. */
-function WithData({ state, places, abroad, open, onToggle, onRetry, onPick }: { state: ReturnType<typeof useCoverageIndex>['index']; places: PlaceWithData[]; abroad: LocationSummary[]; open: boolean; onToggle: () => void; onRetry: () => void; onPick: (p: PlaceWithData) => void }) {
+function WithData({ state, places, onRetry, onPick }: { state: ReturnType<typeof useCoverageIndex>['index']; places: PlaceWithData[]; onRetry: () => void; onPick: (p: PlaceWithData) => void }) {
   const { t } = useI18n();
-  return <div className="stack-2" data-tour="explore-with-data">
-    <button className="btn btn--sm" aria-expanded={open} aria-controls="with-data" onClick={onToggle}>{open ? t('explore.withData.hide') : `${t('explore.withData.show')}${state?.status === 'ok' ? ` (${places.length + abroad.length})` : ''}`}</button>
-    {open && <div id="with-data" data-testid="with-data"><AbroadList items={abroad} />{!state ? <Loading label={t('explore.withData.loading')} rows={2} />
+  return <div id="with-data" data-testid="with-data">{!state ? <Loading label={t('explore.withData.loading')} rows={2} />
       : state.status === 'failed' ? <Notice tone="warn" title={t('explore.withData.failedTitle')}>{t('explore.withData.failed')} <button className="btn btn--sm" onClick={onRetry}>{t('common.retry')}</button></Notice>
-      : <ul className="list" aria-label={t('explore.withData.show')}>{places.map((p) => { const sig = p.municipality.stateId?.replace(/^BR-/, ''); const items = [...p.own.map((x) => x.id), ...p.fields.map(() => 'field')]; return <li key={p.municipality.id}><button onClick={() => onPick(p)}><span className="stack-2" style={{ gap: 2 }}><b>{p.municipality.name}{sig ? `, ${sig}` : ''}</b><span className="meta-13">{items.map((i) => t(`explore.withData.item.${i}` as MessageKey)).join(' · ')}</span></span><ChevronRight size={18} aria-hidden /></button></li>; })}</ul>}</div>}
+      : <ul className="list" aria-label={t('explore.withData.show')}>{places.map((p) => { const sig = p.municipality.stateId?.replace(/^BR-/, ''); const items = [...p.own.map((x) => x.id), ...p.fields.map(() => 'field')]; return <li key={p.municipality.id}><button onClick={() => onPick(p)}><span className="stack-2" style={{ gap: 2 }}><b>{p.municipality.name}{sig ? `, ${sig}` : ''}</b><span className="meta-13">{items.map((i) => t(`explore.withData.item.${i}` as MessageKey)).join(' · ')}</span></span><ChevronRight size={18} aria-hidden /></button></li>; })}</ul>}
   </div>;
 }
 
