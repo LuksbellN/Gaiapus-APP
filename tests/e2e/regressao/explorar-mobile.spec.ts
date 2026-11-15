@@ -56,7 +56,8 @@ test.describe('Explorar no celular — folha inferior', () => {
     await expect(page.locator('nav.rail a', { hasText: 'Simulador' }).first()).toBeVisible();
   });
 
-  test('no conteúdo o gesto rola a lista; só no topo um puxão para baixo recolhe', async ({ page }) => {
+  test('no conteúdo o gesto rola a lista; só no topo um puxão para baixo recolhe', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'o toque sintético usa o protocolo do Chromium; em WebKit o gesto precisa de aparelho');
     await page.goto(URL);
     await page.getByRole('button', { name: 'Expandir detalhes' }).click();
     await expect(sheet(page)).toHaveAttribute('data-pos', 'expandida');
@@ -134,4 +135,60 @@ test.describe('Responsividade no celular — todas as telas', () => {
       expect(problems).toEqual([]);
     });
   }
+});
+
+// Com o mapa WebGL ativo (sem ?semwebgl): gestos no painel não movem o mapa; na área descoberta o mapa continua respondendo.
+test.describe('Explorar no celular — painel sobre o mapa WebGL', () => {
+  test.use(MOBILE);
+  const view = (page: Page) => page.evaluate(() => { const m = (window as any).__gaiapusMap; const c = m.getCenter(); return { lng: c.lng, lat: c.lat, zoom: m.getZoom() }; });
+  const settled = async (page: Page) => { await page.waitForFunction(() => { const m = (window as any).__gaiapusMap; return !!m && m.loaded() && !m.isMoving(); }, undefined, { timeout: 30000 }); await page.waitForTimeout(600); };
+  const same = (a: { lng: number; lat: number; zoom: number }, b: typeof a) => Math.abs(a.lng - b.lng) < 1e-6 && Math.abs(a.lat - b.lat) < 1e-6 && Math.abs(a.zoom - b.zoom) < 1e-6;
+
+  test('arrastar, rolar, recolher e expandir o painel não movem o mapa; arrastar o mapa descoberto move', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'o toque sintético usa o protocolo do Chromium; em WebKit o gesto precisa de aparelho');
+    await page.goto('/#/explorar?pais=BR&uf=31&mun=3170206');
+    const webgl = await page.waitForFunction(() => !!(window as any).__gaiapusMap, undefined, { timeout: 20000 }).then(() => true, () => false);
+    test.skip(!webgl, 'WebGL indisponível neste navegador de teste');
+    await settled(page);
+    // Expandir muda o enquadramento uma vez (o mapa reserva o espaço do painel); a partir daí nada no painel pode movê-lo.
+    await page.getByRole('button', { name: 'Expandir detalhes' }).click();
+    await expect(sheet(page)).toHaveAttribute('data-pos', 'expandida'); await settled(page);
+    const before = await view(page);
+    const scroller = page.getByTestId('explore-sheet-scroll'); const s = (await scroller.boundingBox())!;
+    await swipe(page, s.x + s.width / 2, s.y + 420, s.y + 80);                       // rolar o conteúdo
+    await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(100);
+    await scroller.evaluate((el) => el.scrollTo(0, el.scrollHeight));                 // até o último item
+    await swipe(page, s.x + s.width / 2, s.y + 120, s.y + 380);                       // voltar um pouco
+    await scroller.evaluate((el) => el.scrollTo(0, 0));
+    const grip = await box(page, '[data-testid="explore-sheet-grip"]');
+    await swipe(page, grip.x + grip.width / 2, grip.y + 8, grip.y + 60);              // toque na alça, sem soltar em outra posição
+    await page.mouse.wheel(0, 300);                                                    // roda do mouse sobre o painel
+    await settled(page);
+    expect(same(await view(page), before)).toBe(true);
+    // Recolher devolve espaço ao mapa: o enquadramento pode mudar aqui, por decisão do app, não por gesto.
+    await page.getByRole('button', { name: 'Recolher detalhes' }).click(); await page.getByRole('button', { name: 'Recolher detalhes' }).click();
+    await expect(sheet(page)).toHaveAttribute('data-pos', 'recolhida'); await settled(page);
+    const open = await view(page);
+    await swipe(page, 195, 300, 420);                                                  // arrastar o mapa na área descoberta
+    await settled(page);
+    expect(same(await view(page), open)).toBe(false);
+    await expect(page).toHaveURL(/mun=3170206/);
+  });
+
+  test('trocar de município pela lista mantém o painel utilizável e a seleção na URL', async ({ page }) => {
+    await page.goto('/#/explorar?pais=BR&uf=31&mun=3170206');
+    const webgl = await page.waitForFunction(() => !!(window as any).__gaiapusMap, undefined, { timeout: 20000 }).then(() => true, () => false);
+    test.skip(!webgl, 'WebGL indisponível neste navegador de teste');
+    await settled(page);
+    await page.getByRole('button', { name: 'Expandir detalhes' }).click();
+    const filter = page.locator('#filtro-mun');                                    // digitar dentro do painel não o recolhe nem move a página
+    await filter.scrollIntoViewIfNeeded(); await filter.fill('Uberaba');
+    await expect(sheet(page)).toHaveAttribute('data-pos', 'expandida');
+    const other = page.getByTestId('explore-sheet-scroll').getByRole('button', { name: /^Uberaba/ }).first();
+    await other.scrollIntoViewIfNeeded(); await other.click();
+    await expect(page).toHaveURL(/mun=3170107/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Uberaba' })).toBeVisible();
+    await expect(sheet(page)).toHaveAttribute('data-pos', 'media');
+    await expect(page.getByRole('button', { name: 'Expandir detalhes' })).toBeEnabled();
+  });
 });
