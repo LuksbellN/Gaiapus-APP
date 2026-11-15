@@ -225,6 +225,7 @@ Pontos levantados na revisão independente do desenho. Têm precedência sobre o
    - O NDVI do núcleo cobre a safra de soja 2023/24 no mesmo polígono.
    - Sorriso e os 3 condados ganham recorte novo, escolhido com MapBiomas ou CDL.
    - Na interface, a aba Imagem passa a ler o núcleo; `/v1/observations` continua existindo, sem mudança, para quem já o usa.
+7. **Rotas.** `/v1/places` já existe, como rota privada dos lugares monitorados de cada usuário. As rotas novas são `GET /v1/locations` e `GET /v1/locations/:id/core`, e os tipos se chamam `LocationSummary` e `LocationCore`. O identificador continua `BR:ibge:…` / `US:fips:…`.
 
 ## 6. Testes de aceite
 
