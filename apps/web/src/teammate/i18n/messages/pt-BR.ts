@@ -124,6 +124,7 @@ const ptBR = {
       noCountry: 'Não foi possível identificar o país da sua posição. Escolha na lista ou no mapa.', here: 'Você está em {place}.', denied: 'Permissão de localização negada. Use a busca ou o mapa.', failed: 'Não foi possível obter sua posição.',
     },
     map: {
+      position: 'Sua posição', label: 'Mapa. Use a lista ao lado para navegar por teclado; no mapa, arraste para mover e clique em um país, estado ou município.',
       unavailableTitle: 'Mapa indisponível neste aparelho.', unavailable: 'O navegador não conseguiu iniciar o mapa (WebGL). A busca e as listas ao lado continuam funcionando para escolher o lugar.',
       downloadTitle: 'O mapa não pôde ser baixado.', download: 'Sem conexão para carregar o mapa. A busca e as listas ao lado continuam funcionando para escolher o lugar.',
       loading: 'Carregando o mapa…', baseOffline: 'Mapa-base sem conexão. Os limites do IBGE e as listas continuam funcionando.',
@@ -198,6 +199,7 @@ const ptBR = {
     },
   },
   modelStatus: {
+    label: { reference: 'Referência histórica', national: '{type} nacional', regional: '{type} regional ({scope})', and: ' e ' },
     service: '1. Modelo no serviço', servedIn: 'Nos exemplos do contrato:', noHttp: 'Não há serviço HTTP ligado a este frontend.', noExample: 'Sem resposta de exemplo para esta cultura neste frontend.',
     development: '2. Desenvolvimento (2019–2021)', choice: 'Escolha da validação', reference: 'Referência histórica', mae: 'Erro médio (MAE)', meanYield: 'Rendimento médio', municipalities: 'Municípios', states: 'Estados',
     vstatus: { validated: 'Modelo escolhido superou as referências', reference_only: 'Nenhum modelo superou a referência simples' },

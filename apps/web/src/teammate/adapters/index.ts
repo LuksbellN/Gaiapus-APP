@@ -9,7 +9,7 @@ import { backend, publishedExample, request } from './http';
 import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
 import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
 import { byName } from '../format';
-import { activeLocale } from '../i18n';
+import { activeLocale, translate } from '../i18n';
 import type { Locale } from '../i18n/locale';
 import { authAccount } from './session';
 
@@ -176,9 +176,14 @@ export type YieldEstimate = {
   validation: { years: number[]; cutoff_days: number; scope: string; mae_kg_ha: number; bias_kg_ha?: number; municipalities?: number; validation_status?: string } | null;
   coverage: { forcing_days_expected?: number; forcing_days_present?: number; sources?: string[]; source_mode?: string } | null;
 };
-const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient boosting)', mlp: 'MLP', reference: 'Referência histórica' };
+const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient boosting)', mlp: 'MLP' };
 /** Nome do modelo tirado da resposta: tipo + abrangência. 1.0.0 não traz `scope`; a versão antiga era só nacional. */
-export function modelLabel(m: YieldModel) { const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null); return `${MODEL_TYPE[m.type] ?? m.type}${scope === 'national' ? ' nacional' : scope ? ` regional (${scope.replace('+', ' e ')})` : ''}`; }
+export function modelLabel(m: YieldModel) {
+  const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null);
+  const type = m.type === 'reference' ? translate('modelStatus.label.reference') : MODEL_TYPE[m.type] ?? m.type;
+  if (scope === 'national') return translate('modelStatus.label.national', { type });
+  return scope ? translate('modelStatus.label.regional', { type, scope: scope.split('+').join(translate('modelStatus.label.and')) }) : type;
+}
 export const modelScope = (m: YieldModel) => m.scope ?? (/national/.test(m.version) ? 'national' : 'national');
 const yieldMeta = (data: YieldEstimate, example: string, kind: 'fixture' | 'publicacao' = 'fixture'): Sourced<YieldEstimate>['meta'] => ({ kind, source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, noteKey: 'notes.yieldExample' });
 const YIELD_FIXTURES: Record<string, () => Promise<{ default: unknown }>> = {

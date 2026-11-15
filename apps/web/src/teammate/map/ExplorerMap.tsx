@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { bboxOf, type BBox, type FC } from '../adapters';
 import { MOTION } from '../config';
 import { reducedMotion } from '../ui';
+import { translate, useI18n } from '../i18n';
 
 import type { MapHandle, MapLayers, Selection } from './types';
 type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; placeBox?: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
@@ -24,13 +25,14 @@ const style: StyleSpecification = {
 const empty: FC = { type: 'FeatureCollection', features: [] };
 
 const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
+  const { t } = useI18n();
   const el = useRef<HTMLDivElement>(null); const mapRef = useRef<MlMap | null>(null); const ready = useRef(false); const latest = useRef(p); latest.current = p;
   const markerEls = useRef<maplibregl.Marker[]>([]); const here = useRef<maplibregl.Marker | null>(null);
 
   useImperativeHandle(ref, () => ({
     zoom: (d) => { const m = mapRef.current; if (m) m.easeTo({ zoom: m.getZoom() + d, duration: reducedMotion() ? 0 : 200 }); },
     countryAt: (lon, lat) => { const m = mapRef.current; if (!m || !ready.current) return null; const f = m.queryRenderedFeatures(m.project([lon, lat]), { layers: ['countries'] })[0]; return f?.properties?.ADM0_A3 ? String(f.properties.ADM0_A3) : null; },
-    flyTo: (lon, lat) => { const m = mapRef.current; if (!m) return; here.current?.remove(); const dot = document.createElement('div'); dot.setAttribute('aria-label', 'Sua posição'); dot.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#79BDD8;border:3px solid #EAF2EB'; here.current = new maplibregl.Marker({ element: dot }).setLngLat([lon, lat]).addTo(m); m.flyTo({ center: [lon, lat], zoom: Math.max(m.getZoom(), 7), duration: reducedMotion() ? 0 : MOTION.fly }); },
+    flyTo: (lon, lat) => { const m = mapRef.current; if (!m) return; here.current?.remove(); const dot = document.createElement('div'); dot.setAttribute('aria-label', translate('explore.map.position')); dot.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#79BDD8;border:3px solid #EAF2EB'; here.current = new maplibregl.Marker({ element: dot }).setLngLat([lon, lat]).addTo(m); m.flyTo({ center: [lon, lat], zoom: Math.max(m.getZoom(), 7), duration: reducedMotion() ? 0 : MOTION.fly }); },
   }));
 
   const applySelected = () => {
@@ -111,6 +113,6 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     // Alternate label side so nearby places (Sorriso, Uberlândia) do not overlap at world zoom.
     p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
   }, [p.markers, p.selection.mun]);
-  return <div ref={el} className="explore__map" role="application" aria-label="Mapa. Use a lista ao lado para navegar por teclado; no mapa, arraste para mover e clique em um país, estado ou município." />;
+  return <div ref={el} className="explore__map" role="application" aria-label={t('explore.map.label')} />;
 });
 export default ExplorerMap;
