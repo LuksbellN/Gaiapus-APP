@@ -1,0 +1,51 @@
+{
+  "source": "LeandroJerse/Gaiapus_nasa data/serving/location-core",
+  "generator": "gaiapus_nasa@9589e838caf0",
+  "generated_at": "2026-11-15T03:20:00+00:00",
+  "manifest_sha256": "abf43d1b6fb180853a03e65f18f57077c2ddcbf5faa9f64d9f88bc642a442e31",
+  "manifest_canonical_sha256": "582fe06ae01d6cac078637b33b585e55d72b228dfab1c95311b881ed5bc1518a",
+  "packages": [
+    {
+      "id": "BR:ibge:5107925",
+      "path": "BR_ibge_5107925.json",
+      "sha256": "652ff2e1b09b6e057d2a7add10afafec1865f0a92b402468deb11c7626d43f11",
+      "canonical_sha256": "56d4c8437741479bd9a472625aa71f2af3c6be39dfa764daf71ac069424109e5"
+    },
+    {
+      "id": "BR:ibge:3170206",
+      "path": "BR_ibge_3170206.json",
+      "sha256": "7c1b465b28e21c032505846ea9a75fcc01eb1a26941f83ca4d28ec4b6d441e12",
+      "canonical_sha256": "be821e9c5aaf19b982daf57a61a7895537fe9707fcd06302dd33b85b2394c8b2"
+    },
+    {
+      "id": "BR:ibge:5218805",
+      "path": "BR_ibge_5218805.json",
+      "sha256": "f4a4436de36037997bad37ed98989644a16c8837b1ace4897753cb3084e65a6f",
+      "canonical_sha256": "b3738dc2f81850636e26106f98a9a6a951767775fe4b822f7c75d6abbf3a9edf"
+    },
+    {
+      "id": "BR:ibge:2903201",
+      "path": "BR_ibge_2903201.json",
+      "sha256": "a01cfb9245cd47d9109e9e95ee8aba2e1198400dc9a58638aa16684758d2bde6",
+      "canonical_sha256": "7302fa5b1e3b2a36bec1ae99c2aadf9ab9ad768e448a502c66d6fae1c361b8a0"
+    },
+    {
+      "id": "US:fips:19169",
+      "path": "US_fips_19169.json",
+      "sha256": "e657c1c1425c48559ed870cbafc0022d154bfe85e72c537c4674a1bb99c3abab",
+      "canonical_sha256": "e6c22743b0f23f1f6874b1b49dbc23c39c15afb1ce5282946b08b9b62125da88"
+    },
+    {
+      "id": "US:fips:31185",
+      "path": "US_fips_31185.json",
+      "sha256": "b92874179adb1a0424b08d4391f32c927a84cc343080a962d4b1754b48d33581",
+      "canonical_sha256": "f95ff3bc9935b26a708846f590d0246d7c3745aa4cc8a24f59123248a29a56b0"
+    },
+    {
+      "id": "US:fips:20191",
+      "path": "US_fips_20191.json",
+      "sha256": "fa37609302e4ba99649df7a01e4997783bd8069564cd862b8082e9e26b10fd0e",
+      "canonical_sha256": "4c7f85731e4024c65c0690c1f4d6c14ee7bdf104dc998ce71105ebdad96d8bc6"
+    }
+  ]
+}

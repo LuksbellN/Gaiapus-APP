@@ -57,3 +57,4 @@ export const fixtures: { schema: string; value: unknown }[] = [
   { schema: 'MonitoredPlace', value: monitoredPlace }, { schema: 'ComparisonDetail', value: savedComparison }, { schema:'ComparisonDetail',value:olderSavedComparison }, { schema: 'EvidenceReview', value: evidenceReview }, { schema: 'EvidenceReviewResult', value: null },
   ...Object.values(errorFixtures).map(value => ({ schema: 'ErrorResponse', value })),
 ];
+export { locationCore, locationSummaries, locationPublication } from './locations.js';
