@@ -15,5 +15,6 @@ A	apps/web/src/teammate/pages/FieldShiftBareSoil.tsx
 M	apps/web/src/teammate/pages/FieldShiftDecision.tsx
 A	apps/web/src/teammate/sim/field-shift-bare-soil.test.ts
 A	apps/web/src/teammate/sim/field-shift-bare-soil.ts
+M	apps/web/src/teammate/ui/ScienceReadingGuide.tsx
 A	services/science-adapter/field_shift_rotations.py
 A	services/science-adapter/tests/test_field_shift_rotations.py

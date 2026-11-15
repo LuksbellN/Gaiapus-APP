@@ -63,7 +63,7 @@ export function FieldShiftPage() {
         {v2 && input ? <StrategyTable pkg={v2} input={input} reference={reference} groups={orderGroups(chosen.priority)} /> : pkg.status === 'error' ? <ErrorState error={pkg.error} onRetry={pkg.retry} /> : <Loading rows={6} />}
         <Source meta={pkg.data?.meta ?? f.data.meta} extra={t('fieldShift.soil', { cls: x.soil.cad_class, mm: n0(x.soil.capacity_mm) })} /></section>}
       {v2 && chosen.priority !== 'conservacao' && <BareSoilCard pkg={v2} highlight={false} />}
-      {v2 && <ScienceReadingGuide source={v2.summary.weather.source} />}
+      {v2 && <ScienceReadingGuide source={v2.summary.weather.source} soil={v2.summary.soil} />}
       {v2 && <AgronomyMatrix />}
       {legacy && <section className="card" data-tour="fs-table"><div className="row-between"><h2>{t('fieldShift.table.title')}</h2><span className="meta-13">{t('fieldShift.table.legend')}</span></div>
         <div className="table-wrap" tabIndex={0} role="group" aria-label={t('common.tableScroll')}><table><thead><tr><th>{t('fieldShift.table.indicator')}</th><th className="num">A · {t('sim.names.fallow')}</th><th className="num">B · {t('sim.names.brachiaria')}</th><th className="num">B − A</th></tr></thead><tbody>{METRICS.map(([k, unit, dgt]) => <tr key={k}><td>{t(`fieldShift.metric.${k}` as MessageKey)} <span className="meta-13">({unit === 'mm' ? 'mm' : t('common.days')})</span></td><td className="num">{nMax(ref[k], 2)}</td><td className="num">{nMax(bra[k], 2)}</td><td className="num"><b>{signed(diff[k], Math.max(dgt, 1))}</b></td></tr>)}<tr><td>{t('fieldShift.table.yieldEffect')}</td><td className="num" colSpan={3}>{t('fieldShift.table.notEvaluated')}</td></tr></tbody></table></div>

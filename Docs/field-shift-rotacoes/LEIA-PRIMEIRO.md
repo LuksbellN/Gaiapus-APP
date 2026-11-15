@@ -10,6 +10,7 @@ O `main` já tinha as três estratégias (pacote `field-shift-v2-0d12285bf7a9`),
 2. **Solo nu e estações vulneráveis** (`963c6d0`): cartão novo com dias de solo nu, dias de solo nu na estação chuvosa (nov–abr) e chuva sobre solo nu ("proxy de exposição à erosão, não erosão"), A/B/C com B − A e C − A pareados por safra, linhas de chuva ±20% rotuladas como teste de sensibilidade e temperatura +1,5 °C como não simulada. O cartão só aparece se os dias cobertos e de solo nu de cada safra forem idênticos aos do pacote v2; se não forem, não mostra nenhum número. Com a prioridade "conservação", ele vem antes dos cartões de rotação. A matriz agronômica continua "não avaliado" e aponta para este cartão na linha de erosão.
 3. **Decisão** (`b117d79`): rodapé "Apoia, não substitui, a decisão do produtor e do agrônomo." nos cartões; frase gerada no seletor de prioridade, com os números do ponto de chuva na tela; `plan.form.priorityNote` passou a dizer "Ordena os indicadores do Field Shift; não altera os cálculos." (o texto anterior dizia que a prioridade não alterava nada).
 4. **README e documentos**: seção "How Gaiapus answers Field Shift" no `README.md` e esta pasta.
+5. **Guia de leitura**: o bloco "Como ler estes números" ganhou a reserva de água do solo (AD4, 55 mm, lida do pacote), NDVI (HLS, 30 m, só em dias sem nuvem) e satélite × estação × sonda (POWER/IMERG = ponto de grade do município; HLS = talhão; sonda = um ponto a 15 e 40 cm). A tela Sondas aparece como demonstrativa, com dados sintéticos.
 
 **Escolhas registradas**
 - O déficit na implantação na tela continua 1,57 mm (v2, 6 safras). O 1,88 mm da extensão (5 transições) só aparece na nota de `NUMEROS-DEMO.md`.
@@ -44,6 +45,7 @@ Novos:
 Modificados:
 - `apps/web/src/teammate/adapters/index.ts` (`simulations.fieldShiftBareSoil`)
 - `apps/web/src/teammate/pages/FieldShift.tsx` (posição do cartão, frase), `FieldShiftDecision.tsx` (frase, rodapé, nota da matriz), `FieldShift.test.tsx`
+- `apps/web/src/teammate/ui/ScienceReadingGuide.tsx` (reserva, NDVI, satélite × estação × sonda)
 - `apps/web/src/teammate/i18n/messages/{pt-BR,en,es,fr,de}.ts`
 - `README.md`
 
@@ -55,5 +57,6 @@ Chaves novas, todas em `fieldShift.v2`, exceto a última:
 - `bare.*`: `title`, `kind`, `intro`, `highlight`, `metric.bare_days`, `metric.bare_days_nov_apr`, `metric.rain_on_bare_soil_mm`, `proxy`, `sens.title`, `sens.label`, `sens.method`, `sens.rain`, `sens.comparison`, `sens.temperature`, `source`, `mismatch.title`, `mismatch.text`
 - `matrix.erosionLink`
 - `card.footer`
+- `guide.soil`, `guide.ndvi`, `guide.sources`
 - `priority.sentence.conservacao`, `priority.sentence.producao`, `priority.sentence.margem`
 - `plan.form.priorityNote` (texto trocado)

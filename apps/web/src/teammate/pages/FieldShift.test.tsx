@@ -322,3 +322,14 @@ it('the priority sentence quotes the package numbers on screen and the cards car
   for (const v of [mean.reference_fallow.mean.soy_deficit_mm!, mean.brachiaria.mean.maize_deficit_mm!]) expect(production).toHaveTextContent(num(v));
   expect(production).toHaveTextContent('C não cultiva milho');
 });
+
+it('the reading guide adds the soil reserve, NDVI from HLS and satellite × station × probe, with the probes as synthetic', async () => {
+  open();
+  const guide = await screen.findByTestId('reading-guide');
+  expect(guide.querySelector('[data-term="soil"]')).toHaveTextContent(`${summary.soil.cad_class}, ${num(summary.soil.capacity_mm, 0)} mm`);
+  expect(guide.querySelector('[data-term="ndvi"]')).toHaveTextContent(/HLS.*30 m.*sem nuvem/);
+  const sources = guide.querySelector('[data-term="sources"]') as HTMLElement;
+  expect(sources).toHaveTextContent('15 e 40 cm');
+  expect(sources).toHaveTextContent('dados sintéticos');
+  expect(sources).not.toHaveTextContent('20 cm');
+});
