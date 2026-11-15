@@ -6,6 +6,7 @@ import { getState, setState, uid, now, getAccountScope, type FieldRecord, type P
 import { norm } from '../format';
 import { cropIdFromName, isCropId, type CropId } from '../catalog';
 import { backend, publishedExample, request } from './http';
+import { checkPackage, type FieldShiftSeries, type FieldShiftSummary, type PackageManifest } from '../sim/field-shift-decision';
 import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
 import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
 import { byName } from '../format';
@@ -238,12 +239,25 @@ export const crops = {
 };
 
 export type FieldShift = typeof import('../data/sorriso-field-shift.json');
+export type FieldShiftPackage = { id: string; manifest: PackageManifest; summary: FieldShiftSummary; series: FieldShiftSeries };
 export const simulations = {
   async fieldShift(code: string, signal?: AbortSignal): Promise<Sourced<FieldShift>> {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<FieldShift>('field-shift-sorriso', signal);
     return { ...result, meta: { ...result.meta, source: result.data.weather.source, note: `${result.meta.note ?? ''} · ${result.data.evidence}` } };
+  },
+  /** Field Shift v2: three strategies. Summary and daily series are one pinned package; a mixed pair is refused. */
+  async fieldShiftStrategies(code: string, signal?: AbortSignal): Promise<Sourced<FieldShiftPackage>> {
+    await wait(signal);
+    if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
+    const [manifest, summary, series] = await once('field-shift-v2', () => Promise.all([
+      import('../data/field-shift-v2/manifest.json').then((m) => m.default as unknown as PackageManifest),
+      import('../data/field-shift-v2/summary.json').then((m) => m.default as unknown as FieldShiftSummary),
+      import('../data/field-shift-v2/series.json').then((m) => m.default as unknown as FieldShiftSeries)]));
+    let id: string;
+    try { id = checkPackage(manifest, summary, series); } catch (error) { throw new AdapterError('field_shift_package_mismatch', 409, error instanceof Error ? error.message : undefined); }
+    return { data: { id, manifest, summary, series }, meta: { kind: 'fixture', source: summary.weather.source, generatedAt: manifest.generated_at, note: `${id} · ${summary.evidence}` } };
   },
 };
 

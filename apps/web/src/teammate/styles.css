@@ -31,7 +31,7 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 400 16px/1.5 
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
 h1 { font-size: 26px; } h2 { font-size: 20px; } h3 { font-size: 17px; font-family: var(--font-body); letter-spacing: 0; }
 p { margin: 0; } a { color: var(--action); text-underline-offset: 3px; }
-small, .meta { font-size: 14px; color: var(--text-2); } .meta-13 { font-size: 13px; color: var(--text-2); }
+small, .meta { font-size: 14px; color: var(--text-2); } .meta-13 { font-size: 13px; color: var(--text-2); } .block { display: block; }
 .num { font-variant-numeric: tabular-nums; text-align: right; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* Superfícies do navegador, a partir da paleta */

@@ -336,6 +336,12 @@
       "date": "2026-11-15",
       "reason": "UX journey batch 1: simulator opens on season planning with place/crop pickers, season window, climate trajectory explained, phone tabs, crop comparison; simulate actions in Municipality and Explore; context chip without a fixed place",
       "sha256": "0acc840f2a6b59960bfdbd8218d8265478e9044b703639b2a1100bc4ff34b402"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Sprint final M1: Field Shift shows three calculated strategies (A/B/C) of one pinned package, reference selector, third series in the timeline; five languages",
+      "sha256": "48d2285cafa74f617f2d37449bea76cda98ab9c7b96f3967b10fe1c3c22e2d02"
     }
   ]
 }

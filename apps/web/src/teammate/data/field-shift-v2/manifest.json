@@ -1,0 +1,116 @@
+{
+  "package_id": "field-shift-v2-0d12285bf7a9",
+  "schema_version": "2.0.0",
+  "generated_at": "2026-11-15T18:52:41.288197+00:00",
+  "identity": {
+    "schema_version": "2.0.0",
+    "weather": {
+      "sha256": "e775dc6d03f372a6d5f814033f2c7d35432415bb87f2725be59abedd57eb203b",
+      "days": 8766,
+      "first_day": "2001-01-01",
+      "last_day": "2024-12-31"
+    },
+    "code": {
+      "data/ingest/field_shift_case.py": "1b82e778edf8b549715c046474f120c98a400872f19b31670c91e4b606ef5034",
+      "data/ingest/field_shift_v2.py": "d23ba6af31549fab82a08ce76a20a7b153deffb91fa066a4820ce55c7ede11db",
+      "data/models/field_shift_forcing.py": "d0ef1801d355343aba0f28b2ba505df9bfb726488425f4379ff1fc4b1e6aa47e",
+      "data/models/water_balance.py": "212ea82a61347c7c7c86d80f28094a76188f27dbffc57ead1c0a308864e893a4"
+    },
+    "parameters": {
+      "central": {
+        "cover_kc": 0.8,
+        "straw_factor": 0.8,
+        "cad_class": "AD4",
+        "soy_shift_days": 0
+      },
+      "ranges_tested": {
+        "cover_kc": [
+          0.75,
+          0.85
+        ],
+        "straw_factor": [
+          0.7,
+          0.9,
+          1.0
+        ],
+        "cad_class": [
+          "AD2",
+          "AD6"
+        ],
+        "soy_shift_days": [
+          -15,
+          15
+        ]
+      },
+      "rain_multipliers": [
+        0.8,
+        1.0,
+        1.2
+      ],
+      "fallow_kc": 0.3,
+      "initial_storage_fraction": 0.7
+    }
+  },
+  "weather_source": "NASA POWER daily point (IMERG rain), retrospective",
+  "base_git_revision": "56b1af32bc0d70085ed7f2a76f729ec541b34756",
+  "reproduction_v1": {
+    "reference_fallow": {
+      "by_year_identical": true,
+      "daily_identical": true,
+      "years": 6,
+      "days": 2192,
+      "v1_by_year_sha256": "9ef291bad7a1ef363d6a3623f3ab60d2936ac889c9063c21e7a480d2168d903c",
+      "v1_daily_sha256": "74acd2ffb46df5cc6452c76b195900cd8e6d1da9d202d4ec3d9410cfacaffa79"
+    },
+    "brachiaria": {
+      "by_year_identical": true,
+      "daily_identical": true,
+      "years": 6,
+      "days": 2192,
+      "v1_by_year_sha256": "231e1cbfd5a07a029b43bd5630b111ea505b06fb32b53f3fad9f2bcbd3be2429",
+      "v1_daily_sha256": "f06417ea80d464110b0fa41ac3d3080fb4ad2ea0f237bb4638f16e84759c9633"
+    }
+  },
+  "files": {
+    "brachiaria_by_year.csv": {
+      "sha256": "79b58eb648c8947fd2f1080f34ec6dc4ce334d68aaebc35c9b78441478374490",
+      "bytes": 1259
+    },
+    "brachiaria_daily.csv": {
+      "sha256": "f06417ea80d464110b0fa41ac3d3080fb4ad2ea0f237bb4638f16e84759c9633",
+      "bytes": 224485
+    },
+    "paired_differences.csv": {
+      "sha256": "2bbd13f3af405f9c9123e2ed2f946dcfaf229ee0cdccb96c89421bb7052e18f5",
+      "bytes": 4780
+    },
+    "rain_sensitivity.csv": {
+      "sha256": "dc63100472d04b6c934f52cf87ecd028b6029a9747a2f543061055333f74ba3c",
+      "bytes": 1563
+    },
+    "reference_fallow_by_year.csv": {
+      "sha256": "c5b0d030b71217bf2196c89d386f57f8528a838acb5c9786182953990f7a021a",
+      "bytes": 1264
+    },
+    "reference_fallow_daily.csv": {
+      "sha256": "74acd2ffb46df5cc6452c76b195900cd8e6d1da9d202d4ec3d9410cfacaffa79",
+      "bytes": 213258
+    },
+    "series.json": {
+      "sha256": "8524adef2ae954506c2a706c0f26a76478b5f7c8ce0940d67ca143130081b284",
+      "bytes": 697576
+    },
+    "soy_long_fallow_by_year.csv": {
+      "sha256": "1307f5e58e286b5efa5d3324ba781b0d7c14184aea4bc6e1cda835704451824f",
+      "bytes": 1212
+    },
+    "soy_long_fallow_daily.csv": {
+      "sha256": "11ee6304977502f9336cbe26f9db82e52502f34315483d4e899a9f3af96cafa0",
+      "bytes": 213371
+    },
+    "summary.json": {
+      "sha256": "6d45197f4885265cb189e5f4e3562d57c618aa97ab7710dfb65880995478d432",
+      "bytes": 313610
+    }
+  }
+}
