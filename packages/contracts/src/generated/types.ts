@@ -76,6 +76,7 @@ export type SimulationReason =
   | 'flooded_system_not_represented'
   | 'perennial_engine_missing'
   | 'season_already_started_without_observations'
+  | 'post_harvest_no_daily_series'
   | 'unsupported';
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -1629,6 +1630,7 @@ export interface SimulationCapability {
   run_ids: SimulationRunKey[];
   water_balance?: 'physical_experimental';
   yield?: string;
+  yield_result?: SimulationYield;
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
@@ -1685,8 +1687,8 @@ export interface SimulationPublication {
   current: boolean;
   artifacts: SimulationArtifact[];
   measured: {
-    seconds: number;
-    peak_python_mib: number;
+    seconds: number | null;
+    peak_python_mib: number | null;
     series_bytes_raw: number;
     series_bytes_gzip: number;
     members: number;

@@ -5222,6 +5222,7 @@
           "flooded_system_not_represented",
           "perennial_engine_missing",
           "season_already_started_without_observations",
+          "post_harvest_no_daily_series",
           "unsupported"
         ]
       },
@@ -5323,6 +5324,9 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 256
+          },
+          "yield_result": {
+            "$ref": "#/components/schemas/SimulationYield"
           }
         },
         "required": [
@@ -5532,10 +5536,26 @@
             "additionalProperties": false,
             "properties": {
               "seconds": {
-                "type": "number"
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "peak_python_mib": {
-                "type": "number"
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "series_bytes_raw": {
                 "type": "integer",
