@@ -275,7 +275,8 @@ export const seasons = {
   async savePlot(p: Omit<Plot, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Plot> {
     const scope = getAccountScope(); await wait(undefined, 60); assertCurrentAccount(scope); const t = now(); const s = getState();
     const prev = p.id ? s.plots.find((x) => x.id === p.id) : undefined;
-    const item: Plot = { ...p, id: prev?.id ?? uid('talhao'), createdAt: prev?.createdAt ?? t, updatedAt: t };
+    // Fields this form does not know (outline, calculated area, revision) survive an edit made here.
+    const item: Plot = { ...prev, ...p, id: prev?.id ?? uid('talhao'), createdAt: prev?.createdAt ?? t, updatedAt: t };
     setState({ plots: prev ? s.plots.map((x) => (x.id === item.id ? item : x)) : [...s.plots, item], activePlotId: s.activePlotId ?? item.id }); return item;
   },
   async saveRecord(r: Pick<FieldRecord, 'kind' | 'plotId' | 'event_at' | 'data'> & { id?: string }): Promise<FieldRecord> {
@@ -302,6 +303,6 @@ export const devices = {
 const localAccount = {
   async setConsent(v: boolean) { const scope = getAccountScope(); await wait(undefined, 40); assertCurrentAccount(scope); const s = getState().session; if (s) setState({ session: { ...s, researchConsent: v, consentAt: now() } }); },
   // Exportação protege identidade: sem nome/e-mail, IDs estáveis mantidos.
-  exportData() { const s = getState(); return JSON.stringify({ exported_at: now(), schema: 1, user_id: s.session?.userId ?? null, research_consent: s.session?.researchConsent ?? false, properties: s.properties, plots: s.plots, records: s.records, plans: s.plans }, null, 2); },
+  exportData() { const s = getState(); return JSON.stringify({ exported_at: now(), schema: 1, user_id: s.session?.userId ?? null, research_consent: s.session?.researchConsent ?? false, properties: s.properties, plots: s.plots, records: s.records, plans: s.plans, devices: s.devices, installations: s.installations, commands: s.commands, measurements: s.measurements }, null, 2); },
 };
 export const account = { ...localAccount, ...authAccount };
