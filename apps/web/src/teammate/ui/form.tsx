@@ -12,7 +12,9 @@ export function useDraftForm(key: string, initial: Record<string, string>) {
   const saved = useStore((s) => s.drafts[key]); const [v, setV] = useState<Record<string, string>>(() => legacy(saved)); const [restored, setRestored] = useState(() => !!saved); const k = useRef(key);
   // Switching key (e.g. plot A → B → A) loads that key's own draft instead of blanking it (D-06).
   useEffect(() => { if (k.current !== key) { k.current = key; const d = getState().drafts[key]; setV(legacy(d)); setRestored(!!d); } }, [key]); // eslint-disable-line
-  const set = (name: string, value: string) => setV((p) => { const n = { ...p, [name]: value }; if (!n.__locale) n.__locale = activeLocale(); setDraft(key, n); return n; });
+  // The latest values live in a ref so the store write happens outside the state updater (no update during render).
+  const latest = useRef(v); latest.current = v;
+  const set = (name: string, value: string) => { const n = { ...latest.current, [name]: value }; if (!n.__locale) n.__locale = activeLocale(); latest.current = n; setV(n); setDraft(key, n); };
   const bind = (name: string) => ({ value: v[name] ?? '', onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(name, e.target.value) });
   return { v, set, bind, restored, locale: (isLocale(v.__locale) ? v.__locale : activeLocale()) as Locale, clear: () => { setDraft(key, null); setV({ ...initial }); }, load: (d: Record<string, string>) => setV(legacy(d)) };
 }
