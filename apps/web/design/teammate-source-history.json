@@ -346,6 +346,54 @@
     {
       "file": "styles.css",
       "date": "2026-11-15",
+      "reason": "Mobile: Explore panel becomes a working bottom sheet (drag, three positions, inner scroll, expand/collapse buttons); tutorial invite moved above it",
+      "sha256": "eff451e57569b5326094c3a06c727ee5be7c350aaf7e484c1db498b57f158dda"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Mobile: Explore panel becomes a working bottom sheet (drag, three positions, inner scroll, expand/collapse buttons); tutorial invite moved above it",
+      "sha256": "5a623c151dcfd91c50ebbce445554889c1540ea2a54d64a8978720569981d75b"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Mobile sweep: grids shrink to the screen, long source strings wrap, 44 px touch targets, no focus ring on the page title",
+      "sha256": "e0e70572bc946fb23735a6436af91e055dd358f6b6ef9429f9111a24ef316b71"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Gaiapus logo in header, favicon and boot screen",
+      "sha256": "4b55c1a48f0b75c3079690450096f872ef436051dbaf9bd338c02436a8d842ff"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Merge of main into feat/logo: Gaiapus logo in header, favicon and boot screen on top of the integrated frontend",
+      "sha256": "76036c2854ebfd765a88a1317c74fe2886dc35dc6cb60e7518bb2b6634038767"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Resolve feat/logo merge with main: retain logo styling together with mobile explorer and regions-with-data updates",
+      "sha256": "d96cbad7824569927a315e2530c300a5540a86148f0937c5222bb0069a8f1e30"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-15",
+      "reason": "Preserve PR #10 from main: regions-with-data shortcut opens the country selection instead of Brazil",
+      "sha256": "4170d0008c7f670dce556d1552520b98bd1f43d90a49654b92598bd4641a46c3"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Preserve PRs #9 and #10 from main: working mobile bottom sheet together with countries-first regions-with-data navigation",
+      "sha256": "ba97b02e770955d67aa24a9ab59693471a0b7e62c20da8bdd831533b00f9397f"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
       "reason": "sensores-talhoes: stake model tools (close-up preset, load-failure note) in the soil-profile scene",
       "sha256": "94650707fe4b89202937f921d8cbb6acfa25ca5f4afdc1876f56e90368f90c12"
     },
@@ -360,6 +408,12 @@
       "date": "2026-11-15",
       "reason": "sensores-talhoes: readings table fits 360 px; 44 px targets in 'Minha área'",
       "sha256": "3306132e808325521383ebf6386544c1163060bd5163e1c3432ec02865493374"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Merge of main (bottom sheet, phone sweep, logo, regions with data) into the sensors and plots branch: combined content of the pinned sources",
+      "sha256": "b09480a771ca6d371324e4a904d296a1958b73a56081b7440cd76271a1b6d519"
     }
   ]
 }

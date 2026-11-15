@@ -24,7 +24,7 @@ export function Overview() {
     <ScopeStrip place={place} elsewhere={elsewhere} />
     <div className="cols"><section className="card" aria-labelledby="h-sem" data-testid="no-analysis"><h2 id="h-sem">{t('overview.noWater.title', { place: place.name })}</h2>
       <p>{t('overview.noWater.text', { place: place.name })}</p>
-      <div className="row"><LinkBtn primary to={`/explorar?mun=${code}`}>{t('overview.noWater.seeHere', { place: place.name })}</LinkBtn><LinkBtn to="/visao-geral?mun=5107925">{t('overview.noWater.seeDemo')}</LinkBtn><LinkBtn to="/explorar?pais=BR">{t('overview.noWater.withData')}</LinkBtn></div></section>
+      <div className="row"><LinkBtn primary to={`/explorar?mun=${code}`}>{t('overview.noWater.seeHere', { place: place.name })}</LinkBtn><LinkBtn to="/visao-geral?mun=5107925">{t('overview.noWater.seeDemo')}</LinkBtn><LinkBtn to="/explorar?dados=1">{t('overview.noWater.withData')}</LinkBtn></div></section>
       <aside className="stack" aria-label={t('overview.aside')}><Actions /><Upcoming upcoming={upcoming} plot={ctx.plot?.name} /></aside></div></div>;
   if (w.status === 'error') return <div className="page"><h1>{t('nav.item.visaoGeral')}</h1><ErrorState error={w.error} onRetry={w.retry} /><p><LinkBtn to="/explorar?pais=BR">{t('overview.otherPlace')}</LinkBtn></p></div>;
   if (!w.data?.data) return <div className="page"><h1>{t('nav.item.visaoGeral')}</h1><Loading rows={6} /></div>;

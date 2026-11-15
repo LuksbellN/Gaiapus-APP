@@ -39,7 +39,7 @@ html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; scr
 ::selection { background: color-mix(in srgb, var(--action) 38%, transparent); color: var(--text); }
 h1, h2 { text-wrap: balance; }
 .input:hover { border-color: var(--text-2); } .input:focus-visible { outline-offset: 1px; }
-.main:focus { outline: none; }
+.main:focus { outline: none; } .main h1:focus-visible { outline: none; } /* the page title receives focus on navigation for screen readers; it is not a control and needs no ring */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--action); color: var(--on-action); padding: 10px 14px; border-radius: 8px; font-weight: 600; }
 .skip:focus-visible, .skip:focus { top: 8px; }
@@ -49,6 +49,8 @@ h1, h2 { text-wrap: balance; }
 .header { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s4); padding: 0 var(--s4); border-bottom: 1px solid var(--border); background: var(--bg); min-width: 0; }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 20px var(--font-display); color: var(--text); text-decoration: none; }
 .brand svg { color: var(--action); }
+/* The logo keeps its cream background as a rounded tile, readable on light and dark themes. */
+.brand__logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
 .header__ctx { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex: 1; }
 .ctx-btn { display: flex; align-items: center; gap: 8px; min-height: var(--touch); padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; min-width: 0; text-align: left; text-decoration: none; }
 .ctx-btn > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -71,19 +73,20 @@ h1, h2 { text-wrap: balance; }
 .lang-select__input option { color: var(--text); background: var(--surface); }
 .rail .only-mobile { display: none; }
 .main { min-width: 0; min-height: 0; overflow: auto; position: relative; }
-.page { max-width: 1280px; margin: 0 auto; padding: var(--s6); display: grid; gap: var(--s6); }
+.page { max-width: 1280px; margin: 0 auto; padding: var(--s6); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s6); } /* minmax(0, …): a wide child (tab row, table) scrolls inside itself instead of widening the page */
 .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s4); }
 .page-head p { color: var(--text-2); max-width: 70ch; }
 .cols { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s6); align-items: start; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
 .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s4); }
-.stack { display: grid; gap: var(--s4); align-content: start; } .stack-2 { display: grid; gap: var(--s2); align-content: start; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); align-content: start; } .stack-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s2); align-content: start; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); } .row-between { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s4); }
 .grow { flex: 1; min-width: 0; }
 
 /* Superfícies */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); align-content: start; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); align-content: start; min-width: 0; overflow-wrap: anywhere; } /* long source strings (variable lists, ids) wrap instead of widening the page */
+.card table, .card .seg, .card .btn, .card .pill { overflow-wrap: normal; } /* tables keep whole words and scroll inside their wrapper */
 .card--flat { background: transparent; }
 .card h2, .card h3 { display: flex; align-items: center; gap: 8px; } .card h2 > svg, .card h3 > svg { flex: none; }
 .divider { border: 0; border-top: 1px solid var(--border); margin: 0; }
@@ -186,11 +189,13 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .search__list { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-control); box-shadow: var(--overlay-shadow); max-height: 300px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; }
 .search__list li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; min-height: 40px; align-items: center; } .search__list li[aria-selected='true'], .search__list li:hover { background: var(--surface-2); }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.list button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 10px; background: none; border: 1px solid transparent; border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
-.list button:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
+.list button, .list > li > a { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 10px; background: none; border: 1px solid transparent; border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; text-align: left; text-decoration: none; }
+.list button:hover, .list > li > a:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
+.list button > span:not(.pill), .list > li > a > span:not(.pill) { min-width: 0; overflow-wrap: anywhere; }
+.list button > :is(svg, .pill), .list > li > a > :is(svg, .pill) { flex-shrink: 0; }
 /* Lista longa (países): só desenha os itens perto da área visível */
 .list--long li { content-visibility: auto; contain-intrinsic-size: auto 44px; }
-.sheet-handle { display: none; }
+.sheet-grip { display: none; } .explore__sheet-scroll { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .maplibregl-ctrl-attrib { font-size: 11px; }
 /* Text links that stand alone in lists or short meta lines keep a 24px target (WCAG 2.5.8). */
 .plain li > a, p.meta > a { display: inline-block; min-height: 24px; line-height: 24px; }
@@ -239,7 +244,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 
 /* Responsivo */
 @media (max-width: 1100px) {
-  .cols { grid-template-columns: 1fr; } .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols { grid-template-columns: minmax(0, 1fr); } .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .explore__detail { position: static; width: auto; max-height: none; box-shadow: none; border: 0; padding: 0; animation: none; background: none; }
   .sim { grid-template: minmax(0, 1fr) auto / auto minmax(0, 1fr); } .sim__results { grid-column: 1 / -1; grid-row: 3; border-left: 0; border-top: 1px solid var(--border); max-height: 34vh; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
   .sim { grid-template-rows: minmax(0, 1fr) auto auto; } .sim__config { grid-row: 1 / 3; }
@@ -250,17 +255,27 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
   .rail { grid-row: 3; flex-direction: row; border-right: 0; border-top: 1px solid var(--border); padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)); overflow: visible; justify-content: space-around; }
   .rail a { flex: 1; min-height: 54px; font-size: 12px; } .rail a.more-only { display: none; } .rail hr { display: none; } .rail .only-mobile { display: flex; } .rail__group { display: contents; }
   .rail a[aria-current='page']::before { left: 20%; right: 20%; top: -4px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
-  .page { padding: var(--s4); gap: var(--s4); } h1 { font-size: 24px; } .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .explore__panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 16px 16px 0 0; border-bottom: 0; height: var(--sheet-h, 46%); transition: height var(--t-panel) var(--ease-out); }
+  .page { padding: var(--s4); gap: var(--s4); } h1 { font-size: 24px; } .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+  /* Bottom sheet: the grip drags (touch-action none only there); head and lists scroll together inside, so the collapsed sheet still names the place and the expanded one reaches the last item. */
+  .explore__panel { left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 16px 16px 0 0; border-bottom: 0; height: var(--sheet-h, 46%); max-height: 100%; transition: height var(--t-panel) var(--ease-out); }
+  .explore__panel[data-dragging] { transition: none; }
+  .sheet-grip { display: grid; justify-items: center; gap: 2px; flex: none; padding: 8px var(--s3) 4px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; border-bottom: 1px solid var(--border); }
+  .sheet-grip__bar { width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); } .sheet-grip__actions { gap: var(--s2); justify-content: center; flex-wrap: nowrap; }
+  .explore__sheet-scroll { display: block; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; padding-bottom: var(--s4); }
+  .explore__sheet-scroll > .explore__panel-head { border-bottom: 0; padding-bottom: 0; } .explore__sheet-scroll > .explore__panel-body { overflow: visible; flex: none; }
   .explore__panel-head { padding-top: 0; } .explore__search-top { position: absolute; z-index: 4; left: var(--s3); right: var(--s3); top: var(--s3); }
-  .sheet-handle { display: grid; place-items: center; width: 100%; min-height: 36px; background: none; border: 0; color: var(--text-2); cursor: pointer; } .sheet-handle::before { content: ''; width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); }
   .explore__controls { right: var(--s3); bottom: auto; top: 76px; } .explore__legend { display: none; } .explore__toast { bottom: auto; top: 132px; }
   .sim { display: flex; flex-direction: column; } .sim__tabs { display: block; padding: var(--s2) var(--s3) 0; background: var(--bg); } .sim__tabs .sim__title { font-size: 17px; margin-bottom: 4px; } .sim__stage--message { padding: var(--s4); }
   .sim__config, .sim__config[data-collapsed='true'] { width: auto; border: 0; flex: 1; } .sim__results { max-height: none; flex: 1; border: 0; } .sim__stage { flex: 1; min-height: 240px; }
   .sim[data-tab='campo'] .sim__config, .sim[data-tab='campo'] .sim__results, .sim[data-tab='indicadores'] .sim__config, .sim[data-tab='indicadores'] .sim__stage, .sim[data-tab='configurar'] .sim__results, .sim[data-tab='configurar'] .sim__stage, .sim[data-tab='configurar'] .sim__timeline { display: none; }
   th, td { padding: 8px 10px; }
+  /* Phone sweep: touch targets of at least 44 px for the language menu, disclosure summaries and the links of the crop comparison */
+  .lang-select__input { min-height: var(--touch); min-width: var(--touch); text-align: center; }
+  details > summary { min-height: var(--touch); padding-block: 10px; } .sim__layers > summary, .sim__config details.help > summary { min-height: var(--touch); }
+  .compare-list__head a { display: inline-flex; align-items: center; min-height: var(--touch); }
+  .place-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); } .place-picker > :last-child { grid-column: 1 / -1; }
   /* Alvos de toque: tudo o que se toca tem pelo menos 44 px */
-  .brand { min-width: var(--touch); min-height: var(--touch); justify-content: center; } .sheet-handle { min-height: var(--touch); } .crumbs button, .crumbs [aria-current] { min-height: var(--touch); min-width: var(--touch); justify-content: center; padding-inline: 8px; display: inline-flex; align-items: center; }
+  .brand { min-width: var(--touch); min-height: var(--touch); justify-content: center; } .crumbs button, .crumbs [aria-current] { min-height: var(--touch); min-width: var(--touch); justify-content: center; padding-inline: 8px; display: inline-flex; align-items: center; }
   .btn--sm, select.input--sm, .ctx-btn { min-height: var(--touch); }
   /* A atribuição do mapa não pode ficar sob o painel inferior */
   .explore .maplibregl-ctrl-bottom-right { top: 76px; bottom: auto; right: auto; left: 0; }
@@ -279,7 +294,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .tour-target { outline: 3px solid var(--focus) !important; outline-offset: 3px; border-radius: var(--r-control); }
 @media (max-width: 760px) {
   .tour-bar { padding: var(--s3) var(--s4) 0; }
-  .tour-bar--float { top: auto; bottom: 12px; right: 12px; }
+  .tour-bar--float { top: 128px; bottom: auto; right: 12px; } /* above the bottom sheet, below the map controls */
   .tour-pop--sheet { bottom: calc(var(--nav-h, 64px) + 12px + env(safe-area-inset-bottom)); }
 }
 

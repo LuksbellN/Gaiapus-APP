@@ -130,7 +130,7 @@ const m: DeepPartial<Messages> = {
       downloadTitle: 'No se pudo descargar el mapa.', download: 'Sin conexión para cargar el mapa. La búsqueda y las listas de al lado siguen funcionando para elegir el lugar.',
       loading: 'Cargando el mapa…', baseOffline: 'Mapa base sin conexión. Los límites del IBGE y las listas siguen funcionando.',
     },
-    sheet: { recolhida: 'contraída', media: 'intermedia', expandida: 'expandida', expand: 'Panel en posición {pos}. Tocar para expandir', collapse: 'Panel en posición {pos}. Tocar para contraer' },
+    sheet: { expandBtn: "Expandir detalles", collapseBtn: "Contraer detalles", recolhida: 'contraída', media: 'intermedia', expandida: 'expandida', expand: 'Panel en posición {pos}. Tocar para expandir', collapse: 'Panel en posición {pos}. Tocar para contraer' },
     loadingCountries: 'Cargando países…', loadingCountry: 'Cargando país…', loadingStates: 'Cargando estados', loadingMun: 'Cargando municipios',
     filterCountries: 'Filtrar países', filterCountriesPh: 'Filtrar {count} países y territorios…', noCountry: 'Ningún país con ese nombre', noCountryText: 'Revise la escritura o haga clic en el país en el mapa.', countries: 'Países',
     brStates: '27 unidades de la federación', dataIn: 'datos en {states}', withDataPill: 'Con datos',

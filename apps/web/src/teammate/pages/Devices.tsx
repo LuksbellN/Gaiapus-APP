@@ -27,7 +27,7 @@ export function Alerts() {
   const head = <div className="page-head"><div className="stack-2"><h1>{t('nav.item.alertas')}</h1><p>{t('alerts.subtitle')}</p></div><Pill>{covered ? t('alerts.placeCrop', { place: place.name, crop: t('crop.soy') }) : place.name}</Pill></div>;
   if (!covered) return <div className="page">{head}
     <ScopeStrip place={place} elsewhere={elsewhere} />
-    <Empty title={t('alerts.noneFor', { place: place.name })} action={<div className="row"><LinkBtn to="/alertas?mun=5107925">{t('overview.noWater.seeDemo')}</LinkBtn><LinkBtn to="/explorar?pais=BR">{t('overview.noWater.withData')}</LinkBtn></div>}>{t('alerts.noneForText')}</Empty></div>;
+    <Empty title={t('alerts.noneFor', { place: place.name })} action={<div className="row"><LinkBtn to="/alertas?mun=5107925">{t('overview.noWater.seeDemo')}</LinkBtn><LinkBtn to="/explorar?dados=1">{t('overview.noWater.withData')}</LinkBtn></div>}>{t('alerts.noneForText')}</Empty></div>;
   if (w.status === 'error') return <div className="page"><h1>{t('nav.item.alertas')}</h1><ErrorState error={w.error} onRetry={w.retry} /></div>; if (!w.data?.data) return <div className="page"><h1>{t('nav.item.alertas')}</h1><Loading /></div>;
   const p = w.data.data; const stress = p.days.filter((d) => d.stress); const l = p.evaluation.by_lead[0];
   const rows: [MessageKey, string][] = [
