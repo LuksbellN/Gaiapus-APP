@@ -37,7 +37,7 @@ for (const g of topo.objects.counties.geometries) {
 }
 mkdirSync(out, { recursive: true });
 const files = {};
-for (const [iso, features] of Object.entries(byState).sort()) {
+for (const [iso, features] of Object.entries(byState).sort(([a], [b]) => a.localeCompare(b, 'en'))) {
   features.sort((a, b) => a.properties.fips.localeCompare(b.properties.fips));
   const body = JSON.stringify({ type: 'FeatureCollection', features });
   writeFileSync(new URL(`${iso}.json`, out), body);

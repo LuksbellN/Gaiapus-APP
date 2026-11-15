@@ -11,7 +11,7 @@ export function countriesWithData({ brStates, abroad }: { brStates: string[]; ab
     if (!out.has(l.country)) out.set(l.country, new Set());
     out.get(l.country)!.add(short);
   }
-  return new Map([...out].map(([k, v]) => [k, [...v].sort()]));
+  return new Map([...out].map(([k, v]) => [k, [...v].sort((a, b) => a.localeCompare(b, 'en'))]));
 }
 
 /** Countries with data first (Brazil first among them), then the rest; each group by name. */
