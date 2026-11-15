@@ -11,6 +11,7 @@ import { useI18n, type MessageKey } from '../i18n';
 import { isStrategy, RainControl, rainPoint, StrategyChart, StrategyOverview, StrategyTable } from './FieldShiftStrategies';
 import { orderGroups, resolvePriority, STRATEGIES, STRATEGY_LETTER, type StrategyId } from '../sim/field-shift-decision';
 import { AgronomyMatrix, PriorityPicker, StrategyCards } from './FieldShiftDecision';
+import { BareSoilCard } from './FieldShiftBareSoil';
 import { ScienceReadingGuide } from '../ui/ScienceReadingGuide';
 import { useStore } from '../store';
 
@@ -50,6 +51,7 @@ export function FieldShiftPage() {
       {legacy && <Notice tone="warn" title={t('fieldShift.v2.mismatch.title')}>{t('fieldShift.v2.mismatch.text')}</Notice>}
       {v2 && <PriorityPicker priority={chosen.priority} source={chosen.source} planDate={chosen.plan?.createdAt.slice(0, 10) ?? null} onChange={(p) => put('prioridade', p)} />}
       {v2 && point && <RainControl pkg={v2} point={point} onChange={(percent) => put('chuva', percent === '0' ? null : percent)} />}
+      {v2 && chosen.priority === 'conservacao' && <BareSoilCard pkg={v2} highlight />}
       {v2 && input && <StrategyCards pkg={v2} input={input} reference={reference} priority={chosen.priority} />}
       {!v2 && <div className="grid-3">
         <div className="card"><Stat label={t('fieldShift.stat.covered')} value={signed(diff.covered_days, 0)} unit={t('fieldShift.stat.perYear')} note={t('fieldShift.stat.coveredNote', { a: n0(ref.covered_days), b: n0(bra.covered_days) })} /></div>
@@ -60,6 +62,7 @@ export function FieldShiftPage() {
       {!legacy && <section className="card" data-tour="fs-table"><h2>{t('fieldShift.v2.table.title', { n: v2 ? v2.summary.scenarios[reference].valid_years : 6 })}</h2>
         {v2 && input ? <StrategyTable pkg={v2} input={input} reference={reference} groups={orderGroups(chosen.priority)} /> : pkg.status === 'error' ? <ErrorState error={pkg.error} onRetry={pkg.retry} /> : <Loading rows={6} />}
         <Source meta={pkg.data?.meta ?? f.data.meta} extra={t('fieldShift.soil', { cls: x.soil.cad_class, mm: n0(x.soil.capacity_mm) })} /></section>}
+      {v2 && chosen.priority !== 'conservacao' && <BareSoilCard pkg={v2} highlight={false} />}
       {v2 && <ScienceReadingGuide source={v2.summary.weather.source} />}
       {v2 && <AgronomyMatrix />}
       {legacy && <section className="card" data-tour="fs-table"><div className="row-between"><h2>{t('fieldShift.table.title')}</h2><span className="meta-13">{t('fieldShift.table.legend')}</span></div>

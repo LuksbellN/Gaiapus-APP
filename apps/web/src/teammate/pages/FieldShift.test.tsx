@@ -10,13 +10,17 @@ import { AdapterError } from '../adapters/core';
 
 const v1 = JSON.parse(readFileSync(join(process.cwd(), '..', '..', 'packages', 'contracts', 'upstream', 'v7', 'contracts', 'examples', 'field-shift-sorriso.json'), 'utf8'));
 const summary = JSON.parse(readFileSync(join(process.cwd(), 'src', 'teammate', 'data', 'field-shift-v2', 'summary.json'), 'utf8')) as FieldShiftSummary;
-const state = vi.hoisted(() => ({ breakPackage: false }));
+const state = vi.hoisted(() => ({ breakPackage: false, bare: null as null | 'gap' | 'refused' }));
 vi.mock('../../features/auth/client', () => ({ supabase: { auth: {} }, currentAccessToken: () => null }));
 vi.mock('../adapters', async (original) => {
   const real = await original<typeof import('../adapters')>();
   return { ...real, simulations: { ...real.simulations,
     fieldShift: async () => ({ data: v1, meta: { kind: 'publicacao', source: v1.weather.source, note: 'Publicação v7' } }),
-    fieldShiftStrategies: async (code: string) => { if (state.breakPackage) throw new AdapterError('field_shift_package_mismatch', 409); return real.simulations.fieldShiftStrategies(code); } } };
+    fieldShiftStrategies: async (code: string) => { if (state.breakPackage) throw new AdapterError('field_shift_package_mismatch', 409); return real.simulations.fieldShiftStrategies(code); },
+    fieldShiftBareSoil: async (code: string, s: FieldShiftSummary) => {
+      if (state.bare === 'refused') throw new AdapterError('field_shift_bare_soil_mismatch', 409);
+      const r = await real.simulations.fieldShiftBareSoil(code, s); if (state.bare !== 'gap') return r;
+      const data = structuredClone(r.data); data.scenarios.soy_fallow.mean.bare_days_nov_apr = null; return { ...r, data }; } } };
 });
 import { FieldShiftPage } from './FieldShift';
 
@@ -25,7 +29,7 @@ globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {
 const open = (query = '') => render(<MemoryRouter initialEntries={[`/field-shift${query}`]}><FieldShiftPage /></MemoryRouter>);
 const num = (v: number, d = 1) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: d }).format(v);
 const cell = (table: HTMLElement, metric: string, sel: string) => table.querySelector(`tr[data-metric="${metric}"] ${sel}`) as HTMLElement;
-afterEach(() => { state.breakPackage = false; });
+afterEach(() => { state.breakPackage = false; state.bare = null; });
 
 it('shows the three calculated strategies with the published means, and absent maize as "not grown"', async () => {
   open();
@@ -258,4 +262,50 @@ it('when the package is refused, the older publication keeps its own sensitivity
   await screen.findByText('Pacote das três estratégias incoerente');
   expect(screen.queryByTestId('fs-parameters')).toBeNull();
   expect(screen.getByText('Cada linha muda uma hipótese por vez. Valores são B − A, média das 6 safras.')).toBeInTheDocument();
+});
+
+const ext = JSON.parse(readFileSync(join(process.cwd(), 'src', 'teammate', 'data', 'sorriso-field-shift-rotations.json'), 'utf8'));
+const bareCell = (metric: string, sel: string) => screen.getByTestId('fs-bare-table').querySelector(`tr[data-metric="${metric}"] ${sel}`) as HTMLElement;
+it('bare soil card: three strategies, B − A and C − A, the erosion-proxy label and the ±20% rows labelled as a sensitivity test', async () => {
+  open();
+  const table = await screen.findByTestId('fs-bare-table');
+  for (const name of ['A · Pousio', 'B · Braquiária', 'C · Pousio prolongado', 'B − A', 'C − A']) expect(within(table).getByRole('columnheader', { name })).toBeInTheDocument();
+  expect(bareCell('rain_on_bare_soil_mm', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(num(ext.scenarios.soy_fallow.mean.rain_on_bare_soil_mm));
+  expect(bareCell('bare_days_nov_apr', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(num(ext.scenarios.soy_fallow.mean.bare_days_nov_apr));
+  expect(bareCell('bare_days_nov_apr', '[data-strategy="reference_fallow"]')).toHaveTextContent('0');
+  expect(within(table).getByText('proxy de exposição à erosão, não erosão')).toBeInTheDocument();
+  const sens = screen.getByTestId('fs-bare-sens');
+  expect(sens.querySelectorAll('tr[data-highlight]')).toHaveLength(4);
+  expect(screen.getByText('Teste de sensibilidade (não é projeção climática).')).toBeInTheDocument();
+  expect(within(sens).getByText(/Temperatura \+1,5 °C: não simulada/)).toBeInTheDocument();
+});
+
+it('a missing bare-soil value shows "—", never 0', async () => {
+  state.bare = 'gap';
+  open();
+  await screen.findByTestId('fs-bare-table');
+  expect(bareCell('bare_days_nov_apr', '[data-strategy="soy_long_fallow"]').textContent).toBe('—');
+  expect(bareCell('bare_days_nov_apr', '[data-strategy="soy_long_fallow"]')).not.toHaveTextContent('0');
+});
+
+it('the priority moves the bare soil card: first with conservation, after the table otherwise', async () => {
+  const before = (a: HTMLElement, b: HTMLElement) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const first = open();
+  await screen.findByTestId('fs-bare-table');
+  expect(screen.getByTestId('fs-bare')).toHaveAttribute('data-highlight', 'true');
+  expect(before(screen.getByTestId('fs-bare'), screen.getByTestId('fs-cards'))).toBe(true);
+  first.unmount();
+  open('?prioridade=producao');
+  await screen.findByTestId('fs-bare-table');
+  expect(screen.getByTestId('fs-bare')).not.toHaveAttribute('data-highlight');
+  expect(before(screen.getByTestId('fs-strategy-table'), screen.getByTestId('fs-bare'))).toBe(true);
+});
+
+it('a bare-soil extension that does not match the package shows no number', async () => {
+  state.bare = 'refused';
+  open();
+  await screen.findByText('Solo nu indisponível');
+  expect(screen.getByTestId('fs-bare')).toHaveAttribute('data-status', 'refused');
+  expect(screen.getByTestId('fs-bare')).not.toHaveTextContent(/\d/);
+  expect(screen.getByTestId('fs-strategy-table')).toBeInTheDocument();
 });

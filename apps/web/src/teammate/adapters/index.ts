@@ -7,6 +7,7 @@ import { norm } from '../format';
 import { cropIdFromName, isCropId, type CropId } from '../catalog';
 import { backend, publishedExample, request } from './http';
 import { checkPackage, type FieldShiftSeries, type FieldShiftSummary, type PackageManifest } from '../sim/field-shift-decision';
+import { checkBareSoil, type BareSoilExtension } from '../sim/field-shift-bare-soil';
 import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
 import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
 import { byName } from '../format';
@@ -258,6 +259,14 @@ export const simulations = {
     let id: string;
     try { id = checkPackage(manifest, summary, series); } catch (error) { throw new AdapterError('field_shift_package_mismatch', 409, error instanceof Error ? error.message : undefined); }
     return { data: { id, manifest, summary, series }, meta: { kind: 'fixture', source: summary.weather.source, generatedAt: manifest.generated_at, note: `${id} · ${summary.evidence}` } };
+  },
+  /** Bare soil and vulnerable seasons (extension of the same engine). Refused unless its calendar of covered days is the v2 package's. */
+  async fieldShiftBareSoil(code: string, summary: FieldShiftSummary, signal?: AbortSignal): Promise<Sourced<BareSoilExtension>> {
+    await wait(signal);
+    if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
+    const ext = await once('field-shift-rotations', () => import('../data/sorriso-field-shift-rotations.json').then((m) => m.default as unknown as BareSoilExtension));
+    try { checkBareSoil(ext, summary); } catch (error) { throw new AdapterError('field_shift_bare_soil_mismatch', 409, error instanceof Error ? error.message : undefined); }
+    return { data: ext, meta: { kind: 'fixture', source: summary.weather.source, note: ext.provenance.script } };
   },
 };
 
