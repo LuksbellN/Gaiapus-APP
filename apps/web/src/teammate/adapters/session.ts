@@ -30,7 +30,7 @@ function configured() {
 export const authAccount = {
   async signIn(_name: string, email: string, password: string) {
     const { data, error } = await configured().signInWithPassword({ email, password });
-    if (error) throw new AdapterError('signin_failed', 401, 'Confira e-mail e senha. Confirme seu e-mail antes de entrar.');
+    if (error) throw new AdapterError(error.code === 'email_not_confirmed' ? 'email_not_confirmed' : 'signin_failed', 401, 'Confira e-mail e senha. Confirme seu e-mail antes de entrar.');
     syncSession(data.session);
   },
   async signUp(name: string, email: string, password: string) {
