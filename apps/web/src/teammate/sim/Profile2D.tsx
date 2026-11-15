@@ -3,9 +3,12 @@
 import { useMemo } from 'react';
 import { DRAINAGE_COLOR, IRRIGATION_COLOR, mulberry32, LED_COLORS, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
 import type { CropSceneState } from './scene-adapter';
+import { STAKE_MODEL } from './stake-model';
 import { RootSystem2D, type RootText } from './RootSystem2D';
 
 const W = 600, GROUND = 120, SOIL_H = 165, PX_PER_M = SOIL_H / PROFILE_DEPTH_M, STAKE_X = W - 46;
+/** Head case height above the ground (model: case top at 0.134 m above the soil line). The LED dot above it is a legend of the simulated code, not a part at scale. */
+const HEAD_H = 0.134 * PX_PER_M;
 
 export type DeviceText = { electrode: (depthCm: number) => string; led: string; roots: RootText };
 
@@ -31,11 +34,13 @@ export function Profile2D({ scene, layers, label, zoneLabel, deviceText }: { sce
       {layers.drainage && <g data-testid="drainage-arrow" fill={DRAINAGE_COLOR} stroke={DRAINAGE_COLOR}><line x1={W / 2} x2={W / 2} y1={zoneBottom - 40} y2={zoneBottom - 40 + layers.drainage.length * 90} strokeWidth={layers.drainage.width * 220} /><path d={`M${W / 2 - 8},${zoneBottom - 40 + layers.drainage.length * 90} l8,12 l8,-12 z`} /></g>}
       {layers.runoff && <g data-testid="runoff-arrow" fill={RUNOFF_COLOR} stroke={RUNOFF_COLOR}><line x1={60} x2={60 + layers.runoff.length * 400} y1={GROUND - 3} y2={GROUND - 3} strokeWidth={layers.runoff.width * 220} /><path d={`M${60 + layers.runoff.length * 400},${GROUND - 11} l12,8 l-12,8 z`} /></g>}
       {layers.device && <g data-testid="device">
-        {/* Stake drawn at its physical size: 0.75 m body, top 0.3 m above ground (as in the device), electrodes at 15/40 cm. */}
-        <rect x={STAKE_X - 3} y={GROUND - 0.3 * PX_PER_M} width="6" height={0.75 * PX_PER_M} fill="#d8d6cf" />
+        {/* Schematic of the rev G stake at its measured size (stake-model.ts): tube and tip in the soil, head case resting on the ground, antenna above; electrodes at 15/40 cm. */}
+        <rect x={STAKE_X - 2} y={GROUND} width="4" height={STAKE_MODEL.depthBelowSoilM * PX_PER_M} fill="#8a9482" />
+        <rect x={STAKE_X - 7} y={GROUND - HEAD_H} width="14" height={HEAD_H} rx="2" fill="#8a9482" stroke="#0d1a22" />
+        <rect x={STAKE_X + 4} y={GROUND - STAKE_MODEL.heightAboveSoilM * PX_PER_M} width="1.5" height={STAKE_MODEL.heightAboveSoilM * PX_PER_M - HEAD_H} fill="#0d0d0d" />
         {layers.device.electrodesM.map((d) => <g key={d} data-testid="electrode"><rect x={STAKE_X - 6} y={GROUND + d * PX_PER_M - 3} width="12" height="6" rx="1" fill="#b98d2c" /><text x={STAKE_X - 12} y={GROUND + d * PX_PER_M + 4} textAnchor="end" fill="#EAF2EB" fontSize="11">{deviceText.electrode(Math.round(d * 100))}</text></g>)}
-        <circle data-testid="led" data-led={layers.device.led} cx={STAKE_X} cy={GROUND - 0.3 * PX_PER_M} r="6" fill={LED_COLORS[layers.device.led]} stroke="#0d1a22" />
-        <text x={STAKE_X - 12} y={GROUND - 0.3 * PX_PER_M + 4} textAnchor="end" fill="#EAF2EB" fontSize="11">{deviceText.led}</text>
+        <circle data-testid="led" data-led={layers.device.led} cx={STAKE_X} cy={GROUND - HEAD_H - 9} r="5" fill={LED_COLORS[layers.device.led]} stroke="#0d1a22" />
+        <text x={STAKE_X - 12} y={GROUND - HEAD_H - 5} textAnchor="end" fill="#EAF2EB" fontSize="11">{deviceText.led}</text>
       </g>}
       <text x={W / 2} y={GROUND + 18} textAnchor="middle" fill="#EAF2EB" fontSize="13">{zoneLabel}</text>
     </svg>

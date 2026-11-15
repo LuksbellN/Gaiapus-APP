@@ -390,6 +390,30 @@
       "date": "2026-11-15",
       "reason": "Preserve PRs #9 and #10 from main: working mobile bottom sheet together with countries-first regions-with-data navigation",
       "sha256": "ba97b02e770955d67aa24a9ab59693471a0b7e62c20da8bdd831533b00f9397f"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "sensores-talhoes: stake model tools (close-up preset, load-failure note) in the soil-profile scene",
+      "sha256": "94650707fe4b89202937f921d8cbb6acfa25ca5f4afdc1876f56e90368f90c12"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "sensores-talhoes: styles of the 'Minha área' screen (list, map, contextual panel, wizard)",
+      "sha256": "418dfd59474ccd112ee9be15981061851ab1dbbc30abc9632ed0370a74ba3918"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "sensores-talhoes: readings table fits 360 px; 44 px targets in 'Minha área'",
+      "sha256": "3306132e808325521383ebf6386544c1163060bd5163e1c3432ec02865493374"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Merge of main (bottom sheet, phone sweep, logo, regions with data) into the sensors and plots branch: combined content of the pinned sources",
+      "sha256": "b09480a771ca6d371324e4a904d296a1958b73a56081b7440cd76271a1b6d519"
     }
   ]
 }

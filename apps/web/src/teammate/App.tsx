@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
-import { Bell, CalendarDays, CircleHelp, CircleUserRound, CloudRain, Droplets, Globe, Layers, MapPin, Menu, Moon, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
+import { Bell, CalendarDays, CircleHelp, CircleUserRound, CloudRain, Droplets, Globe, Layers, MapPin, Menu, Moon, Radio, SlidersHorizontal, Sprout, Sun, Tractor } from 'lucide-react';
 import { EDITION } from './config';
 import { useI18n, type Messages } from './i18n';
 import { LanguageSelect } from './ui/LanguageSelect';
@@ -23,6 +23,7 @@ const PlanPage = lazyPage('/planejar', () => import('./pages/Plan'), 'PlanPage')
 const AccountPage = lazyPage('/conta', () => import('./pages/Account'), 'AccountPage');
 const Records = lazyPage('/registros', () => import('./pages/Records'), 'Records');
 const Properties = lazyPage('/propriedades', () => import('./pages/Records'), 'Properties');
+const MyArea = lazyPage('/minha-area', () => import('./pages/MyArea'), 'MyArea');
 const Devices = lazyPage('/dispositivos', () => import('./pages/Devices'), 'Devices');
 const Alerts = lazyPage('/alertas', () => import('./pages/Devices'), 'Alerts');
 const DesignPreview = lazyPage(null, () => import('./pages/DesignPreview'), 'DesignPreview');
@@ -37,7 +38,7 @@ export const NAV_GROUPS: { id: keyof Messages['nav']['group']; items: NavItem[] 
   { id: 'explorar', items: [{ to: '/explorar', key: 'explorar', icon: Globe, mobile: true }, { to: '/municipio', key: 'municipio', icon: CloudRain }] },
   { id: 'acompanhar', items: [{ to: '/visao-geral', key: 'visaoGeral', icon: Sprout, mobile: true }, { to: '/alertas', key: 'alertas', icon: Bell }, { to: '/dispositivos', key: 'sondas', icon: Droplets }] },
   { id: 'planejar', items: [{ to: '/planejar', key: 'planejar', icon: CalendarDays }, { to: '/simulador', key: 'simulador', icon: SlidersHorizontal, mobile: true }, { to: '/field-shift', key: 'fieldShift', icon: Layers }] },
-  { id: 'lavoura', items: [{ to: '/propriedades', key: 'propriedades', icon: MapPin }, { to: '/registros', key: 'registros', icon: Tractor, mobile: true }] },
+  { id: 'lavoura', items: [{ to: '/propriedades', key: 'propriedades', icon: MapPin }, { to: '/minha-area', key: 'minhaArea', icon: Radio }, { to: '/registros', key: 'registros', icon: Tractor, mobile: true }] },
   { id: 'ajuda', items: [{ to: '/ajuda', key: 'ajuda', icon: CircleHelp }] },
 ];
 export const NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
@@ -113,6 +114,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
           <Route path="/registros" element={<Records />} />
           <Route path="/propriedades" element={<Properties />} />
           <Route path="/dispositivos" element={<Devices />} />
+          <Route path="/minha-area" element={<MyArea />} />
           <Route path="/alertas" element={<Alerts />} />
           <Route path="/conta/*" element={<AccountPage />} />
           <Route path="/mais" element={<More />} />

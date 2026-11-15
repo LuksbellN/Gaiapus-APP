@@ -2,21 +2,31 @@ import { useSyncExternalStore } from 'react';
 import { clearTours } from './tours/storage';
 import { cropIdFromName, isAmbiguousCropName } from './catalog';
 import { withCodes } from './options';
+import type { DeviceCommand, Installation, Measurement } from './area/device';
+import type { PolygonGeometry } from './area/geometry';
 
 export type Property = { id: string; name: string; municipalityCode: string; municipalityName: string; uf: string; areaHa: number | null; createdAt: string; updatedAt: string };
-export type Plot = { id: string; propertyId: string; name: string; areaHa: number | null; soil: string; irrigation: string; polygon: 'demo_uberlandia' | null; createdAt: string; updatedAt: string };
+export type Plot = { id: string; propertyId: string; name: string; areaHa: number | null; soil: string; irrigation: string; polygon: 'demo_uberlandia' | null; createdAt: string; updatedAt: string;
+  /** Outline drawn by the user (GeoJSON Polygon, WGS84). Absent on plots saved before 'Minha área'; `polygon` above is only the demonstration marker and never becomes a real outline. */
+  geometry?: PolygonGeometry | null;
+  /** Area calculated from `geometry`; `areaHa` stays the area the user declared. */
+  areaCalcHa?: number | null; revision?: number; archivedAt?: string | null };
+/** A stake linked to this account bucket. The ownership code is never stored. */
+export type OwnedDevice = { id: string; nickname: string; claimedAt: string; removedAt: string | null };
 export type RecordKind = 'plantio' | 'evento' | 'colheita' | 'venda';
 // Todo registro guarda: quando ocorreu, quando foi registrado/atualizado, origem e versão do esquema.
 export type FieldRecord = { id: string; kind: RecordKind; plotId: string; cycleId: string; event_at: string; recorded_at: string; updated_at: string; origin: 'informado' | 'observado' | 'estimado' | 'sintetico'; schema: 1; revision: number; data: Record<string, string> };
 export type Plan = { id: string; createdAt: string; data: Record<string, string> };
 export type Session = { userId: string; name: string; email: string; researchConsent: boolean; consentAt: string | null; createdAt?: string } | null;
-export type State = { session: Session; properties: Property[]; plots: Plot[]; records: FieldRecord[]; plans: Plan[]; drafts: Record<string, Record<string, string>>; activePlotId: string | null };
+export type State = { session: Session; properties: Property[]; plots: Plot[]; records: FieldRecord[]; plans: Plan[]; drafts: Record<string, Record<string, string>>; activePlotId: string | null;
+  // 'Minha área' (browser-local until the server has these tables; see Docs/sensores-talhoes).
+  devices: OwnedDevice[]; installations: Installation[]; commands: DeviceCommand[]; measurements: Measurement[] };
 
 const KEY = 'gaiapus.v1';
 let activeKey = KEY + '.guest';
 let accountScope = 0;
 export const getAccountScope = () => accountScope;
-const initial: State = { session: null, properties: [], plots: [], records: [], plans: [], drafts: {}, activePlotId: null };
+const initial: State = { session: null, properties: [], plots: [], records: [], plans: [], drafts: {}, activePlotId: null, devices: [], installations: [], commands: [], measurements: [] };
 let persistent = true;
 // Registros e planos salvos antes do catálogo guardavam só o nome da cultura. A migração acrescenta `cultura_id`
 // (ID do contrato) sem apagar nem reescrever nada. Nome ambíguo ("Café", "Milho") fica sem ID e marcado
@@ -24,7 +34,9 @@ let persistent = true;
 const withCropId = (d: Record<string, string>): Record<string, string> => { if ('cultura_id' in d || !('cultura' in d)) return d; const id = cropIdFromName(d.cultura); return { ...d, cultura_id: id ?? '', ...(!id && isAmbiguousCropName(d.cultura) ? { cultura_pendente: '1' } : {}) }; };
 // Choice fields gain stable codes next to the stored Portuguese text (options.ts); nothing is removed or rewritten.
 export function migrate(s: State): State { return { ...s, records: s.records.map((r) => ({ ...r, data: withCodes(r.kind === 'plantio' ? withCropId(r.data) : r.data) })), plans: s.plans.map((p) => ({ ...p, data: withCodes(withCropId(p.data)) })) }; }
-function load(): State { try { const raw = localStorage.getItem(activeKey) ?? (activeKey === KEY + '.guest' ? localStorage.getItem(KEY) : null); return raw ? migrate({ ...initial, ...JSON.parse(raw) }) : initial; } catch { persistent = false; return initial; } }
+/** Stored bucket -> current state. Collections added later default to empty; existing records are kept as they are. */
+export function hydrate(raw: unknown): State { return migrate({ ...initial, ...(raw as Partial<State>) }); }
+function load(): State { try { const raw = localStorage.getItem(activeKey) ?? (activeKey === KEY + '.guest' ? localStorage.getItem(KEY) : null); return raw ? hydrate(JSON.parse(raw)) : initial; } catch { persistent = false; return initial; } }
 let state: State = typeof localStorage === 'undefined' ? initial : { ...load(), session: null };
 const subs = new Set<() => void>();
 export const isPersistent = () => persistent;

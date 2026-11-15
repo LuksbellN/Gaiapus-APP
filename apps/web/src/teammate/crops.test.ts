@@ -21,7 +21,7 @@ describe('catálogo de culturas', () => {
 
 describe('migração do armazenamento local', () => {
   const rec = (id: string, data: Record<string, string>) => ({ id, kind: 'plantio' as const, plotId: 't1', cycleId: 't1:2026/2027', event_at: '2026-10-05', recorded_at: 'x', updated_at: 'x', origin: 'informado' as const, schema: 1 as const, revision: 1, data });
-  const old: State = { session: null, properties: [], plots: [], drafts: {}, activePlotId: null,
+  const old: State = { session: null, properties: [], plots: [], drafts: {}, activePlotId: null, devices: [], installations: [], commands: [], measurements: [],
     records: [rec('a', { cultura: 'Milho safrinha', area: '10', cultivar: 'AG 8088' }), rec('b', { cultura: 'Outra', area: '2' }), rec('c', { cultura: 'Café', area: '3', idade: '4' }), { ...rec('d', { quantidade: '100', unidade: 'saca', saca: '60' }), kind: 'colheita' }],
     plans: [{ id: 'p1', createdAt: 'x', data: { cultura: 'Café', area: '5', preco: '1200' } }, { id: 'p2', createdAt: 'x', data: { cultura: 'Soja', area: '50' } }] };
   const m = migrate(old);
@@ -57,7 +57,7 @@ describe('códigos das opções gravadas (I3)', () => {
   it('registro antigo ganha o código sem perder o texto; texto desconhecido fica como está', async () => {
     const { migrate } = await import('./store');
     const base = { id: 'x', plotId: 't', cycleId: 't:2026/2027', event_at: '2026-10-05', recorded_at: '', updated_at: '', origin: 'informado' as const, schema: 1 as const, revision: 1 };
-    const m = migrate({ session: null, properties: [], plots: [], drafts: {}, activePlotId: null, plans: [{ id: 'p', createdAt: '', data: { cultura: 'Soja', irrigacao: 'Irrigado', solo: 'Argiloso' } }],
+    const m = migrate({ session: null, properties: [], plots: [], drafts: {}, activePlotId: null, devices: [], installations: [], commands: [], measurements: [], plans: [{ id: 'p', createdAt: '', data: { cultura: 'Soja', irrigacao: 'Irrigado', solo: 'Argiloso' } }],
       records: [{ ...base, kind: 'evento', data: { tipo: 'Floração' } }, { ...base, kind: 'venda', data: { situacao: 'Previsto' } }, { ...base, kind: 'evento', data: { tipo: 'Granizo forte' } }] });
     expect(m.records[0].data).toEqual({ tipo: 'Floração', tipo_code: 'flowering' });
     expect(m.records[1].data).toEqual({ situacao: 'Previsto', situacao_code: 'planned' });
