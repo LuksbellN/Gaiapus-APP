@@ -7,7 +7,7 @@ revisao_auditada: 2cf2881992c2226483f05045b28e45236cab0680 (main, "Frontend inte
 
 # Plano de UX com preservação de funções
 
-Esta pasta é a entrega da fase de **planejamento**. Nada em `apps/`, `packages/`, `services/` ou `supabase/` foi alterado. Não houve commit, push nem deploy.
+Esta pasta começou como entrega da fase de **planejamento** (documentos 01–08). A implementação foi feita depois na branch local `ux-preservacao`, tocando só `apps/web`, `tests/e2e`, o lockfile e `Docs/`; estado em `09-status-implementacao.md`. Não houve push nem deploy.
 
 ## O que foi confirmado
 
