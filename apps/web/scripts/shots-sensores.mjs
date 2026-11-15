@@ -54,4 +54,51 @@ if (what === 'sim') {
     await ctx.close();
   }
 }
+
+/** Seeds one property through the real form, then builds the area through the new screen (guest demonstration). */
+const COORDS = ['-18.9186, -48.2772', '-18.9186, -48.2712', '-18.9146, -48.2702', '-18.9136, -48.2768'].join(String.fromCharCode(10));
+async function seedArea(page) {
+  await page.goto(base + '/#/propriedades?mun=3170206&nome=Uberl%C3%A2ndia&uf=MG');
+  await page.getByLabel('Nome da propriedade').fill('Sítio Boa Vista');
+  await page.getByRole('button', { name: 'Salvar propriedade' }).click();
+  await page.getByText('Propriedade "Sítio Boa Vista" salva', { exact: false }).waitFor();
+  await page.goto(base + '/#/minha-area?demo=1');
+  await page.getByRole('button', { name: 'Demarcar talhão' }).click();
+  await page.getByLabel('Nome do talhão').fill('Talhão da baixada');
+  await page.getByTestId('plot-coords').fill(COORDS);
+  await page.getByRole('button', { name: 'Aplicar coordenadas' }).click();
+  await page.getByRole('button', { name: 'Salvar talhão' }).click();
+  await page.getByTestId('area-message').waitFor();
+  await page.getByRole('button', { name: 'Adicionar sensor' }).click();
+  await page.getByLabel('Identificador da estaca').fill('c4000110');
+  await page.getByLabel('Código de posse').fill('K7Q2-M9XD');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByLabel('Apelido').fill('Estaca da baixada');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByLabel('Talhão', { exact: true }).selectOption({ label: 'Talhão da baixada' });
+  await page.getByLabel('Latitude').fill('-18.9162');
+  await page.getByLabel('Longitude').fill('-48.2741');
+  await page.getByLabel('Confirmo que este é o ponto onde a estaca está').check();
+  await page.getByRole('button', { name: 'Registrar instalação' }).click();
+  await page.getByRole('button', { name: 'Inserir leitura sintética de exemplo' }).click();
+  await page.getByRole('button', { name: 'Concluir', exact: true }).click();
+  await page.getByTestId('sensor-detail').waitFor();
+}
+if (what === 'area') {
+  for (const [name, opts] of [['desktop', DESKTOP], ['celular', PHONE]]) {
+    const { ctx, page, errors } = await open(opts, '/#/minha-area');
+    await page.getByTestId('area-gate').waitFor();
+    await page.screenshot({ path: path.join(out, 'minha-area-acesso-' + name + '.png') });
+    await seedArea(page);
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: path.join(out, 'minha-area-sensor-' + name + '.png'), fullPage: true });
+    if (name === 'celular') { await page.getByText('Mapa', { exact: true }).click(); await page.waitForTimeout(1200); await page.screenshot({ path: path.join(out, 'minha-area-mapa-' + name + '.png') }); }
+    else { await page.getByRole('button', { name: /Talhão da baixada/ }).first().click(); await page.waitForTimeout(800); await page.screenshot({ path: path.join(out, 'minha-area-talhao-' + name + '.png') });
+      await page.getByRole('button', { name: 'Editar contorno e dados' }).click(); await page.waitForTimeout(1200); await page.screenshot({ path: path.join(out, 'minha-area-editar-talhao-' + name + '.png') }); await page.getByRole('button', { name: 'Cancelar' }).click(); }
+    await page.getByRole('tab', { name: 'Gateways' }).click(); await page.waitForTimeout(400);
+    await page.screenshot({ path: path.join(out, 'minha-area-gateways-' + name + '.png') });
+    console.log(name, 'errors:', errors);
+    await ctx.close();
+  }
+}
 await browser.close();

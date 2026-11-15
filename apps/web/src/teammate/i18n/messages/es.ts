@@ -1,5 +1,6 @@
 // Generated from pt-BR.ts by Codex; terminology: Docs/ux-preservacao/08-revisao-traducoes.md. Review pending by a native speaker.
 import type { DeepPartial, Messages } from '../index';
+import area from './area/es';
 const m: DeepPartial<Messages> = {
   common: {
     localTime: 'hora local', retry: 'Reintentar', close: 'Cerrar', cancel: 'Cancelar', loading: 'Cargando…', none: '—', notProvided: 'no proporcionada',
@@ -647,5 +648,6 @@ const m: DeepPartial<Messages> = {
     usNote: "Centro global: clima, agua del suelo, NDVI y pronóstico. Sin estimación de rendimiento en Estados Unidos en esta versión.",
   },
   place: { notFoundTitle: "Lugar no encontrado", notFound: "No hay datos publicados para «{id}». Elija un lugar de la lista o búsquelo por nombre.", picker: "Elegir lugar", country: "País", state: "Estado", place: "Lugar", search: "Buscar lugares con datos", searchPh: "Nombre o código oficial (IBGE, FIPS)…", noResult: "No se encontró ningún lugar con datos.", noYieldTitle: "Sin estimación de rendimiento.", noYield: "Esta versión no tiene modelo de rendimiento para este país; sus registros de rendimiento aún no se auditaron. Clima, agua del suelo, NDVI y pronóstico están en las otras pestañas." },
+  area,
 };
 export default m;

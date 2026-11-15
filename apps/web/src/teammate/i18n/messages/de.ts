@@ -1,5 +1,6 @@
 // Generated from pt-BR.ts by Codex; terminology: Docs/ux-preservacao/08-revisao-traducoes.md. Review pending by a native speaker.
 import type { DeepPartial, Messages } from '../index';
+import area from './area/de';
 const m: DeepPartial<Messages> = {
   common: {
     localTime: 'Ortszeit', retry: 'Erneut versuchen', close: 'Schließen', cancel: 'Abbrechen', loading: 'Wird geladen…', none: '—', notProvided: 'nicht angegeben',
@@ -647,5 +648,6 @@ const m: DeepPartial<Messages> = {
     usNote: "Globale Datenzentrale: Klima, Bodenwasser, NDVI und Vorhersage. In dieser Version keine Ertragsschätzung für die USA.",
   },
   place: { notFoundTitle: "Ort nicht gefunden", notFound: "Für „{id}“ gibt es keine veröffentlichten Daten. Wählen Sie einen Ort aus der Liste oder suchen Sie nach dem Namen.", picker: "Ort wählen", country: "Land", state: "Bundesstaat", place: "Ort", search: "Orte mit Daten suchen", searchPh: "Name oder amtlicher Code (IBGE, FIPS) …", noResult: "Kein Ort mit Daten gefunden.", noYieldTitle: "Keine Ertragsschätzung.", noYield: "Diese Version hat für dieses Land kein Ertragsmodell; die Ertragsdaten sind noch nicht geprüft. Klima, Bodenwasser, NDVI und Vorhersage stehen in den anderen Reitern." },
+  area,
 };
 export default m;

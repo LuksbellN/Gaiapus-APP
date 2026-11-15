@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
+import { safeReturn } from '../area/access';
 import { account } from '../adapters';
 import { resetAll, useStore } from '../store';
 import { Dialog, Field, LinkBtn, Notice, Pill, useAsync } from '../ui';
@@ -19,10 +20,12 @@ function Local() { const { t } = useI18n(); return <div data-tour="account-local
 function Sign({ mode }: { mode: 'entrar' | 'cadastro' }) {
   const { t } = useI18n(); const authError = useAuthError();
   const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [err, setErr] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false); const nav = useNavigate(); const errRef = useRef<HTMLParagraphElement>(null);
+  // After signing in, go back to the private screen that asked for it (internal, allow-listed destinations only).
+  const [query] = useSearchParams(); const back = safeReturn(query.get('voltar'));
   useEffect(() => { if (err) errRef.current?.focus(); }, [err]);
   const go = async (e: React.FormEvent) => { e.preventDefault(); setErr(''); setMsg(''); if (mode === 'cadastro' && !name.trim()) { setErr(t('account.err.name')); return; } setBusy(true); try {
     if (mode === 'cadastro') { await account.signUp(name.trim(), email.trim(), password); setPassword(''); setMsg(t('account.msg.checkEmail')); }
-    else { await account.signIn(name.trim(), email.trim(), password); setPassword(''); nav('/conta'); }
+    else { await account.signIn(name.trim(), email.trim(), password); setPassword(''); nav(back ?? '/conta'); }
   } catch (x) { setErr(authError(x)); } finally { setBusy(false); } };
   return <div className="page" style={{ maxWidth: 520 }}><div className="row-between"><h1>{mode === 'entrar' ? t('account.signIn') : t('account.signUp')}</h1><LanguageSelect id="idioma-conta" /></div>
     {!supabase && <Notice tone="warn" title={t('account.unavailableTitle')}>{t('account.unavailable')}</Notice>}

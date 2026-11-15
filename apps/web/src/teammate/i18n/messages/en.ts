@@ -1,5 +1,6 @@
 // Generated from pt-BR.ts by Codex; terminology: Docs/ux-preservacao/08-revisao-traducoes.md. Review pending by a native speaker.
 import type { DeepPartial, Messages } from '../index';
+import area from './area/en';
 const m: DeepPartial<Messages> = {
   common: {
     localTime: 'local time', retry: 'Try again', close: 'Close', cancel: 'Cancel', loading: 'Loading…', none: '—', notProvided: 'not provided',
@@ -647,5 +648,6 @@ const m: DeepPartial<Messages> = {
     usNote: "Global hub: climate, soil water, NDVI and forecasts. No yield estimates for the US in this version.",
   },
   place: { notFoundTitle: "Place not found", notFound: "There is no published data for “{id}”. Choose a place from the list or search by name.", picker: "Choose a place", country: "Country", state: "State", place: "Place", search: "Search places with data", searchPh: "Name or official code (IBGE, FIPS)…", noResult: "No place with data found.", noYieldTitle: "No yield estimate.", noYield: "This version has no yield model for this country; its yield labels have not been audited yet. Climate, soil water, NDVI and the forecast are in the other tabs." },
+  area,
 };
 export default m;
