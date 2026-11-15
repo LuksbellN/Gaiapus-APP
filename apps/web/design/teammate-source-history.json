@@ -216,6 +216,12 @@
       "date": "2026-11-15",
       "reason": "sonar: explicit button types, dialog backdrop listener, handled promises",
       "sha256": "9b8adced62ed206159361023f3a141d97019da5180e4dfd4929a96161fdc8e00"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Gaiapus logo in header, favicon and boot screen",
+      "sha256": "4b55c1a48f0b75c3079690450096f872ef436051dbaf9bd338c02436a8d842ff"
     }
   ]
 }

@@ -6,6 +6,8 @@
   <meta name="description" content="Gaiapus — encontre sua lavoura, entenda água e clima, compare manejos e registre sua safra.">
   <meta name="theme-color" content="#0B1411">
   <title>Gaiapus · Água, clima e safra</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/gaiapus-logo-32.png">
+  <link rel="apple-touch-icon" href="/brand/gaiapus-logo-180.png">
   <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin>
   <style>
     html { background: #0B1411; color: #EAF2EB; }
@@ -25,7 +27,7 @@
     window.__gaiapusBoot = { 'pt-BR': ['Carregando…', 'Não foi possível iniciar. Confira a conexão e recarregue a página.'], en: ['Loading…', 'Could not start. Check your connection and reload the page.'], es: ['Cargando…', 'No se pudo iniciar. Revisa la conexión y recarga la página.'], fr: ['Chargement…', 'Impossible de démarrer. Vérifiez la connexion et rechargez la page.'], de: ['Wird geladen…', 'Start nicht möglich. Prüfen Sie die Verbindung und laden Sie die Seite neu.'] }[lang];</script>
 </head>
 <body>
-  <div id="root"><div class="boot" role="status"><b translate="no">Gaiapus</b><span id="boot-text">Carregando…</span><i aria-hidden="true"></i></div></div>
+  <div id="root"><div class="boot" role="status"><img src="/brand/gaiapus-logo-64.png" width="56" height="56" alt="" style="border-radius:12px"><b translate="no">Gaiapus</b><span id="boot-text">Carregando…</span><i aria-hidden="true"></i></div></div>
   <script>document.getElementById('boot-text').textContent = window.__gaiapusBoot[0];</script>
   <noscript><p style="padding:24px;font-family:system-ui">A Gaiapus precisa de JavaScript para mostrar o mapa e os dados.</p></noscript>
   <script type="module" src="/src/main.tsx"></script>

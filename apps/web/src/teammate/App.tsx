@@ -80,7 +80,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
     <div className="app">
       <a className="skip" href="#conteudo" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>{t('nav.skip')}</a>
       <header className="header">
-        <Link to="/explorar" className="brand" aria-label={t('nav.home')} translate="no"><Sprout size={26} aria-hidden /><span>Gaiapus</span></Link>
+        <Link to="/explorar" className="brand" aria-label={t('nav.home')} translate="no"><img className="brand__logo" src="/brand/gaiapus-logo-64.png" width={32} height={32} alt="" /><span>Gaiapus</span></Link>
         <div className="header__ctx">
           <Link to="/registros" className="ctx-btn" title={t('nav.ctx.openTitle')}><span className="sr-only">{t('nav.ctx.current')}</span>
             <Tractor size={18} aria-hidden />
