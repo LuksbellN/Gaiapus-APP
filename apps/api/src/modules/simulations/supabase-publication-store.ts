@@ -2,6 +2,7 @@
 // says which batch is current and the sha256 of its catalog and index; the public bucket holds the objects.
 // Uses only the publishable key and public reads; no administrative credential ever reaches the API process.
 import { createHash } from 'node:crypto';
+import { validators } from '@gaiapus/contracts';
 import { ARTIFACT_PATH, type Artifact, type Catalog, type Index, type PublicationSource } from './publication-store.js';
 
 type Batch = { batch_key: string; scope: string; storage_bucket: string; storage_prefix: string; catalog_sha256: string; catalog_bytes: number;
@@ -10,6 +11,10 @@ export interface SupabaseSourceConfig {
   id: string; scope: 'BR' | 'US'; url: string; publishableKey: string;
   fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
   timeoutMs?: number; batchTtlMs?: number; maxObjectBytes?: number;
+  /** After a failed refresh, do not try the remote again for this long (default 15 s). */
+  retryAfterFailureMs?: number;
+  /** Receives the cause of a failed refresh (never contains the key); for operator logs. */
+  onError?: (source: string, message: string) => void;
 }
 const BUCKET = 'simulation-public';
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -25,6 +30,7 @@ export class SupabasePublicationSource implements PublicationSource {
   readonly id: string;
   private state: { at: number; batch: Batch | null; data: { index: Index; catalog: Catalog } | null } | null = null;
   private loading: Promise<{ index: Index; catalog: Catalog } | null> | null = null;
+  private failedAt: number | null = null;
   private readonly fetcher: NonNullable<SupabaseSourceConfig['fetcher']>;
   private readonly base: string;
   constructor(private readonly config: SupabaseSourceConfig) {
@@ -59,7 +65,22 @@ export class SupabasePublicationSource implements PublicationSource {
   async load() {
     const ttl = this.config.batchTtlMs ?? 60_000;
     if (this.state && Date.now() - this.state.at < ttl) return this.state.data;
-    this.loading ??= (async () => {
+    // A recent failure is remembered: requests do not each wait for a timeout. The last verified batch, if any, keeps being served.
+    if (this.failedAt !== null && Date.now() - this.failedAt < (this.config.retryAfterFailureMs ?? 15_000)) {
+      if (this.state) return this.state.data;
+      throw new Error('Remote publication source failed recently');
+    }
+    this.loading ??= this.refresh().then(data => { this.failedAt = null; return data; }, error => {
+      this.failedAt = Date.now();
+      this.config.onError?.(this.id, error instanceof Error ? error.message : 'unknown error');
+      if (this.state) return this.state.data;
+      throw error;
+    }).finally(() => { this.loading = null; });
+    return this.loading;
+  }
+
+  private async refresh(): Promise<{ index: Index; catalog: Catalog } | null> {
+    {
       const batch = await this.activeBatch();
       if (!batch) { this.state = { at: Date.now(), batch: null, data: null }; return null; }
       // Same batch as before: the parsed catalog and index are still valid (a batch never changes under its key).
@@ -71,10 +92,11 @@ export class SupabasePublicationSource implements PublicationSource {
       const data = { index: JSON.parse(indexBytes.toString('utf8')) as Index, catalog: JSON.parse(catalogBytes.toString('utf8')) as Catalog };
       const prefix = `${this.config.scope}:`;
       if (data.catalog.places.some(p => !p.location_id.startsWith(prefix)) || data.index.publications.some(p => !p.location_id.startsWith(prefix))) throw new Error('Batch contains places outside its scope');
+      // Integrity is not enough: content this API version cannot represent would fail every merged response, Brazil included.
+      if (!validators.SimulationCatalog!(data.catalog) || !Array.isArray(data.index.publications) || data.index.publications.some(p => !validators.SimulationPublication!(p))) throw new Error('Batch catalog or index does not match the contract of this API version');
       this.state = { at: Date.now(), batch, data };
       return data;
-    })().finally(() => { this.loading = null; });
-    return this.loading;
+    }
   }
 
   async artifact(artifact: Artifact) {

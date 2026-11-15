@@ -43,7 +43,7 @@ export function loadPublication(dir) {
   const artifacts = [];
   for (const p of index.publications) for (const a of p.artifacts) {
     const m = ARTIFACT_PATH.exec(a.path);
-    if (!m || m[1] !== p.run_id || !HEX64.test(a.sha256)) throw new Error(`Unexpected artifact in index: ${a.path}`);
+    if (!m || m[1] !== p.run_id || !HEX64.test(a.sha256) || !Number.isInteger(a.bytes) || a.bytes < 1 || !['run', 'series'].includes(a.kind) || ![null, 'gzip'].includes(a.compression)) throw new Error(`Unexpected artifact in index: ${a.path}`);
     artifacts.push({ run_id: p.run_id, kind: a.kind, path: a.path, name: m[2], sha256: a.sha256, bytes: a.bytes, compression: a.compression });
   }
   // The batch identity is the content: catalog, index and every artifact hash. Changing any byte changes the key.
@@ -245,7 +245,7 @@ export function metadataSql(pub) {
   }
   out.push(`do $check$ declare n integer; begin`,
     `  select count(*) into n from public.regional_simulation_publications p join public.simulation_publication_batches b on b.id=p.batch_id where b.batch_key=${lit(pub.batchKey)};`,
-    `  if n <> ${pub.index.publications.length} then raise exception 'staged % of ${pub.index.publications.length} publications for ${pub.batchKey}', n; end if;`,
+    `  if n <> ${pub.index.publications.length} then raise exception 'staged % of ${pub.index.publications.length} publications for ${pub.batchKey}: a run can belong to one batch only, so runs already published by another batch cannot be staged again', n; end if;`,
     'end $check$;', 'commit;',
     `select batch_key, scope, status, runs, places from public.simulation_publication_batches where batch_key=${lit(pub.batchKey)};`);
   return out.join('\n') + '\n';

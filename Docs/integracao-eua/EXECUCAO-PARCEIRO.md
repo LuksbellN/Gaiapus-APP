@@ -1,6 +1,6 @@
 # Integração EUA — execução no Supabase (roteiro do operador)
 
-**Data:** 15/11/2026. **Destino definido por Leandro:** projeto Supabase `kgtvvdwwqnmmjbtcmbbu` (conta leandrojerse@gmail.com). **Quem executa:** o Codex ou o parceiro, logado nessa conta. As sessões do Claude não executaram nada nesse projeto.
+**Data:** 15/11/2026. **Destino definido por Leandro:** projeto Supabase `kgtvvdwwqnmmjbtcmbbu`, na conta pessoal de Leandro. **Quem executa:** o Codex ou o parceiro, logado nessa conta. As sessões do Claude não executaram nada nesse projeto.
 
 > **Regra de conta:** a CLI do Supabase da máquina do Leandro usada pelo Claude está logada em outra organização (Blips). Nada do Gaiapus vai para lá. Antes de qualquer comando com efeito, confirme que o projeto alvo é `kgtvvdwwqnmmjbtcmbbu`.
 
@@ -25,7 +25,7 @@ Pasta de entrega (fora do Git): `C:\Users\leand\Backups\gaiapus\entrega-eua\`
 | Arquivo | Bytes | SHA-256 |
 |---|---:|---|
 | `gaiapus-us-v2-publication-69c23cefe48e.zip` | 153.405.598 | `1c7dd29abe7a1c71e642ccdefb62cb21526abb99b29257b7cac48611864a9d57` |
-| `us-74a444b5fb7f886e.metadata.sql` | 1.877.421 | `ab7c658b9097f329dfa4e38b326d25541921cd34019c7e50dda6e09b6caa411b` |
+| `us-74a444b5fb7f886e.metadata.sql` | 1.877.524 | `4a052a3499f53502729f1d8d6df8d2ab75e473dc5416f4ef5ea3bf9a800e0f94` |
 | `us-74a444b5fb7f886e.activate.sql` | 731 | `725403ec03802bfab62bcaf3660fe76c14d2b2f83167129ffb2eee68cc3a48a5` |
 | `us-74a444b5fb7f886e.rollback.sql` | 715 | `0929057806e204d365253a0e7d9967fccbe054022baac6169a3024146a325251` |
 
@@ -148,7 +148,15 @@ Enquanto o lote está em `staged`, visitantes não veem nenhuma linha dele. Os o
 
 Para servir os EUA do Supabase: `SIMULATION_US_SOURCE=supabase` com `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` (os mesmos do login). A API usa só a chave publicável e leituras públicas. Valor inválido faz a API recusar a partida, em vez de subir meio configurada.
 
-O Brasil continua vindo do diretório fixado no repositório, independentemente dessa configuração. Se a fonte dos EUA falhar, as rotas do Brasil respondem normalmente, `source_status` mostra `us-supabase: unavailable` e um run dos EUA responde 503 `simulation_source_unavailable`.
+O Brasil continua vindo do diretório fixado no repositório, independentemente dessa configuração. Se a fonte dos EUA falhar:
+
+- a API continua servindo o último lote dos EUA já verificado, se houver; séries ainda não baixadas respondem 503 `simulation_source_unavailable`;
+- sem lote anterior em memória, `source_status` mostra `us-supabase: unavailable` e as rotas do Brasil respondem normalmente;
+- a falha é lembrada por 15 s: só a primeira requisição espera o timeout (`SIMULATION_FETCH_TIMEOUT_MS`), as seguintes não;
+- a causa aparece no log da API (`simulation source us-supabase unavailable: …`), sem chaves;
+- um catálogo remoto íntegro, mas fora do contrato desta versão da API, é tratado como fonte indisponível.
+
+Com os EUA ativos, as respostas do Brasil mantêm os mesmos lugares, runs e séries; mudam dois metadados: `meta.publication_version` passa a citar as duas fontes e `inputs` do catálogo passa a ser agrupado por fonte.
 
 `SCIENCE_MODE` e a seleção de modelos não mudam. Nenhum modelo é promovido por esta configuração.
 
@@ -180,14 +188,16 @@ Retira o lote ativo dos EUA e restaura o anterior, se houver. Não apaga linhas 
 
 Limites do rollback: objetos já enviados ao bucket público continuam acessíveis por URL; a migração não tem script de reversão (é aditiva, e o APP anterior funciona com ela aplicada). Um lote retirado fica como `withdrawn`; para republicar o mesmo conteúdo é preciso intervenção manual no status.
 
+**Limite conhecido do esquema:** cada run pertence a um único lote. Um lote novo que reaproveite runs já publicados por outro lote não consegue ser preparado (o SQL de metadados aborta com mensagem explícita, sem alterar nada). Hoje isso não ocorre, porque este é o primeiro lote dos EUA; uma revisão futura que mantenha os mesmos runs exigirá uma tabela de vínculo lote↔run.
+
 ## 11. Testes que sustentam este roteiro
 
 | Comando | O que prova | Resultado em 15/11/2026 |
 |---|---|---|
 | `pnpm --filter @gaiapus/contracts test` | contratos, fixture EUA, métricas nulas, 2026, KS 2027, FIPS | 28 passam |
-| `pnpm --filter @gaiapus/api test` | fontes local e remota, Storage fora do ar, artefato corrompido, cache, Brasil preservado | 53 passam |
+| `pnpm --filter @gaiapus/api test` | fontes local e remota, Storage fora do ar, artefato corrompido, cache, Brasil preservado | 56 passam |
 | `pnpm --filter @gaiapus/web test` | seleção por safra, cobertura por produto, regressão do web | 264 passam |
-| `pnpm test:publication-tool` | plano sem escrita, envio interrompido e retomado, recusa de sobrescrita, verificação remota, SQL | 8 passam |
+| `pnpm test:publication-tool` | plano sem escrita, envio interrompido e retomado, recusa de sobrescrita, verificação remota, SQL | 9 passam |
 | `node supabase/tests/simulation-batches.test.mjs` | lote invisível até ativar, 2027/2028 juntos, Brasil intacto, rollback | passa |
 | `node supabase/tests/simulations.policies.test.mjs` | políticas existentes com todas as migrações | passa |
 | `node supabase/tests/publication-tool.database.test.mjs` | SQL gerado aplicado duas vezes, ativado e revertido (fixture e lote real de 710 runs via `PUBLICATION_DIR`) | passa |

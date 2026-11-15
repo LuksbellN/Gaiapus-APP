@@ -138,3 +138,13 @@ test('generated SQL is staged, idempotent by construction and scoped to one coun
   assert.match(rollbackSql(pub), /app_private\.rollback_simulation_batch\('US'\)/);
   assert.equal(/service|secret|eyJ/i.test(sql + activateSql(pub) + rollbackSql(pub)), false);
 });
+
+test('numbers that reach SQL must be integers: a tampered index is refused before any SQL is generated', () => {
+  const dir = copyOfFixture();
+  try {
+    const index = JSON.parse(readFileSync(join(dir, 'index.json'), 'utf8'));
+    index.publications[0].artifacts[0].bytes = "1); drop table public.simulation_runs; --";
+    writeFileSync(join(dir, 'index.json'), JSON.stringify(index));
+    assert.throws(() => loadPublication(dir), /Unexpected artifact in index/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

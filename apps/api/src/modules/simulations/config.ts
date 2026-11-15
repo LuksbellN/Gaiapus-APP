@@ -25,7 +25,8 @@ export function simulationStoreFromEnv(env: Env): PublicationStore {
   } else if (mode === 'supabase') {
     if (!env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) throw new Error('SIMULATION_US_SOURCE=supabase requires SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY');
     sources.push(new SupabasePublicationSource({ id: 'us-supabase', scope: 'US', url: env.SUPABASE_URL, publishableKey: env.SUPABASE_PUBLISHABLE_KEY,
-      timeoutMs: bounded(env, 'SIMULATION_FETCH_TIMEOUT_MS', 10_000, 100, 120_000), batchTtlMs: bounded(env, 'SIMULATION_BATCH_TTL_SECONDS', 60, 1, 3600) * 1000 }));
+      timeoutMs: bounded(env, 'SIMULATION_FETCH_TIMEOUT_MS', 10_000, 100, 120_000), batchTtlMs: bounded(env, 'SIMULATION_BATCH_TTL_SECONDS', 60, 1, 3600) * 1000,
+      onError: (source, message) => console.warn(`simulation source ${source} unavailable: ${message}`) }));
   } else if (mode !== 'off') throw new Error('SIMULATION_US_SOURCE must be off, local or supabase');
   return new PublicationStore(sources, { cacheBytes: bounded(env, 'SIMULATION_CACHE_MB', 64, 1, 1024) * 1024 * 1024 });
 }

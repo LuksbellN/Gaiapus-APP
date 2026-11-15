@@ -133,6 +133,58 @@ describe('simulation publication sources', () => {
     await expect(tiny.series(index.publications[0].run_id)).rejects.toMatchObject({ status: 500 });
   });
 
+  it('a hanging remote costs one timeout, not one per request: failures are remembered briefly', async () => {
+    let calls = 0;
+    const fetcher = (_input: string | URL, init?: RequestInit) => new Promise<Response>((_, reject) => { calls++; init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))); });
+    const source = new SupabasePublicationSource({ id: 'us-remote', scope: 'US', url: 'https://project.example', publishableKey: 'k', fetcher, timeoutMs: 150, retryAfterFailureMs: 60_000 });
+    const app = appWith(source);
+    const first = performance.now();
+    expect((await app.inject('/v1/simulations/regional')).json().data.items.length).toBe(7);
+    const firstMs = performance.now() - first;
+    const again = performance.now();
+    for (let i = 0; i < 5; i++) expect((await app.inject('/v1/simulations/capabilities?location_id=BR:ibge:5107925')).statusCode).toBe(200);
+    expect(performance.now() - again).toBeLessThan(120);
+    expect(firstMs).toBeLessThan(400); // one timeout, not two
+    expect(calls).toBe(1);
+    await app.close();
+  });
+
+  it('keeps serving the last verified batch while the remote fails after the TTL', async () => {
+    const good = remote();
+    let down = false;
+    const fetcher = async (input: string | URL) => { if (down) throw new Error('network down'); return (good.source as any).fetcher(String(input)); };
+    const source = new SupabasePublicationSource({ id: 'us-remote', scope: 'US', url: 'https://project.example', publishableKey: 'k', fetcher, batchTtlMs: 1, retryAfterFailureMs: 1 });
+    const app = appWith(source);
+    const id = storyRun(2028);
+    expect((await app.inject(`/v1/simulations/${id}/series`)).statusCode).toBe(200);
+    down = true; await new Promise(r => setTimeout(r, 10));
+    const caps = (await app.inject('/v1/simulations/capabilities?location_id=US:fips:19169')).json();
+    expect(caps.data.places.length).toBe(1);
+    expect(caps.data.source_status[1]).toEqual({ source: 'us-remote', status: 'ok' });
+    expect((await app.inject(`/v1/simulations/${id}/series`)).statusCode).toBe(200);
+    await app.close();
+  });
+
+  it('a remote catalog that passes the hash but not the contract makes only that source unavailable', async () => {
+    const prefix = 'us/v2/bad';
+    const catalog = JSON.parse(readFileSync(`${fixture}catalog.json`, 'utf8'));
+    catalog.places[0].capabilities[0].reason_code = 'a_reason_this_app_does_not_know';
+    const catalogBytes = Buffer.from(JSON.stringify(catalog)), idx = readFileSync(`${fixture}index.json`);
+    const fetcher = async (input: string | URL) => {
+      const url = String(input);
+      if (url.includes('/rest/v1/')) return new Response(JSON.stringify([{ batch_key: 'bad', scope: 'US', storage_bucket: 'simulation-public', storage_prefix: prefix,
+        catalog_sha256: sha(catalogBytes), catalog_bytes: catalogBytes.length, index_sha256: sha(idx), index_bytes: idx.length, manifest_sha256: 'e'.repeat(64) }]), { status: 200 });
+      return new Response(new Uint8Array(url.endsWith('catalog.json') ? catalogBytes : idx), { status: 200 });
+    };
+    const app = appWith(new SupabasePublicationSource({ id: 'us-remote', scope: 'US', url: 'https://project.example', publishableKey: 'k', fetcher }));
+    for (const path of ['/v1/simulations/capabilities', '/v1/simulations/capabilities?crop_id=soy', '/v1/simulations/regional']) {
+      const res = await app.inject(path);
+      expect(res.statusCode, path).toBe(200);
+      expect(res.json().data.source_status[1]).toEqual({ source: 'us-remote', status: 'unavailable' });
+    }
+    await app.close();
+  });
+
   it('when two sources publish the same place, the first source wins and the conflict is reported', async () => {
     const store = new PublicationStore([new LocalPublicationSource('first', fixture), new LocalPublicationSource('second', fixture)]);
     const catalog = await store.catalog();
