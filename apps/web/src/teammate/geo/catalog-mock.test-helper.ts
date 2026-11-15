@@ -6,7 +6,7 @@ const json = (name: string) => files[`./__fixtures__/${name}.json`]?.default;
 
 export function mockCatalog(opts: { failCoverage?: boolean; failGeography?: boolean; observations?: unknown } = {}) {
   return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-    const url = new URL(String(input), 'http://x');
+    const url = new URL(String(input), 'https://x');
     if (url.pathname === '/v1/geography') return opts.failGeography ? new Response('{}', { status: 503 }) : new Response(JSON.stringify(json('geography')), { status: 200 });
     if (url.pathname === '/v1/coverage') {
       if (opts.failCoverage) return new Response(JSON.stringify({ error: { code: 'dependency_failure', message: 'x' } }), { status: 503 });

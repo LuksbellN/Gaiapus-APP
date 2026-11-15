@@ -426,7 +426,7 @@ const m: DeepPartial<Messages> = {
       exported: 'Fichier généré. Le nom et l’adresse e-mail ne sont pas inclus dans l’exportation.',
     },
     signIn: 'Se connecter', signUp: 'Créer un compte', unavailableTitle: 'Comptes indisponibles.', unavailable: 'Configurez Supabase pour vous connecter. L’exploration et les enregistrements locaux restent disponibles sans compte.',
-    name: 'Votre nom', email: 'E-mail', password: 'Mot de passe', passwordHint: 'Au moins 8 caractères. La confirmation de l’adresse e-mail est obligatoire.', wait: 'Veuillez patienter…', continueWithout: 'Continuer sans compte',
+    name: 'Votre nom', email: 'E-mail', passwordLabel: 'Mot de passe', passwordHint: 'Au moins 8 caractères. La confirmation de l’adresse e-mail est obligatoire.', wait: 'Veuillez patienter…', continueWithout: 'Continuer sans compte',
     resend: 'Renvoyer la confirmation', firstTime: 'Première visite ?', recover: 'Récupérer l’accès', haveAccount: 'Vous avez déjà un compte ?', recoverEmail: 'Adresse e-mail du compte', requestRecovery: 'Demander la récupération', back: 'Revenir',
     connected: 'Compte connecté', profileDown: 'Votre compte est connecté, mais le profil de l’API est indisponible.',
     prefs: 'Préférences', prefsNote: 'La langue est sauvegardée sur cet appareil et s’applique aussi sans compte.',

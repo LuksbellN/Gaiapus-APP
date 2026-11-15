@@ -1,8 +1,9 @@
 // Targeted read-only probes against the running dev build. Each probe uses a fresh, empty browser context.
-import { chromium } from 'file:///C:/Users/leand/Documents/Gaiapus-APP/apps/web/node_modules/@playwright/test/index.mjs';
+import { chromium } from '../../../../../apps/web/node_modules/@playwright/test/index.mjs';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-const BASE = process.env.GAIAPUS_WEB_URL ?? 'http://127.0.0.1:5173'; const OUT = process.argv[2]; const only = process.argv[3];
+const BASE = process.env.GAIAPUS_WEB_URL ?? 'http://127.0.0.1:5173'; const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); const only = /^[a-z0-9:-]+$/.test(process.argv[2] ?? '') ? process.argv[2] : undefined; // output folder is fixed
 const browser = await chromium.launch({ channel: 'chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const R = {}; const rec = (k, v) => { R[k] = v; console.log(`\n## ${k}\n${typeof v === 'string' ? v : JSON.stringify(v, null, 1)}`); };
 const fresh = async (opts = {}) => { const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'pt-BR', ...opts }); const page = await ctx.newPage(); return { ctx, page }; };

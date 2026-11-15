@@ -426,7 +426,7 @@ const m: DeepPartial<Messages> = {
       exported: 'File generated. Your name and email are not included in the export.',
     },
     signIn: 'Sign in', signUp: 'Create account', unavailableTitle: 'Accounts unavailable.', unavailable: 'Configure Supabase to sign in. Exploration and local records remain available without an account.',
-    name: 'Your name', email: 'Email', password: 'Password', passwordHint: 'At least 8 characters. Email confirmation is required.', wait: 'Please wait…', continueWithout: 'Continue without an account',
+    name: 'Your name', email: 'Email', passwordLabel: 'Password', passwordHint: 'At least 8 characters. Email confirmation is required.', wait: 'Please wait…', continueWithout: 'Continue without an account',
     resend: 'Resend confirmation', firstTime: 'First time?', recover: 'Recover access', haveAccount: 'Already have an account?', recoverEmail: 'Account email', requestRecovery: 'Request recovery', back: 'Back',
     connected: 'Account connected', profileDown: 'Your account is connected, but the API profile is unavailable.',
     prefs: 'Preferences', prefsNote: 'The language is saved on this device and also applies without an account.',

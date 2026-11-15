@@ -2,7 +2,7 @@
 // Simulates localStorage in memory; imports the real store module twice to stand in for two page loads.
 const mem = new Map<string, string>();
 (globalThis as any).localStorage = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, String(v)), removeItem: (k: string) => void mem.delete(k), clear: () => mem.clear() };
-const STORE = 'file:///C:/Users/leand/Documents/Gaiapus-APP/apps/web/src/teammate/store.ts';
+const STORE = new URL('../../../../../apps/web/src/teammate/store.ts', import.meta.url).href;
 const user = { userId: 'A', name: 'A', email: 'a@example.com', researchConsent: false, consentAt: null };
 
 const first = await import(STORE + '?load=1');

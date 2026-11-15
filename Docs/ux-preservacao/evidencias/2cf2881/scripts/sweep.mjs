@@ -1,10 +1,12 @@
 // Read-only audit sweep of the active Gaiapus-APP frontend. Fresh browser contexts only; no user profile is touched.
-import { chromium } from 'file:///C:/Users/leand/Documents/Gaiapus-APP/apps/web/node_modules/@playwright/test/index.mjs';
+import { chromium } from '../../../../../apps/web/node_modules/@playwright/test/index.mjs';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const BASE = process.env.GAIAPUS_WEB_URL ?? 'http://127.0.0.1:5173';
-const OUT = process.argv[2];
+// Output always goes to this evidence folder (no path taken from the command line).
+const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 fs.mkdirSync(path.join(OUT, 'capturas'), { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 

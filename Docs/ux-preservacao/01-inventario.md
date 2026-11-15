@@ -9,7 +9,7 @@ Revisão `2cf2881` (main), inspecionada em 14/11/2026. Marcas de evidência: [N]
 | Repositório | `https://github.com/LuksbellN/Gaiapus-APP`, branch única `main` |
 | Commit auditado | `2cf2881` "Frontend integration", 14/11/2026 16:44 −03 |
 | Histórico | 5 commits: contratos e API (`5d6cf0a`, `d41d7af`), primeira interface (`a6cd617`), Auth (`af57629`), integração do frontend aprovado (`2cf2881`) |
-| Clone local | `C:\Users\leand\Documents\Gaiapus-APP`, limpo; único item novo é `Docs/ux-preservacao/` |
+| Clone local | `Documents\Gaiapus-APP` (máquina do Leandro), limpo; único item novo é `Docs/ux-preservacao/` |
 | Ferramentas | Monorepo pnpm 10.14.0, Node `>=22.23.4 <23`. Nesta máquina há Node 22.23.2: pnpm avisa e executa. Bun não foi usado; nenhum lockfile mudou |
 | Scripts web | `dev`, `build`, `preview`, `typecheck`, `test`, `test:e2e` (`apps/web/package.json:6-13`) |
 
