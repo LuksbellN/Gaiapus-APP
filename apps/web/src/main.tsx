@@ -18,5 +18,8 @@ async function start() {
   createRoot(document.getElementById('root')!).render(<HashRouter><App authPage={authRoute ? <AuthPage recovery={location.pathname === '/auth/recovery'} /> : undefined} /></HashRouter>);
 }
 start().catch(() => {
-  document.getElementById('root')!.innerHTML = '<main class="boot"><b>Gaiapus</b><p>Não foi possível iniciar. Confira a conexão e recarregue a página.</p></main>';
+  // Message chosen by index.html in the boot language; catalogs may be the thing that failed, so it does not use i18n.
+  const text = (window as { __gaiapusBoot?: string[] }).__gaiapusBoot?.[1] ?? 'Could not start. Check your connection and reload the page.';
+  const main = document.createElement('main'); main.className = 'boot'; main.innerHTML = '<b translate="no">Gaiapus</b><p></p>'; main.querySelector('p')!.textContent = text;
+  document.getElementById('root')!.replaceChildren(main);
 });

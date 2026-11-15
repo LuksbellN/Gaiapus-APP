@@ -1,12 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { exchangeEmailCode, supabase } from './client';
-import { callbackProblem, safeReturnPath } from './urls';
+import { callbackProblemKey, safeReturnPath } from './urls';
 import { canResumeRecovery, clearRecovery, rememberRecovery } from './recovery';
+import { useI18n, type MessageKey } from '../../teammate/i18n';
+import { LanguageSelect } from '../../teammate/ui/LanguageSelect';
 
+// The PKCE flow is unchanged; only the visible text is a message key, so switching language re-renders it.
 export function AuthPage({ recovery }: { recovery: boolean }) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'done'>('loading');
-  const [message, setMessage] = useState('Verificando seu link…');
+  const [message, setMessage] = useState<MessageKey>('auth.checking');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
@@ -15,7 +19,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
 
   useEffect(() => {
     const url = emailUrl;
-    const problem = !supabase ? 'O acesso por e-mail ainda não está configurado neste ambiente.' : callbackProblem(url);
+    const problem: MessageKey | null = !supabase ? 'auth.notConfigured' : callbackProblemKey(url);
     const code = url.searchParams.get('code');
     let active = true;
     // Remove codes and provider errors from browser history immediately.
@@ -26,48 +30,47 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
           if (!active) return;
           const valid = !error && canResumeRecovery(data.session);
           setStatus(valid ? 'ready' : 'error');
-          setMessage(valid ? 'Escolha uma nova senha para sua conta.' : problem ?? 'Solicite um novo link de recuperação.');
-        }).catch(() => { if (active) { setStatus('error'); setMessage('Não foi possível recuperar a sessão. Solicite um novo link.'); } });
-      } else { setStatus('error'); setMessage(problem ?? 'Link inválido.'); }
+          setMessage(valid ? 'auth.choosePassword' : problem ?? 'auth.requestNew');
+        }).catch(() => { if (active) { setStatus('error'); setMessage('auth.sessionFailed'); } });
+      } else { setStatus('error'); setMessage(problem ?? 'auth.invalid'); }
       return () => { active = false; };
     }
     void exchangeEmailCode(code).then(session => {
       if (!active) return;
       if (recovery) rememberRecovery(session);
       setStatus(recovery ? 'ready' : 'done');
-      setMessage(recovery ? 'Escolha uma nova senha para sua conta.' : 'E-mail confirmado. Sua conta está conectada.');
+      setMessage(recovery ? 'auth.choosePassword' : 'auth.confirmed');
       sessionStorage.removeItem('gaiapus.auth.return');
     }).catch(() => {
       if (!active) return;
       setStatus('error');
-      setMessage('Não foi possível validar este link. Ele pode ter expirado, já ter sido usado ou ter sido aberto em outro navegador. Solicite um novo e-mail.');
+      setMessage('auth.validateFailed');
     });
     return () => { active = false; };
   }, [recovery, emailUrl]);
 
   async function updatePassword(event: FormEvent) {
     event.preventDefault();
-    if (password !== confirm) { setMessage('As senhas precisam ser iguais.'); return; }
+    if (password !== confirm) { setMessage('auth.mismatch'); return; }
     setBusy(true);
     try {
       const result = await supabase!.auth.updateUser({ password });
       if (result.error) throw result.error;
       clearRecovery();
-      setPassword(''); setConfirm(''); setStatus('done'); setMessage('Sua senha foi atualizada.');
-    } catch { setMessage('Não foi possível atualizar a senha. Use uma senha diferente, com pelo menos 8 caracteres, e tente novamente.'); }
+      setPassword(''); setConfirm(''); setStatus('done'); setMessage('auth.updated');
+    } catch { setMessage('auth.updateFailed'); }
     finally { setBusy(false); }
   }
 
   return <main className="page" style={{ maxWidth: 520 }}><section className="card" aria-labelledby="auth-title">
-
-    <h1 id="auth-title">{recovery ? 'Recuperar acesso' : 'Confirmar e-mail'}</h1>
-    <p role="status">{message}</p>
+    <div className="row-between"><h1 id="auth-title">{recovery ? t('auth.titleRecovery') : t('auth.titleConfirm')}</h1><LanguageSelect id="idioma-auth" /></div>
+    <p role="status">{t(message)}</p>
     {status === 'ready' && <form className="stack" onSubmit={updatePassword}>
-      <label>Nova senha<input className="input" autoComplete="new-password" type="password" required minLength={8} value={password} disabled={busy} onChange={e => setPassword(e.target.value)} /></label>
-      <label>Confirmar nova senha<input className="input" autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
-      <button className="btn btn--primary" disabled={busy}>{busy ? 'Salvando…' : 'Salvar nova senha'}</button>
+      <label>{t('auth.newPassword')}<input className="input" autoComplete="new-password" type="password" required minLength={8} value={password} disabled={busy} onChange={e => setPassword(e.target.value)} /></label>
+      <label>{t('auth.confirmPassword')}<input className="input" autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
+      <button className="btn btn--primary" disabled={busy}>{busy ? t('auth.saving') : t('auth.save')}</button>
     </form>}
-    {status === 'error' && supabase && <div className="row"><a className="btn" href="/#/conta/recuperar">Pedir novo link</a><a className="btn" href="/#/conta">Entrar ou reenviar confirmação</a></div>}
-    <a className="btn" href={returnPath}>Voltar à exploração</a>
+    {status === 'error' && supabase && <div className="row"><a className="btn" href="/#/conta/recuperar">{t('auth.newLink')}</a><a className="btn" href="/#/conta">{t('auth.signInOrResend')}</a></div>}
+    <a className="btn" href={returnPath}>{t('auth.backToExplore')}</a>
   </section></main>;
 }

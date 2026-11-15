@@ -8,7 +8,7 @@ import { AdapterError } from './core';
 export function syncSession(session: SupabaseSession | null) {
   const user = session?.user;
   if (!user || !user.email_confirmed_at) { activateAccount(null); return; }
-  activateAccount({ userId: user.id, name: user.user_metadata.display_name || user.email?.split('@')[0] || 'Minha conta', email: user.email ?? '', researchConsent: false, consentAt: null });
+  activateAccount({ userId: user.id, name: user.user_metadata.display_name || user.email?.split('@')[0] || 'Minha conta', email: user.email ?? '', researchConsent: false, consentAt: null, createdAt: user.created_at });
   // Fetch profile outside onAuthStateChange's lock and discard late responses after logout/account switching.
   void backend.me().then(me => {
     if (getState().session?.userId !== user.id || !me.profile.display_name) return;

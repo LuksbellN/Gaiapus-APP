@@ -6,15 +6,22 @@ import { getState, setState, uid, now, getAccountScope, type FieldRecord, type P
 import { norm } from '../format';
 import { cropIdFromName, isCropId, type CropId } from '../catalog';
 import { backend, publishedExample, request } from './http';
-import type { ObservationsResult } from '@gaiapus/contracts';
+import type { CoverageResult, ObservationsResult } from '@gaiapus/contracts';
+import { fieldOf, loadCoverageIndex } from '../geo/coverageIndex';
+import { byName } from '../format';
+import { activeLocale, translate } from '../i18n';
+import type { Locale } from '../i18n/locale';
 import { authAccount } from './session';
 
 export type Feature = { type: 'Feature'; id: number; properties: { code: string; name: string; sigla?: string }; geometry: { type: string; coordinates: any } };
 export type FC = { type: 'FeatureCollection'; features: Feature[] };
 export type BBox = [[number, number], [number, number]];
 export type Place = { type: 'pais' | 'uf' | 'municipio'; code: string; name: string; uf: string; ufSigla: string };
-/** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia. */
-export type Country = { code: string; name: string; continent: string; bbox: BBox };
+export type SearchResult = { places: Place[]; total: number; remote: 'ok' | 'failed' | 'skipped' };
+/** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia.
+ *  `names` por idioma e `aliases` (nomes nas cinco línguas, ISO alfa-2/alfa-3) servem para mostrar e buscar; nunca como identificador. */
+export type Country = { code: string; a2: string | null; names: Record<Locale, string>; aliases: string[]; continent: string; bbox: BBox };
+export const countryName = (c: Country, locale: Locale = activeLocale()) => c.names[locale] ?? c.names.en;
 
 export function bboxOf(geometry: Feature['geometry']): BBox {
   let a = 180, b = 90, c = -180, d = -90;
@@ -32,17 +39,20 @@ const IBGE = 'IBGE · API Malhas v4 e Localidades';
 export const geography = {
   ufsWithMunicipalities: Object.keys(MUN_LOADERS),
   // Países do globo, para navegar. Nenhum dado agrícola é agregado por país; análise só existe em municípios do Brasil.
-  async countries(signal?: AbortSignal): Promise<Sourced<Country[]>> { await wait(signal, 20); const d = await once('countries', () => import('../data/geo/countries.json').then((m) => m.default)); return { data: d.countries as unknown as Country[], meta: { kind: 'fixture', source: 'MapLibre demotiles · Natural Earth (domínio público)', note: 'Limites simplificados, só para navegação.' } }; },
+  async countries(signal?: AbortSignal): Promise<Sourced<Country[]>> { await wait(signal, 20); const d = await once('countries', () => import('../data/geo/countries.json').then((m) => m.default)); return { data: d.countries as unknown as Country[], meta: { kind: 'fixture', source: 'MapLibre demotiles · Natural Earth', noteKey: 'notes.countries' } }; },
   async states(signal?: AbortSignal): Promise<Sourced<FC>> { await wait(signal); const data = await once('states', () => import('../data/geo/states.json').then((m) => m.default as unknown as FC)); return { data, meta: { kind: 'fixture', source: IBGE } }; },
   async municipalities(uf: string, signal?: AbortSignal): Promise<Sourced<FC | null>> {
     await wait(signal);
-    if (!MUN_LOADERS[uf]) return { data: null, meta: { kind: 'fixture', source: IBGE, note: 'Malha municipal desta UF ainda não carregada nesta edição.' } };
+    if (!MUN_LOADERS[uf]) return { data: null, meta: { kind: 'fixture', source: IBGE, noteKey: 'notes.noMesh' } };
     return { data: await once('mun' + uf, MUN_LOADERS[uf]), meta: { kind: 'fixture', source: IBGE } };
   },
   // Busca por nome ou identificador (sigla/código da UF, código IBGE de 7 dígitos).
-  async search(q: string, signal?: AbortSignal): Promise<Place[]> {
+  // Os lugares do pacote (países, estados, municípios de MG e MT) aparecem sempre. A consulta ao catálogo
+  // publicado da API é complementar: se falhar, os resultados locais continuam e `remote` diz que falhou.
+  async search(q: string, signal?: AbortSignal): Promise<SearchResult> {
     await wait(signal, 40);
-    const s = norm(q); if (s.length < 2) return [];
+    const s = norm(q); if (s.length < 2) return { places: [], total: 0, remote: 'skipped' };
+    const remote = backend.geography(q, signal).then((r) => ({ ok: true as const, items: r.items }), (error) => { if ((error as Error)?.name === 'AbortError') throw error; return { ok: false as const, items: [] }; });
     const st = (await this.states()).data.features;
     const sig = Object.fromEntries(st.map((f) => [f.properties.code, f.properties.sigla!]));
     const out: Place[] = st.filter((f) => norm(f.properties.name).includes(s) || norm(f.properties.sigla!) === s || f.properties.code === s).map((f) => ({ type: 'uf', code: f.properties.code, name: f.properties.name, uf: f.properties.code, ufSigla: f.properties.sigla! }));
@@ -50,48 +60,59 @@ export const geography = {
       const fc = (await this.municipalities(uf)).data!;
       for (const f of fc.features) if (norm(f.properties.name).includes(s) || f.properties.code.startsWith(s)) out.push({ type: 'municipio', code: f.properties.code, name: f.properties.name, uf, ufSigla: sig[uf] });
     }
-    for (const c of (await this.countries()).data) if (c.code !== 'BR' ? norm(c.name).includes(s) || norm(c.code) === s : norm(c.name).includes(s)) out.push({ type: 'pais', code: c.code, name: c.name, uf: '', ufSigla: c.continent });
-    const published = await backend.geography(q, signal);
+    const aliasesOf = new Map<string, string[]>();
+    for (const c of (await this.countries()).data) if (c.aliases.some((a) => (a.length <= 3 ? norm(a) === s : norm(a).includes(s)))) { aliasesOf.set(c.code, c.aliases); out.push({ type: 'pais', code: c.code, name: countryName(c), uf: '', ufSigla: c.continent }); }
+    const published = await remote;
     for (const area of published.items) {
       if (area.kind !== 'municipality' || out.some(p => p.code === area.area_id)) continue;
-      const uf = area.area_id.slice(0, 2);
-      out.push({ type: 'municipio', code: area.area_id, name: area.name, uf, ufSigla: sig[uf] ?? '' });
+      // UF from the catalogue's own state_id (BR-MT), never from the identifier prefix.
+      const ufSig = area.state_id?.startsWith('BR-') ? area.state_id.slice(3) : '';
+      const uf = st.find((f) => f.properties.sigla === ufSig)?.properties.code ?? '';
+      out.push({ type: 'municipio', code: area.area_id, name: area.name, uf, ufSigla: ufSig });
     }
-    const rank = (p: Place) => (norm(p.name) === s ? 0 : norm(p.name).startsWith(s) ? 1 : 2) + (p.type === 'pais' && p.code !== 'BR' ? 0.5 : 0);
-    return out.sort((x, y) => rank(x) - rank(y) || x.name.localeCompare(y.name, 'pt-BR')).slice(0, 12);
+    // Exact match first, then prefix, then contains; countries match on any of their names/aliases (Germany, Deutschland, DEU…).
+    const score = (text: string) => (norm(text) === s ? 0 : norm(text).startsWith(s) ? 1 : 2);
+    const rank = (p: Place) => (p.type === 'pais' ? Math.min(...(aliasesOf.get(p.code) ?? [p.name]).map(score)) + (p.code !== 'BR' ? 0.5 : 0) : score(p.name));
+    const places = out.sort((x, y) => rank(x) - rank(y) || byName(x.name, y.name));
+    return { places, total: places.length, remote: published.ok ? 'ok' : 'failed' };
   },
 };
 
-export type Product = { id: string; label: string; period: string; kind: 'historico' | 'previsao' | 'simulacao' | 'observacao'; to: string };
-export type Coverage = { code: string; level: 'analise' | 'somente_geografia'; summary: string; products: Product[] };
-const COVERAGE: Record<string, Coverage> = {
-  '5107925': { code: '5107925', level: 'analise', summary: 'Projeção hídrica, simulação Field Shift e referência municipal de rendimento.', products: [
-    { id: 'water', label: 'Projeção de reserva de água (soja)', period: '14–19 nov 2026 · emitida 14 nov 2026', kind: 'previsao', to: '/visao-geral' },
-    { id: 'field-shift', label: 'Field Shift: pousio × braquiária', period: 'Safras 2015/16 a 2020/21', kind: 'simulacao', to: '/field-shift' },
-    { id: 'yield', label: 'Rendimento municipal de referência', period: 'Colheita 2021 · retrospectivo', kind: 'historico', to: '/municipio' } ] },
-  '3170206': { code: '3170206', level: 'analise', summary: 'NDVI por imagem orbital e chuva diária em um recorte demonstrativo rural.', products: [
-    { id: 'ndvi', label: 'NDVI (HLS) e chuva (IMERG)', period: '1 abr – 31 jul 2024', kind: 'observacao', to: '/municipio' },
-    { id: 'yield', label: 'Rendimento municipal de referência', period: 'Colheita 2021 · antes do 1º corte', kind: 'historico', to: '/municipio' } ] },
+export type Product = { id: string; kind: 'historico' | 'previsao' | 'simulacao' | 'observacao'; to: string; periods: { start: string; end: string }[]; crops: string[] };
+/** analise: everything published here; parcial: some products, others missing; sem_analise: catalogue answered, nothing here;
+ *  nao_consultavel: the catalogue could not be consulted, so absence cannot be concluded. Labels are translated by the screen. */
+export type CoverageLevel = 'analise' | 'parcial' | 'sem_analise' | 'nao_consultavel';
+export type Coverage = { code: string; level: CoverageLevel; products: Product[]; missing: { id: string; crops: string[]; reason: string | null }[] };
+const PRODUCT_INFO: Record<string, { kind: Product['kind']; to: (code: string) => string }> = {
+  water_risk_projection: { kind: 'previsao', to: (code) => `/visao-geral?mun=${code}` },
+  strategy_comparison: { kind: 'simulacao', to: () => '/field-shift' },
+  yield_estimate: { kind: 'historico', to: (code) => `/municipio?mun=${code}&aba=safra` },
+  history: { kind: 'observacao', to: (code) => `/municipio?mun=${code}` },
 };
 export const coverage = {
-  covered: Object.keys(COVERAGE),
+  // Products come from the API catalogue; a published field inside the municipality adds its NDVI/rain product,
+  // labelled as the rectangle's data, never the whole municipality's (Docs/ux-preservacao/06, section 3).
   async get(code: string, signal?: AbortSignal): Promise<Sourced<Coverage>> {
-    const empty: Coverage = { code, level: 'somente_geografia', summary: 'Limites disponíveis. Nenhuma análise publicada para este município nesta edição.', products: [] };
-    try {
-      const result = await backend.coverage(code, signal);
-      const ids: Record<string, string> = { water_risk_projection: 'water', strategy_comparison: 'field-shift', yield_estimate: 'yield', history: 'ndvi' };
-      const available = new Set(result.products.filter(p => p.availability !== 'no_data').map(p => ids[p.product_id]));
-      if (code === '3170206') {
-        const fieldCoverage = await backend.coverage('published-field-uberlandia', signal);
-        if (fieldCoverage.products.some(p => p.product_id === 'history' && p.availability !== 'no_data')) available.add('ndvi');
-      }
-      const original = COVERAGE[code];
-      const products = original?.products.filter(p => available.has(p.id)) ?? [];
-      return { data: products.length ? { ...original, products } : empty, meta: { kind: 'fixture', source: 'Catálogo de cobertura da API Gaiapus', note: result.publication_version } };
-    } catch (error) {
-      if (error instanceof AdapterError && error.status === 404) return { data: empty, meta: { kind: 'fixture', source: 'Catálogo de cobertura da API Gaiapus' } };
-      throw error;
+    const meta = (note?: string): Sourced<Coverage>['meta'] => ({ kind: 'publicacao', source: 'Gaiapus API · /v1/coverage', note });
+    let result: CoverageResult;
+    try { result = await backend.coverage(code, signal); }
+    catch (error) {
+      if (!(error instanceof AdapterError && error.status === 404)) throw error;
+      const idx = await loadCoverageIndex();
+      return { data: { code, level: idx.status === 'ok' ? 'sem_analise' : 'nao_consultavel', products: [], missing: [] }, meta: meta() };
     }
+    const products: Product[] = []; const missing: Coverage['missing'] = [];
+    for (const p of result.products) {
+      const info = PRODUCT_INFO[p.product_id]; if (!info) continue;
+      if (p.availability !== 'no_data') products.push({ id: p.product_id, kind: info.kind, to: info.to(code), periods: p.periods, crops: p.supported_crops });
+      else if (p.product_id !== 'history') missing.push({ id: p.product_id, crops: p.supported_crops, reason: p.reason_code });
+    }
+    const idx = await loadCoverageIndex();
+    const field = fieldOf(idx, code);
+    const fieldHistory = field?.products.find((p) => p.id === 'history' && p.availability !== 'no_data');
+    if (field && fieldHistory) products.push({ id: 'ndvi', kind: 'observacao', to: `/municipio?mun=${code}&aba=imagem`, periods: fieldHistory.periods, crops: [] });
+    const level: CoverageLevel = products.length ? (missing.length ? 'parcial' : 'analise') : 'sem_analise';
+    return { data: { code, level, products, missing }, meta: meta(result.publication_version) };
   },
 };
 
@@ -102,29 +123,46 @@ export const weather = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<WaterProjection>('water-soy-5107925-N10', signal);
-    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: 'Fixture do contrato water_risk_projection (pacote v7).' } };
+    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: `${result.meta.note ?? ''} · contrato water_risk_projection` } };
   },
   async dailySeries(code: string, signal?: AbortSignal): Promise<Sourced<Daily>> {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const data = (await once('daily', () => import('../data/sorriso-daily.json').then((m) => m.default))) as unknown as Daily;
-    return { data, meta: { kind: 'fixture', source: data.source, note: 'scenario/*_daily.csv do pacote v7 · simulação histórica.' } };
+    return { data, meta: { kind: 'fixture', source: data.source, note: 'scenario/*_daily.csv · v7', noteKey: 'notes.dailySeries' } };
   },
 };
 
-export type Imagery = typeof import('../data/uberlandia-field.json');
+/** Field imagery normalised for the screens. Optional fields exist only where the publication provides them. */
+export type FieldImagery = { areaId: string; label: string; imageUrl: string; image: { date: string; corners: number[][]; scene_id: string };
+  field: { geojson: any; label: string }; observations: { date: string; ndvi: number | null; acquired_at: string | null; scene_id: string | null; valid_fraction: number; field_pixels?: number }[];
+  rainfall: { date: string; rain_mm: number | null }[]; sources: { imagery: string; rain: string; weather_scope?: string; rain_validation?: string };
+  validation: { accepted_scenes: number; total_scenes: number; min_valid_fraction?: number } };
 export const imagery = {
-  async series(code: string, signal?: AbortSignal): Promise<Sourced<Imagery & { imageUrl: string }>> {
+  /** Imagery of the published demonstration field inside municipality `code`, found through the catalogue. */
+  async series(code: string, signal?: AbortSignal): Promise<Sourced<FieldImagery>> {
     await wait(signal);
-    if (code !== '3170206') throw new AdapterError('municipality_not_covered', 422);
-    const [d, observed] = await Promise.all([import('../data/uberlandia-field.json'), request<ObservationsResult>('/observations?area_id=published-field-uberlandia&start=2024-04-01&end=2024-07-31', { signal })]);
+    const idx = await loadCoverageIndex(); const field = fieldOf(idx, code);
+    if (!field) throw new AdapterError(idx.status === 'ok' ? 'municipality_not_covered' : 'catalog_unavailable', idx.status === 'ok' ? 422 : 503);
+    const hist = field.products.find((p) => p.id === 'history')?.periods[0];
+    const [start, end] = hist ? [hist.start, hist.end] : ['2024-01-01', '2024-12-31'];
+    const observed = await request<ObservationsResult>(`/observations?area_id=${encodeURIComponent(field.id)}&start=${start}&end=${end}`, { signal });
     const image = observed.imagery.at(-1);
     if (!image) throw new AdapterError('municipality_not_covered', 422);
     const ndvi = observed.series.find(s => s.series_id === 'ndvi');
     const rain = observed.series.find(s => s.series_id === 'rainfall');
-    // Geometry and QA pixel counts remain the approved publication's presentation metadata.
-    const observations = (ndvi?.points ?? []).map(point => ({ ...d.default.observations.find(o => o.date === point.date), date: point.date, ndvi: point.value, acquired_at: point.acquired_at, scene_id: point.scene_id, valid_fraction: point.valid_fraction })) as Imagery['observations'];
-    return { data: { ...d.default, image: { ...d.default.image, ...image }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })), imageUrl: image.url } as Imagery & { imageUrl: string }, meta: { kind: 'fixture', source: ndvi?.source ?? d.default.sources.imagery, note: 'Recorte demonstrativo rural; não é um talhão cadastrado.' } };
+    // Uberlândia keeps the approved publication's presentation metadata (pixel counts, validation thresholds).
+    const local = field.id === 'published-field-uberlandia' ? (await import('../data/uberlandia-field.json')).default : null;
+    const geojson = local?.field.geojson ?? (field.geometryRef ? await fetch(field.geometryRef, { signal }).then((r) => (r.ok ? r.json() : null)).then((g) => g?.geometry ?? g).catch(() => null) : null);
+    const points = ndvi?.points ?? [];
+    const observations = points.map((point) => ({ field_pixels: local?.observations.find((o) => o.date === point.date)?.field_pixels, date: point.date, ndvi: point.value, acquired_at: point.acquired_at, scene_id: point.scene_id, valid_fraction: point.valid_fraction ?? 0 }));
+    const label = local?.field.label ?? 'Recorte demonstrativo rural';
+    return { data: {
+      areaId: field.id, label, imageUrl: image.url, image: { date: image.date, corners: image.corners, scene_id: image.scene_id },
+      field: { geojson, label }, observations, rainfall: (rain?.points ?? []).map(p => ({ date: p.date, rain_mm: p.value })),
+      sources: { imagery: ndvi?.source ?? 'NASA HLS v2', rain: rain?.source ?? 'NASA POWER / IMERG', weather_scope: local?.sources.weather_scope, rain_validation: local?.sources.rain_validation },
+      validation: local ? { accepted_scenes: local.validation.accepted_scenes, total_scenes: local.validation.total_scenes, min_valid_fraction: local.validation.min_valid_fraction } : { accepted_scenes: points.filter((p) => p.value != null).length, total_scenes: points.length },
+    }, meta: { kind: 'publicacao', source: ndvi?.source ?? 'NASA HLS v2', note: field.name, noteKey: 'notes.field' } };
   },
 };
 
@@ -138,11 +176,16 @@ export type YieldEstimate = {
   validation: { years: number[]; cutoff_days: number; scope: string; mae_kg_ha: number; bias_kg_ha?: number; municipalities?: number; validation_status?: string } | null;
   coverage: { forcing_days_expected?: number; forcing_days_present?: number; sources?: string[]; source_mode?: string } | null;
 };
-const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient boosting)', mlp: 'MLP', reference: 'Referência histórica' };
+const MODEL_TYPE: Record<string, string> = { ridge: 'Ridge', hgb: 'HGB (gradient boosting)', mlp: 'MLP' };
 /** Nome do modelo tirado da resposta: tipo + abrangência. 1.0.0 não traz `scope`; a versão antiga era só nacional. */
-export function modelLabel(m: YieldModel) { const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null); return `${MODEL_TYPE[m.type] ?? m.type}${scope === 'national' ? ' nacional' : scope ? ` regional (${scope.replace('+', ' e ')})` : ''}`; }
+export function modelLabel(m: YieldModel) {
+  const scope = m.scope ?? (/national/.test(m.version) ? 'national' : null);
+  const type = m.type === 'reference' ? translate('modelStatus.label.reference') : MODEL_TYPE[m.type] ?? m.type;
+  if (scope === 'national') return translate('modelStatus.label.national', { type });
+  return scope ? translate('modelStatus.label.regional', { type, scope: scope.split('+').join(translate('modelStatus.label.and')) }) : type;
+}
 export const modelScope = (m: YieldModel) => m.scope ?? (/national/.test(m.version) ? 'national' : 'national');
-const yieldMeta = (data: YieldEstimate, example: string): Sourced<YieldEstimate>['meta'] => ({ kind: 'fixture', source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, note: 'Exemplo retrospectivo do contrato; rendimento municipal, não de talhão.' });
+const yieldMeta = (data: YieldEstimate, example: string, kind: 'fixture' | 'publicacao' = 'fixture'): Sourced<YieldEstimate>['meta'] => ({ kind, source: `${modelLabel(data.model)} · ${data.model.version} · ${example}`, generatedAt: data.generated_at, noteKey: 'notes.yieldExample' });
 const YIELD_FIXTURES: Record<string, () => Promise<{ default: unknown }>> = {
   'soy:5107925': () => import('../data/fixtures/yield-soy-5107925-day75.json'),
   'maize2:5107925': () => import('../data/fixtures/yield-maize2-5107925-day75.json'),
@@ -161,7 +204,7 @@ export const crops = {
     const load = YIELD_FIXTURES[`${req.crop}:${req.municipalityCode}`];
     if (!load) throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<YieldEstimate>(`yield-${req.crop}-${req.municipalityCode}-day${req.municipalityCode === '3170206' ? 20 : 75}`, signal);
-    return { ...result, meta: yieldMeta(result.data, 'contracts/examples (1.0.0)') };
+    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), note: result.meta.note } };
   },
   // Todas as respostas de exemplo disponíveis para a cultura (e, se informado, para o município).
   // Sem serviço HTTP ligado, é o que o frontend consegue mostrar; lista vazia = integração pendente, não "sem cobertura".
@@ -178,13 +221,13 @@ export const crops = {
   async regionalMlp(code: string, signal?: AbortSignal): Promise<Sourced<{ horizon_days: number; expected_kg_ha: number }[]>> {
     await wait(signal);
     const all = (await import('../data/fixtures/soy-mg-mt-mlp.json')).default;
-    return { data: all.filter((x) => x.municipality_code === code), meta: { kind: 'fixture', source: 'MLP regional soja MG/MT (soy_mg_mt, guia 30)', note: 'Amostras de verificação (smoke) da safra 2021; retrospectivo, não liberado para operação. No teste 2022–2024 o ganho sobre o histórico não foi confirmado.' } };
+    return { data: all.filter((x) => x.municipality_code === code), meta: { kind: 'fixture', source: 'MLP soy_mg_mt (guia 30)', noteKey: 'notes.mlp' } };
   },
   // Teste selado 2022–2024, aberto uma única vez após o congelamento (data/frozen/test_2022_2024_v7.json).
   async sealedTest(signal?: AbortSignal): Promise<Sourced<SealedTest>> {
     await wait(signal);
     const data = (await import('../data/sealed-test-2022-2024.json')).default as unknown as SealedTest;
-    return { data, meta: { kind: 'fixture', source: `${data.source} · pacote v7`, note: 'MAE é erro médio em kg/ha, não intervalo de previsão. Retrospectivo; nada liberado para operação.' } };
+    return { data, meta: { kind: 'fixture', source: `${data.source} · v7`, noteKey: 'notes.sealed' } };
   },
   async matrix(signal?: AbortSignal) { await wait(signal); const data = (await import('../data/crop-matrix.json')).default; return { data, meta: { kind: 'fixture' as const, source: 'metrics/crop_matrix.csv · validação walk-forward 2019–2021 (anterior ao teste 2022–2024)' } }; },
 };
@@ -195,7 +238,7 @@ export const simulations = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<FieldShift>('field-shift-sorriso', signal);
-    return { ...result, meta: { ...result.meta, source: result.data.weather.source, note: result.data.evidence } };
+    return { ...result, meta: { ...result.meta, source: result.data.weather.source, note: `${result.meta.note ?? ''} · ${result.data.evidence}` } };
   },
 };
 
@@ -225,14 +268,15 @@ export const seasons = {
   },
 };
 
-export type Device = { id: string; name: string; plot: string; depth_cm: number; calibration: string; last_reading_at: string; vwc_pct: number | null; soil_temp_c: number | null; battery_pct: number; signal: string; fault: string | null };
+// Synthetic demonstration probes. Labels are translated by the screen; the fault is a code, not text.
+export type Device = { id: string; depth_cm: number; calibrated: boolean; last_reading_at: string; vwc_pct: number | null; soil_temp_c: number | null; battery_pct: number; signal: 'good' | 'weak'; fault: { code: 'no_reading_low_battery'; hours: number } | null };
 export const devices = {
   async list(signal?: AbortSignal): Promise<Sourced<Device[]>> {
     await wait(signal);
     return { data: [
-      { id: 'sonda-demo-01', name: 'Sonda demonstrativa 01', plot: 'Talhão demonstrativo', depth_cm: 20, calibration: 'Sem calibração de campo', last_reading_at: '2026-11-14T09:00:00-03:00', vwc_pct: 24.6, soil_temp_c: 26.1, battery_pct: 82, signal: 'Bom', fault: null },
-      { id: 'sonda-demo-02', name: 'Sonda demonstrativa 02', plot: 'Talhão demonstrativo', depth_cm: 40, calibration: 'Sem calibração de campo', last_reading_at: '2026-11-13T21:00:00-03:00', vwc_pct: null, soil_temp_c: null, battery_pct: 12, signal: 'Fraco', fault: 'Sem leitura há 12 h · bateria baixa' },
-    ], meta: { kind: 'sintetico', source: 'Telemetria sintética (data/fake)', note: 'Gerada para testar ingestão. Nunca usada em treino nem em decisão.' } };
+      { id: 'sonda-demo-01', depth_cm: 20, calibrated: false, last_reading_at: '2026-11-14T09:00:00-03:00', vwc_pct: 24.6, soil_temp_c: 26.1, battery_pct: 82, signal: 'good', fault: null },
+      { id: 'sonda-demo-02', depth_cm: 40, calibrated: false, last_reading_at: '2026-11-13T21:00:00-03:00', vwc_pct: null, soil_temp_c: null, battery_pct: 12, signal: 'weak', fault: { code: 'no_reading_low_battery', hours: 12 } },
+    ], meta: { kind: 'sintetico', source: 'data/fake', noteKey: 'notes.devices' } };
   },
 };
 

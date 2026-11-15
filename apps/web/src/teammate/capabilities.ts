@@ -3,13 +3,12 @@
 // a falta de exemplo local não prova que o backend não cobre o município.
 import { CROPS, type CropId } from './catalog';
 import examples from './data/fixtures/v7/index.json';
+import { translate } from './i18n';
 
 export type CapStatus = 'local' | 'demo' | 'pendente' | 'sem_suporte';
-export const CAP_STATUS: Record<CapStatus, { label: string; tone: 'ok' | 'water' | 'warn' | undefined }> = {
-  local: { label: 'Disponível neste aparelho', tone: 'ok' },
-  demo: { label: 'Exemplo demonstrativo', tone: 'water' },
-  pendente: { label: 'Integração pendente', tone: 'warn' },
-  sem_suporte: { label: 'Sem suporte nesta edição', tone: undefined },
+const status = (key: CapStatus, tone: 'ok' | 'water' | 'warn' | undefined) => ({ tone, get label() { return translate(`caps.status.${key}`); } });
+export const CAP_STATUS: Record<CapStatus, { readonly label: string; tone: 'ok' | 'water' | 'warn' | undefined }> = {
+  local: status('local', 'ok'), demo: status('demo', 'water'), pendente: status('pendente', 'warn'), sem_suporte: status('sem_suporte', undefined),
 };
 export type CapId = 'cadastro' | 'historico' | 'rendimento' | 'hidrica' | 'imagem' | 'cena3d';
 export type Capability = { id: CapId; label: string; status: CapStatus; note: string };
@@ -24,27 +23,21 @@ export function yieldExampleCount(crop: CropId, mun?: string | null) {
 /** Simulação hídrica diária e cena 3D existem só para a rotação de Sorriso (soja → milho safrinha → pousio/braquiária). */
 export const hasDailySeries = (crop: CropId, mun: string | null) => mun === SORRISO && crop === 'soy';
 
-export function capabilities(crop: CropId, mun: string | null): Capability[] {
+/** `field`: the municipality has a published demonstration field with imagery (from the coverage catalogue). */
+export function capabilities(crop: CropId, mun: string | null, opts: { field?: boolean } = {}): Capability[] {
   const info = CROPS[crop]; const here = mun ? yieldExampleCount(crop, mun) : 0; const anywhere = yieldExampleCount(crop);
-  const inRotation = mun === SORRISO && crop === 'maize2';
+  const inRotation = mun === SORRISO && crop === 'maize2'; const tr = (k: string) => translate(`caps.${k}`); const label = (id: CapId) => tr(`label.${id}`);
   return [
-    info.plantable
-      ? { id: 'cadastro', label: 'Cadastro manual', status: 'local', note: 'Plantio, manejo, colheita e venda ficam salvos só neste aparelho; a sincronização depende do backend.' }
-      : { id: 'cadastro', label: 'Cadastro manual', status: 'sem_suporte', note: 'É uma coorte estatística agregada, não uma espécie plantável. Cadastre arábica ou conilon.' },
-    { id: 'historico', label: 'Histórico municipal', status: 'pendente', note: 'A série de área e rendimento do IBGE PAM entra no treino, mas não é servida por nenhum contrato atual.' },
-    here
-      ? { id: 'rendimento', label: 'Estimativa de rendimento', status: 'demo', note: 'Resposta de exemplo do contrato yield-estimate para este município; retrospectiva (colheita 2021), não liberada para operação.' }
-      : { id: 'rendimento', label: 'Estimativa de rendimento', status: 'pendente', note: anywhere ? 'O contrato yield-estimate cobre a cultura e há exemplo em outro município. Sem serviço HTTP ligado, não dá para consultar este município; isso não prova falta de cobertura.' : 'Sem exemplo do contrato para esta cultura neste frontend.' },
-    hasDailySeries(crop, mun)
-      ? { id: 'hidrica', label: 'Simulação hídrica', status: 'demo', note: 'Projeção de 6 dias e simulação histórica 2015/16–2020/21 da rotação de Sorriso (pacote v7).' }
-      : inRotation
-        ? { id: 'hidrica', label: 'Simulação hídrica', status: 'demo', note: 'O milho safrinha aparece dentro da rotação soja → milho de Sorriso; não há série própria começando no milho.' }
-        : { id: 'hidrica', label: 'Simulação hídrica', status: 'pendente', note: 'Os contratos water-projection e field-shift só têm resposta para a rotação de soja em Sorriso. Nenhuma série é gerada para esta combinação.' },
-    mun === UBERLANDIA
-      ? { id: 'imagem', label: 'Imagem e NDVI', status: 'demo', note: 'Recorte rural demonstrativo (HLS, abr–jul 2024). Vale para a área, não para a cultura, e não comprova previsão de rendimento.' }
-      : { id: 'imagem', label: 'Imagem e NDVI', status: 'pendente', note: 'Depende do polígono do talhão, do período e da qualidade da imagem; não há contrato de imagem por talhão.' },
-    hasDailySeries(crop, mun) || inRotation
-      ? { id: 'cena3d', label: 'Representação 3D', status: 'demo', note: 'Cena ilustrativa com modelos provisórios; segue um calendário demonstrativo e não prova crescimento.' }
-      : { id: 'cena3d', label: 'Representação 3D', status: 'sem_suporte', note: 'Não há representação específica desta cultura; a cena de soja não é reaproveitada com outro nome.' },
+    info.plantable ? { id: 'cadastro', label: label('cadastro'), status: 'local', note: tr('note.cadastroLocal') } : { id: 'cadastro', label: label('cadastro'), status: 'sem_suporte', note: tr('note.cadastroCohort') },
+    { id: 'historico', label: label('historico'), status: 'pendente', note: tr('note.historico') },
+    here ? { id: 'rendimento', label: label('rendimento'), status: 'demo', note: tr('note.rendimentoDemo') }
+      : { id: 'rendimento', label: label('rendimento'), status: 'pendente', note: anywhere ? tr('note.rendimentoElsewhere') : tr('note.rendimentoNone') },
+    hasDailySeries(crop, mun) ? { id: 'hidrica', label: label('hidrica'), status: 'demo', note: tr('note.hidricaDemo') }
+      : inRotation ? { id: 'hidrica', label: label('hidrica'), status: 'demo', note: tr('note.hidricaRotation') }
+      : { id: 'hidrica', label: label('hidrica'), status: 'pendente', note: tr('note.hidricaPending') },
+    (opts.field ?? mun === UBERLANDIA) ? { id: 'imagem', label: label('imagem'), status: 'demo', note: tr('note.imagemDemo') }
+      : { id: 'imagem', label: label('imagem'), status: 'pendente', note: tr('note.imagemPending') },
+    hasDailySeries(crop, mun) || inRotation ? { id: 'cena3d', label: label('cena3d'), status: 'demo', note: tr('note.cena3dDemo') }
+      : { id: 'cena3d', label: label('cena3d'), status: 'sem_suporte', note: tr('note.cena3dNone') },
   ];
 }

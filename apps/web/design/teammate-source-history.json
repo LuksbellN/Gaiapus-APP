@@ -1,0 +1,215 @@
+{
+  "about": "Deliberate changes to files listed in teammate-source-manifest.json. The original manifest keeps the approved handoff hashes; each entry here records why a file changed and its new SHA-256 (LF line endings). The e2e check accepts the original hash (CRLF or LF) or the latest hash recorded here.",
+  "entries": [
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "B2 (D-03): campos numéricos mostram orientação de decimal",
+      "sha256": "ad523488defeff48fc8fa3a0ee07c79976fbd3841e0c5682fe5b6de4b1e31760"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "B1 (D-01): busca mantém lugares locais com a API fora; ver todos os resultados",
+      "sha256": "294bf7d5116f18cdafa7cb85874424cac57959da4e3be4e8fef0a780f6fefdae"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "3b566a6651d9449c909680e9b9de03a3b1da8a7d6e0fde21e8b678b0866cf1f6"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "564a93ca7b94672d08cea58fda2e127f1361772fb7d69726c37b8b76181716f0"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "dbf1c59db335e25f8b28d48f65b1aee1e69e57c29c35b9b16329b7655e942e7b"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "B3 (D-02, D-04, D-21): regra única de contexto, faixa de escopo e estado sem análise",
+      "sha256": "58d36ac8553e03994164597155389d2f275bed7ea4ee0ae57a1dfdf244abafaf"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "B4 (D-05): todos os planos acessíveis; plano reaberto aplica o seu município",
+      "sha256": "d0b49b2a9998eb2212610cb271ec1d7353098555a7ab82b91af8d8674ba12585"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "2d1f169beda6c505cee39c598c3bb698ad32ef154ecd189e58cd1fc43cdecc0c"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "f5d97e67a2f3bc7c963ccca073a1aae465afb02924019447e938306d20b71860"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-14",
+      "reason": "B8 (D-22, D-24, D-25, D-28): mensagens de erro, alvos de 24 px, mapa no celular, foco do 3D",
+      "sha256": "f645998edadebba5517d0e9ae3a2a1f5b0b315ace243c3eb6dc09a62951d994c"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-14",
+      "reason": "O2 (D-13): origem 'Publicação da API' distinta de dado empacotado",
+      "sha256": "92a6df2ac1323033dcf67266d3eb8bfd0c719bb2e00cece2dc51c82036d0e2f6"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "O3 (D-15): navegação em cinco grupos por tarefa; Propriedades e Ajuda no menu",
+      "sha256": "5b41415422398c4788577ef4b7dd29515381985e58c137dfd518a706be616dc0"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "O4/O5 (D-14, D-27): simulador declara o que veio do plano; dia selecionado no link",
+      "sha256": "d1608a5f7139f34643c7aacda46e0e4754637baa0635d45ec46cc38d6569430c"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "O4/O5 (D-14, D-27): simulador declara o que veio do plano; dia selecionado no link",
+      "sha256": "028dae4efe85176943befaf040b14f76be06ae8003915a3c334bc7492ed72f82"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura vinda do catálogo da API, estados parciais, recortes de Rio Verde e Barreiras",
+      "sha256": "e41dc905b38b224dbe79bbbf239360f0532c3ad704c34d2ac118d4fce8d7a088"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura do catálogo, estados parciais, recortes de Rio Verde e Barreiras, câmera pela caixa do catálogo",
+      "sha256": "c899eb615c147e6373a6bc44232cbe8f7b11b4683f9e407df0f01fbc58f9f694"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G2/G3/G4 (D-07, D-08, D-09): cobertura do catálogo, estados parciais, recortes de Rio Verde e Barreiras, câmera pela caixa do catálogo",
+      "sha256": "9851ca1e0c1c000fb766221a7c602e8478ea91a62f3918fda4f588a704413c3b"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-14",
+      "reason": "G1/G6 (D-10, D-26): validação de links e país da posição",
+      "sha256": "73c7cc9acc77cb724a1e2213e26c638d9ac6173d4e63768d8be8582a021e9fda"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "G1/G6 (D-10, D-26): validação de links e país da posição",
+      "sha256": "53b56f9c297f9209815d00c497e0a9b9ea313acb2ab438b0119753847db3cc72"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "f9d9a2500aa37ac6af2b2e65a82bd6d8b7c1dda39dc50518f58547c2c9d9149a"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "0fb82a6ee1035d6c57969e212c1f1b73b32c51b53a939a4455b9c06ad24f81d9"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "I1/I2: seletor de idioma e formatação por idioma",
+      "sha256": "4e98870c548adb0799f114a186904d48ba9367c4b7051161dfcccbc4ea8c7255"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I7/G5: Visão geral e Explorador traduzíveis; países em cinco línguas; busca multilíngue",
+      "sha256": "1236ae2ffa60a00ee9c2d0bff44e1898993e13ab2160f6085dbc3e6e1e4707c2"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I7/G5: Visão geral e Explorador traduzíveis; países em cinco línguas; busca multilíngue",
+      "sha256": "5e4575200fc9a0cd98fb1c66e4abf13e75dd2ba71ec0c5da7e4d8b0deb46d14d"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I7/G5: Visão geral e Explorador traduzíveis; países em cinco línguas; busca multilíngue",
+      "sha256": "fb5476034cbdebabe021f4f05bbc486377559a537c66db4afdb34f3c9067c799"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I3: Município, componentes científicos e Planejar traduzíveis; opções gravadas como códigos",
+      "sha256": "aa4669d10c4ed1424c3f9e2c5d8e7dfe8a84a383f7f88f01bd1c206bbd0dc852"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-14",
+      "reason": "I5/I3: Simulador, Field Shift, Sondas, Alertas, Propriedades e Registros traduzíveis",
+      "sha256": "db7ca5b512843d454af39777a13155c5238be0f72d09aba099de91b0d0bdcaed"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n: map accessible names translated",
+      "sha256": "aa9116eab6c49e7f1e124c83c784a517759e7e8e5f5fef6f7ead6e29d7c2107d"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "a62c8f9a662f0a4ba2b9da976bb473d10638671356bc19dd9cb48e87b6c35c3f"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "509ea3ae6926fd700e1bc51a33fb46f2930e981ede75056965162960af1dc0de"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "48e8ae19cd40cbda076d04a39988b7bef4f2306d47c3d8755e96d7add220dc6a"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "d309f38033b5506cf5185e5d9282bda3623cb7e8fddede406ad8d94cd4c7f2bc"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "403416a105ae7530968ed999988a0835393355e1e99881ea4de4b38e566326ab"
+    },
+    {
+      "file": "pages/Plan.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "7ca7fc4944c4693a533d2ada9c7e3f8fa5e089eaf6dd72862ebf2577ba5c7ad1"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
+      "sha256": "ee829eb204cb8e7754bac6cfe7be9b2d22b1b791938e71a6a20763b2600e68c2"
+    }
+  ]
+}

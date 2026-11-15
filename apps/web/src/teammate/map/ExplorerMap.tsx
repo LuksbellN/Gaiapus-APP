@@ -4,9 +4,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { bboxOf, type BBox, type FC } from '../adapters';
 import { MOTION } from '../config';
 import { reducedMotion } from '../ui';
+import { translate, useI18n } from '../i18n';
 
 import type { MapHandle, MapLayers, Selection } from './types';
-type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
+type Props = { selection: Selection; states: FC | null; municipalities: FC | null; covered: string[]; layers: MapLayers; padding: { top: number; left: number; right: number; bottom: number }; image: { url: string; corners: number[][]; field: any } | null; onPick: (s: Selection) => void; onUnavailable: (reason: string) => void; onStatus?: (s: 'ready' | 'base-offline') => void; countryBox: BBox | null; placeBox?: BBox | null; markers: { code: string; uf: string; name: string; lon: number; lat: number }[] };
 
 const SOUTH_AMERICA: BBox = [[-92, -52], [-22, 16]];
 const BRAZIL: BBox = [[-73.99, -33.75], [-34.8, 5.27]];
@@ -24,12 +25,14 @@ const style: StyleSpecification = {
 const empty: FC = { type: 'FeatureCollection', features: [] };
 
 const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
+  const { t } = useI18n();
   const el = useRef<HTMLDivElement>(null); const mapRef = useRef<MlMap | null>(null); const ready = useRef(false); const latest = useRef(p); latest.current = p;
   const markerEls = useRef<maplibregl.Marker[]>([]); const here = useRef<maplibregl.Marker | null>(null);
 
   useImperativeHandle(ref, () => ({
     zoom: (d) => { const m = mapRef.current; if (m) m.easeTo({ zoom: m.getZoom() + d, duration: reducedMotion() ? 0 : 200 }); },
-    flyTo: (lon, lat) => { const m = mapRef.current; if (!m) return; here.current?.remove(); const dot = document.createElement('div'); dot.setAttribute('aria-label', 'Sua posição'); dot.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#79BDD8;border:3px solid #EAF2EB'; here.current = new maplibregl.Marker({ element: dot }).setLngLat([lon, lat]).addTo(m); m.flyTo({ center: [lon, lat], zoom: Math.max(m.getZoom(), 7), duration: reducedMotion() ? 0 : MOTION.fly }); },
+    countryAt: (lon, lat) => { const m = mapRef.current; if (!m || !ready.current) return null; const f = m.queryRenderedFeatures(m.project([lon, lat]), { layers: ['countries'] })[0]; return f?.properties?.ADM0_A3 ? String(f.properties.ADM0_A3) : null; },
+    flyTo: (lon, lat) => { const m = mapRef.current; if (!m) return; here.current?.remove(); const dot = document.createElement('div'); dot.setAttribute('aria-label', translate('explore.map.position')); dot.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#79BDD8;border:3px solid #EAF2EB'; here.current = new maplibregl.Marker({ element: dot }).setLngLat([lon, lat]).addTo(m); m.flyTo({ center: [lon, lat], zoom: Math.max(m.getZoom(), 7), duration: reducedMotion() ? 0 : MOTION.fly }); },
   }));
 
   const applySelected = () => {
@@ -48,6 +51,7 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     let box: BBox = !s.pais ? SOUTH_AMERICA : s.pais === 'BR' ? BRAZIL : countryBox!; let extra = s.pais ? 24 : 8;
     const uf = s.uf && states?.features.find((f) => f.properties.code === s.uf); if (uf) { box = bboxOf(uf.geometry); extra = 28; }
     const mun = s.mun && municipalities?.features.find((f) => f.properties.code === s.mun); if (mun) { box = bboxOf(mun.geometry); extra = padding.bottom ? 36 : 90; }
+    else if (s.mun && latest.current.placeBox) { box = latest.current.placeBox; extra = padding.bottom ? 36 : 90; } // catalogue box when the mesh is not loaded
     else if (s.mun && !municipalities) return; // espera a malha chegar para não enquadrar o lugar errado
     m.stop();
     m.fitBounds(box, { padding: { top: padding.top + extra, bottom: padding.bottom + extra, left: padding.left + extra, right: padding.right + extra }, duration: instant || reducedMotion() ? 0 : MOTION.fly, maxZoom: 10, essential: false });
@@ -78,6 +82,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
       m.addLayer({ id: 'hls', type: 'raster', source: { type: 'image', url: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', coordinates: [[-48.422, -18.893], [-48.396, -18.893], [-48.396, -18.914], [-48.422, -18.914]] } as any, layout: { visibility: 'none' } });
       m.addLayer({ id: 'field-line', type: 'line', source: 'field', layout: { visibility: 'none' }, paint: { 'line-color': '#E6B85C', 'line-width': 2.5 } });
       m.addLayer({ id: 'state-labels', type: 'symbol', source: 'labels', minzoom: 2.6, maxzoom: 5.2, layout: { 'text-field': ['get', 'sigla'], 'text-font': ['Open Sans Semibold'], 'text-size': 12 }, paint: { 'text-color': C.text, 'text-halo-color': '#0a1a21', 'text-halo-width': 1.4 } });
+      // On narrow screens the compact attribution starts collapsed so it does not sit under the map controls.
+      if (el.current && el.current.clientWidth < 760) el.current.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show');
       ready.current = true; sync(); camera(true); latest.current.onStatus?.('ready');
     });
     m.on('click', (e) => {
@@ -99,13 +105,14 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     applySelected();
   };
   useEffect(() => { sync(); camera(); }, [p.states, p.municipalities, p.image]); // eslint-disable-line
-  useEffect(() => { applySelected(); camera(); }, [p.countryBox?.[0][0], p.countryBox?.[1][1], p.selection.pais, p.selection.uf, p.selection.mun, p.padding.left, p.padding.right, p.padding.bottom, p.padding.top]); // eslint-disable-line
+  useEffect(() => { applySelected(); camera(); }, [p.placeBox?.[0][0], p.countryBox?.[0][0], p.countryBox?.[1][1], p.selection.pais, p.selection.uf, p.selection.mun, p.padding.left, p.padding.right, p.padding.bottom, p.padding.top]); // eslint-disable-line
   useEffect(() => { applySelected(); }, [p.layers, p.covered]); // eslint-disable-line
   useEffect(() => {
     const m = mapRef.current; if (!m) return; markerEls.current.forEach((x) => x.remove()); markerEls.current = [];
     if (p.selection.mun) return;
-    for (const mk of p.markers) { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); }
+    // Alternate label side so nearby places (Sorriso, Uberlândia) do not overlap at world zoom.
+    p.markers.forEach((mk, i) => { const b = document.createElement('button'); b.className = 'map-marker'; b.type = 'button'; b.textContent = mk.name; b.setAttribute('aria-label', `${mk.name}: análise disponível. Abrir município`); b.onclick = (e) => { e.stopPropagation(); latest.current.onPick({ pais: 'BR', uf: mk.uf, mun: mk.code }); }; markerEls.current.push(new maplibregl.Marker({ element: b, anchor: i % 2 ? 'top' : 'bottom' }).setLngLat([mk.lon, mk.lat]).addTo(m)); });
   }, [p.markers, p.selection.mun]);
-  return <div ref={el} className="explore__map" role="application" aria-label="Mapa. Use a lista ao lado para navegar por teclado; no mapa, arraste para mover e clique em um país, estado ou município." />;
+  return <div ref={el} className="explore__map" data-tour="explore-map" role="application" aria-label={t('explore.map.label')} />;
 });
 export default ExplorerMap;

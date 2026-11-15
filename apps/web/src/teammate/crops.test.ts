@@ -21,7 +21,7 @@ describe('catálogo de culturas', () => {
 
 describe('migração do armazenamento local', () => {
   const rec = (id: string, data: Record<string, string>) => ({ id, kind: 'plantio' as const, plotId: 't1', cycleId: 't1:2026/2027', event_at: '2026-10-05', recorded_at: 'x', updated_at: 'x', origin: 'informado' as const, schema: 1 as const, revision: 1, data });
-  const old: State = { theme: 'dark', session: null, properties: [], plots: [], drafts: {}, activePlotId: null,
+  const old: State = { session: null, properties: [], plots: [], drafts: {}, activePlotId: null,
     records: [rec('a', { cultura: 'Milho safrinha', area: '10', cultivar: 'AG 8088' }), rec('b', { cultura: 'Outra', area: '2' }), rec('c', { cultura: 'Café', area: '3', idade: '4' }), { ...rec('d', { quantidade: '100', unidade: 'saca', saca: '60' }), kind: 'colheita' }],
     plans: [{ id: 'p1', createdAt: 'x', data: { cultura: 'Café', area: '5', preco: '1200' } }, { id: 'p2', createdAt: 'x', data: { cultura: 'Soja', area: '50' } }] };
   const m = migrate(old);
@@ -35,7 +35,7 @@ describe('unidades e economia', () => {
   it('saca só vira R$/kg com peso declarado', () => { expect(pricePerKg(120, 'saca', null)).toBeNull(); expect(pricePerKg(120, 'saca', 60)).toBe(2); expect(pricePerKg(120, 'saca', 50)).toBe(2.4); expect(pricePerKg(2000, 't', null)).toBe(2); expect(pricePerKg(2, 'kg', null)).toBe(2); });
   it('receita = kg/ha × ha × R$/kg; margem usa a mesma área', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: 60, costPerHa: 4000, priceDate: '2026-11-01' }); expect(e.revenue).toBe(72000); expect(e.costs).toBe(40000); expect(e.margin).toBe(32000); expect(e.missing).toEqual([]); });
   it('o peso da saca muda o resultado (não há 60 kg implícito)', () => { const base = { yieldKgHa: 1500, areaHa: 2, price: 1000, priceUnit: 'saca' as const, costPerHa: 0, priceDate: '2026-11-01' }; expect(economics({ ...base, sackKg: 60 }).revenue).toBe(50000); expect(economics({ ...base, sackKg: 50 }).revenue).toBe(60000); });
-  it('sem peso da saca, data do preço ou custo não calcula e diz o que falta', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: null, costPerHa: null, priceDate: '' }); expect(e.revenue).toBeNull(); expect(e.margin).toBeNull(); expect(e.missing).toEqual(['peso da saca', 'data do preço', 'custo por hectare']); });
+  it('sem peso da saca, data do preço ou custo não calcula e diz o que falta', () => { const e = economics({ yieldKgHa: 3600, areaHa: 10, price: 120, priceUnit: 'saca', sackKg: null, costPerHa: null, priceDate: '' }); expect(e.revenue).toBeNull(); expect(e.margin).toBeNull(); expect(e.missing).toEqual(['sack', 'priceDate', 'cost']); });
 });
 
 describe('capacidades por cultura e território', () => {
@@ -51,4 +51,17 @@ describe('exemplos do contrato por cultura', () => {
   it('filtrar por município nunca devolve outro município nem outra cultura', async () => { const r = await crops.yieldExamples({ crop: 'maize1', municipalityCode: UBERLANDIA }); expect(r).toHaveLength(1); expect(r[0].data).toMatchObject({ crop: 'maize1', municipality_code: UBERLANDIA }); expect(await crops.yieldExamples({ crop: 'rice', municipalityCode: SORRISO })).toEqual([]); });
   it('modelo e abrangência vêm da resposta: Sorriso tem Ridge nacional (1.0.0) e MLP regional (1.1.0), cada um com o seu rótulo', async () => { const r = await crops.yieldExamples({ crop: 'soy', municipalityCode: SORRISO }); const labels = r.map((x) => `${modelLabel(x.data.model)}|${modelScope(x.data.model)}|${x.data.estimate_kg_ha}`).sort(); expect(labels).toEqual(['MLP regional (MG e MT)|MG+MT|3516.3', 'Ridge nacional|national|3554']); for (const x of r) expect(x.meta.source).toContain(modelLabel(x.data.model)); });
   it('cultura fora do contrato continua sendo invalid_crop', async () => { await expect(crops.yieldExamples({ crop: 'banana' })).rejects.toMatchObject({ code: 'invalid_crop' }); });
+});
+
+describe('códigos das opções gravadas (I3)', () => {
+  it('registro antigo ganha o código sem perder o texto; texto desconhecido fica como está', async () => {
+    const { migrate } = await import('./store');
+    const base = { id: 'x', plotId: 't', cycleId: 't:2026/2027', event_at: '2026-10-05', recorded_at: '', updated_at: '', origin: 'informado' as const, schema: 1 as const, revision: 1 };
+    const m = migrate({ session: null, properties: [], plots: [], drafts: {}, activePlotId: null, plans: [{ id: 'p', createdAt: '', data: { cultura: 'Soja', irrigacao: 'Irrigado', solo: 'Argiloso' } }],
+      records: [{ ...base, kind: 'evento', data: { tipo: 'Floração' } }, { ...base, kind: 'venda', data: { situacao: 'Previsto' } }, { ...base, kind: 'evento', data: { tipo: 'Granizo forte' } }] });
+    expect(m.records[0].data).toEqual({ tipo: 'Floração', tipo_code: 'flowering' });
+    expect(m.records[1].data).toEqual({ situacao: 'Previsto', situacao_code: 'planned' });
+    expect(m.records[2].data).toEqual({ tipo: 'Granizo forte' });
+    expect(m.plans[0].data).toMatchObject({ irrigacao: 'Irrigado', irrigacao_code: 'irrigated', solo_code: 'clay', cultura_id: 'soy' });
+  });
 });
