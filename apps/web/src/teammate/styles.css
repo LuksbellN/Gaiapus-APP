@@ -49,6 +49,8 @@ h1, h2 { text-wrap: balance; }
 .header { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s4); padding: 0 var(--s4); border-bottom: 1px solid var(--border); background: var(--bg); min-width: 0; }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 20px var(--font-display); color: var(--text); text-decoration: none; }
 .brand svg { color: var(--action); }
+/* The logo keeps its cream background as a rounded tile, readable on light and dark themes. */
+.brand__logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
 .header__ctx { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex: 1; }
 .ctx-btn { display: flex; align-items: center; gap: 8px; min-height: var(--touch); padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; min-width: 0; text-align: left; text-decoration: none; }
 .ctx-btn > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

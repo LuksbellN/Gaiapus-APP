@@ -360,6 +360,36 @@
       "date": "2026-11-15",
       "reason": "Mobile sweep: grids shrink to the screen, long source strings wrap, 44 px touch targets, no focus ring on the page title",
       "sha256": "e0e70572bc946fb23735a6436af91e055dd358f6b6ef9429f9111a24ef316b71"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Gaiapus logo in header, favicon and boot screen",
+      "sha256": "4b55c1a48f0b75c3079690450096f872ef436051dbaf9bd338c02436a8d842ff"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Merge of main into feat/logo: Gaiapus logo in header, favicon and boot screen on top of the integrated frontend",
+      "sha256": "76036c2854ebfd765a88a1317c74fe2886dc35dc6cb60e7518bb2b6634038767"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Resolve feat/logo merge with main: retain logo styling together with mobile explorer and regions-with-data updates",
+      "sha256": "d96cbad7824569927a315e2530c300a5540a86148f0937c5222bb0069a8f1e30"
+    },
+    {
+      "file": "pages/Overview.tsx",
+      "date": "2026-11-15",
+      "reason": "Preserve PR #10 from main: regions-with-data shortcut opens the country selection instead of Brazil",
+      "sha256": "4170d0008c7f670dce556d1552520b98bd1f43d90a49654b92598bd4641a46c3"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Preserve PRs #9 and #10 from main: working mobile bottom sheet together with countries-first regions-with-data navigation",
+      "sha256": "ba97b02e770955d67aa24a9ab59693471a0b7e62c20da8bdd831533b00f9397f"
     }
   ]
 }
