@@ -74,6 +74,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
   }, [loc.pathname]);
   useEffect(() => {
     // Navigation from a native email callback must leave the pathname auth page.
+    if (authPage && loc.pathname !== '/') { window.location.replace('/#' + loc.pathname + loc.search); return; }
     if (authPage && window.location.hash.startsWith('#/')) window.location.replace('/' + window.location.hash);
   }, [authPage, loc.pathname, loc.search]);
   // Arquivos leves das telas em segundo plano (nunca o mapa nem o 3D); desligado com economia de dados.
@@ -102,7 +103,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         {NAV_GROUPS.map((g, i) => <div key={g.id} className="rail__group" role="group" aria-label={t(`nav.group.${g.id}`)}>{i > 0 && <hr />}{g.items.map((n) => <NavLink key={n.to} to={n.to} className={n.mobile ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{t(`nav.item.${n.key}`)}</NavLink>)}</div>)}
         <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />{t('nav.more')}</NavLink>
       </nav>
-      <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
+      <main key={authPage ? 'email-auth' : session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
         <TourProvider auto={!authPage}>{authPage ?? <><TourBar /><Routes>
           <Route path="/" element={<Navigate to="/explorar" replace />} />
           <Route path="/explorar" element={<Explore />} />

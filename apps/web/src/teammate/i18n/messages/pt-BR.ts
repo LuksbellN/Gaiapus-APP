@@ -47,6 +47,7 @@ const ptBR = {
       request_failed: 'Não foi possível carregar os dados.', invalid_response: 'A resposta recebida não corresponde ao contrato.', unknown: 'Algo falhou ({code}).',
     },
     auth: {
+      auth_rate_limited: 'O serviço de e-mail atingiu o limite de envios. Aguarde antes de tentar novamente. Seu pedido não foi concluído.',
       signin_failed: 'Confira e-mail e senha. Confirme seu e-mail antes de entrar.', signup_failed: 'Não foi possível criar a conta. Confira os dados e tente novamente.',
       reset_failed: 'Não foi possível enviar o link. Aguarde e tente novamente.', resend_failed: 'Não foi possível reenviar o link. Aguarde e tente novamente.',
       signout_failed: 'Não foi possível sair. Tente novamente.', identity_unavailable: 'O serviço de contas ainda não foi configurado neste ambiente.',
@@ -424,6 +425,7 @@ const ptBR = {
     useComma: 'Use vírgula para decimais, por exemplo {example}.', usePoint: 'Use ponto para decimais, por exemplo {example}.', onlyNumbers: 'Use apenas números, por exemplo {example}.',
   },
   account: {
+    confirmationTitle: 'Confira seu e-mail', confirmationSent: 'Solicitação recebida para {email}. Abra o e-mail de confirmação para ativar sua conta.', confirmationHelp: 'A entrega pode levar alguns minutos. Confira também o spam. Se você já tem conta, entre ou recupere sua senha.', resendWait: 'Reenviar em {seconds}s', changeEmail: 'Corrigir e-mail',
     local: { title: 'Modo local.', text: 'Propriedades, registros e planos continuam neste aparelho. A autenticação usa o serviço de contas; esses registros ainda não são sincronizados pelo backend.' },
     err: { name: 'Informe seu nome.' },
     msg: {
