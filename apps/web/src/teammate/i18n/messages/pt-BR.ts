@@ -414,5 +414,28 @@ const ptBR = {
   number: {
     useComma: 'Use vírgula para decimais, por exemplo {example}.', usePoint: 'Use ponto para decimais, por exemplo {example}.', onlyNumbers: 'Use apenas números, por exemplo {example}.',
   },
+  account: {
+    local: { title: 'Modo local.', text: 'Propriedades, registros e planos continuam neste aparelho. A autenticação usa o serviço de contas; esses registros ainda não são sincronizados pelo backend.' },
+    err: { name: 'Informe seu nome.' },
+    msg: {
+      checkEmail: 'Confira seu e-mail para confirmar o cadastro. Abra o link neste mesmo navegador.',
+      resent: 'Se houver um cadastro aguardando confirmação, você receberá um novo e-mail. Abra o link mais recente neste navegador.',
+      recoverySent: 'Se este e-mail estiver cadastrado, você receberá um link de recuperação. Abra-o neste mesmo navegador.',
+      exported: 'Arquivo gerado. Nome e e-mail não entram na exportação.',
+    },
+    signIn: 'Entrar', signUp: 'Criar conta', unavailableTitle: 'Contas indisponíveis.', unavailable: 'Configure o Supabase para entrar. A exploração e os registros locais continuam disponíveis sem conta.',
+    name: 'Seu nome', email: 'E-mail', password: 'Senha', passwordHint: 'Pelo menos 8 caracteres. A confirmação do e-mail é obrigatória.', wait: 'Aguarde…', continueWithout: 'Continuar sem conta',
+    resend: 'Reenviar confirmação', firstTime: 'Primeira vez?', recover: 'Recuperar acesso', haveAccount: 'Já tem conta?', recoverEmail: 'E-mail da conta', requestRecovery: 'Pedir recuperação', back: 'Voltar',
+    connected: 'Conta conectada', profileDown: 'Sua conta está conectada, mas o perfil da API está indisponível.',
+    prefs: 'Preferências', prefsNote: 'O idioma fica salvo neste aparelho e vale também sem conta.',
+    data: 'Seus dados', counts: '{p} propriedade(s), {t} talhão(ões), {r} registro(s) neste aparelho.', export: 'Exportar meus dados',
+    research: {
+      title: 'Uso em pesquisa', text: 'Separado do uso básico do aplicativo. Com seu consentimento, colheitas registradas e revisadas poderão ajudar a treinar e validar modelos, sem identidade nem localização privada.',
+      consent: 'Autorizo o uso dos meus registros em pesquisa', granted: 'Autorizado em {date}', revoked: 'Revogado em {date}', revocable: 'Você pode revogar a qualquer momento.',
+      local: 'Esta preferência é local. Registros de campo não são enviados para pesquisa por esta versão, com ou sem consentimento.',
+    },
+    signOut: 'Sair', deleteAll: 'Apagar todos os dados deste aparelho',
+    del: { title: 'Apagar todos os dados locais?', text: 'Propriedades, talhões, registros, planejamentos e rascunhos deste aparelho serão apagados. Não é possível desfazer.', confirm: 'Apagar tudo' },
+  },
 };
 export default ptBR;
