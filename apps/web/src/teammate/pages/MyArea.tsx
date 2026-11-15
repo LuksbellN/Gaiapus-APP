@@ -132,7 +132,7 @@ function Workspace({ access, prefill, clearPrefill }: { access: Access; prefill:
   const selectedDevice = selected?.kind === 'sensor' ? state.devices.find((d) => d.id === selected.id) : undefined;
   const setTab = (id: TabId) => guard(() => { const next = new URLSearchParams(params); if (id === 'mapa') next.delete('aba'); else next.set('aba', id); setParams(next, { replace: true }); });
   const select = (s: MapSelection) => guard(() => { setSelected(s); setMoving(null); setPicking(false); setPicked(null); setMessage(''); setError(''); if (narrow && s) setView('lista'); });
-  const openSensor = (id: string) => { const next = new URLSearchParams(params); next.delete('aba'); setParams(next, { replace: true }); setSelected({ kind: 'sensor', id }); setMoving(null); setFrame((f) => f + 1); };
+  const openSensor = (id: string) => { const next = new URLSearchParams(params); next.delete('aba'); setParams(next, { replace: true }); setSelected({ kind: 'sensor', id }); setMoving(null); setFrame((f) => f + 1); if (narrow) setView('lista'); };
   const fail = (e: unknown) => setError(e instanceof AreaError ? t((e.code === 'invalid_geometry' && e.geometry ? `area.geometry.${e.geometry}` : `area.error.${e.code}`) as MessageKey) : t('area.error.generic'));
 
   const startPlot = (plot?: Plot) => guard(() => { setError(''); setMessage(''); setSelected(plot ? { kind: 'plot', id: plot.id } : null); setEdit(plot ? draftOf(plot) : newDraft(propertyId || properties[0]?.id || '')); setRestored(false); if (narrow) setView('mapa'); });

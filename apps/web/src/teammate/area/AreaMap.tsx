@@ -54,7 +54,7 @@ export default function AreaMap(p: AreaMapProps) {
     markers.current.forEach((x) => x.remove()); markers.current = [];
     for (const plot of plots) {
       const tag = document.createElement('div'); tag.className = 'area-map__plot'; tag.textContent = plot.name; tag.setAttribute('aria-hidden', 'true');
-      markers.current.push(new maplibregl.Marker({ element: tag }).setLngLat(centroid(plot.geometry)).addTo(m));
+      markers.current.push(new maplibregl.Marker({ element: tag, anchor: 'bottom', offset: [0, -26] }).setLngLat(centroid(plot.geometry)).addTo(m));
     }
     for (const s of sensors) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'area-map__sensor'; b.dataset.testid = `map-sensor-${s.id}`;

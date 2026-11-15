@@ -30,3 +30,7 @@ Create one decorative panoramic pixel-inspired agricultural landscape asset for 
 - UI icons: Lucide React, one consistent outline family.
 - Fonts: local Fontsource Manrope and Source Sans 3.
 
+
+## Gaiapus stake model
+
+- `src/teammate/assets/gaiapus-stake-revG.glb`: web-size copy of the user's CAD assembly `gaiapus-stake-revG-assembly.glb` (93,004,744 bytes, 3,056,748 triangles; not stored in this repository, never modified). Produced by `scripts/optimize-stake-glb.mjs` with glTF-Transform 4.5.1 and meshoptimizer 1.3.0: parts hidden inside the opaque case and the "soil line" reference plate removed, then dedup, flatten, join, weld, simplify (ratio 0.06, error 0.0006), meshopt compression. Result: 1,068,300 bytes, 184,373 triangles, 23 nodes, no textures; units (metres), axes (Y up), proportions and material values unchanged. Details in `Docs/sensores-talhoes/README.md`.

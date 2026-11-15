@@ -65,7 +65,7 @@ test.describe('Minha área · talhões', () => {
     await page.goto('/#/minha-area?demo=1');
     await expect(page.locator('[data-testid=area-map][data-ready=true]')).toBeVisible();
     await page.getByRole('button', { name: 'Ir para minha posição' }).click();
-    await page.waitForFunction(() => { const m = (window as any).__gaiapusAreaMap; return m && m.getZoom() > 10 && !m.isMoving(); });
+    await page.waitForFunction(() => { const m = (window as unknown as { __gaiapusAreaMap?: { getZoom(): number; isMoving(): boolean } }).__gaiapusAreaMap; return !!m && m.getZoom() > 10 && !m.isMoving(); });
     await page.getByRole('button', { name: 'Demarcar talhão' }).click();
     await page.getByLabel('Nome do talhão').fill('Talhão desenhado');
     await page.getByTestId('area-map').evaluate((el) => el.scrollIntoView({ block: 'center' }));
@@ -218,7 +218,7 @@ test.describe('Minha área · celular e acessibilidade', () => {
 test.describe('Simulador · modelo 3D da estaca', () => {
   test('o conjunto rev G é carregado no perfil do solo e a vista de perto alterna', async ({ page, errors }) => {
     await page.goto('/#/simulador?modo=historico&vista=perfil&dia=120');
-    await page.waitForFunction(() => (window as any).__gaiapusStake === 'ready', null, { timeout: 60000 });
+    await page.waitForFunction(() => (window as unknown as { __gaiapusStake?: string }).__gaiapusStake === 'ready', null, { timeout: 60000 });
     await expect(page.getByTestId('stake-failed')).toHaveCount(0);
     const closeUp = page.getByTestId('stake-closeup');
     await expect(closeUp).toHaveAttribute('aria-pressed', 'false');

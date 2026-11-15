@@ -91,7 +91,11 @@ if (what === 'area') {
     await page.screenshot({ path: path.join(out, 'minha-area-acesso-' + name + '.png') });
     await seedArea(page);
     await page.waitForTimeout(1500);
-    await page.screenshot({ path: path.join(out, 'minha-area-sensor-' + name + '.png'), fullPage: true });
+    if (name === 'desktop') { await page.evaluate(() => document.getElementById('conteudo')?.scrollTo(0, 0)); await page.screenshot({ path: path.join(out, 'minha-area-visao-geral-desktop.png') }); }
+    await page.getByTestId('sensor-detail').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: path.join(out, 'minha-area-sensor-' + name + '.png') });
+    await page.getByTestId('readings-table').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: path.join(out, 'minha-area-leituras-' + name + '.png') });
     if (name === 'celular') { await page.getByText('Mapa', { exact: true }).click(); await page.waitForTimeout(1200); await page.screenshot({ path: path.join(out, 'minha-area-mapa-' + name + '.png') }); }
     else { await page.getByRole('button', { name: /Talhão da baixada/ }).first().click(); await page.waitForTimeout(800); await page.screenshot({ path: path.join(out, 'minha-area-talhao-' + name + '.png') });
       await page.getByRole('button', { name: 'Editar contorno e dados' }).click(); await page.waitForTimeout(1200); await page.screenshot({ path: path.join(out, 'minha-area-editar-talhao-' + name + '.png') }); await page.getByRole('button', { name: 'Cancelar' }).click(); }

@@ -354,6 +354,12 @@
       "date": "2026-11-15",
       "reason": "sensores-talhoes: styles of the 'Minha área' screen (list, map, contextual panel, wizard)",
       "sha256": "418dfd59474ccd112ee9be15981061851ab1dbbc30abc9632ed0370a74ba3918"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "sensores-talhoes: readings table fits 360 px; 44 px targets in 'Minha área'",
+      "sha256": "3306132e808325521383ebf6386544c1163060bd5163e1c3432ec02865493374"
     }
   ]
 }

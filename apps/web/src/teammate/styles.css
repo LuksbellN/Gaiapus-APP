@@ -336,3 +336,4 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 /* Touch targets of at least 44 px everywhere in "Minha área", including compact buttons and the map zoom control. */
 .area .btn--sm { min-height: var(--touch); }
 .area__map .maplibregl-ctrl-group button { width: var(--touch); height: var(--touch); }
+.area-table { table-layout: fixed; } .area-table th:first-child { width: 24%; } .area-table th:last-child { width: 31%; } .area-table th, .area-table td { overflow-wrap: anywhere; }

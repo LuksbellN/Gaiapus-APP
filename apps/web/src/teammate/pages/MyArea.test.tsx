@@ -167,6 +167,16 @@ describe('plots on the screen', () => {
     fireEvent.click(await screen.findByTestId('discard-draft'));
     expect(getState().plots[0]).toEqual(before);
   });
+  it('an unsaved outline survives leaving the screen and is offered back', async () => {
+    const first = open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Demarcar talhão' }));
+    fireEvent.change(await screen.findByLabelText('Nome do talhão'), { target: { value: 'Rascunho do brejo' } });
+    first.unmount();
+    open();
+    expect(await screen.findByText('Recuperamos um talhão que você estava editando e não salvou.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome do talhão')).toHaveValue('Rascunho do brejo');
+    expect(getState().plots).toHaveLength(1); // nothing was saved on its own
+  });
   it('says so when fewer than three corners are given', async () => {
     open();
     fireEvent.click(await screen.findByRole('button', { name: 'Demarcar talhão' }));
