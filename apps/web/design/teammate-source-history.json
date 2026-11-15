@@ -348,6 +348,12 @@
       "date": "2026-11-15",
       "reason": "sensores-talhoes: stake model tools (close-up preset, load-failure note) in the soil-profile scene",
       "sha256": "94650707fe4b89202937f921d8cbb6acfa25ca5f4afdc1876f56e90368f90c12"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "sensores-talhoes: styles of the 'Minha área' screen (list, map, contextual panel, wizard)",
+      "sha256": "418dfd59474ccd112ee9be15981061851ab1dbbc30abc9632ed0370a74ba3918"
     }
   ]
 }

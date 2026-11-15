@@ -333,3 +333,6 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
   .area__map { height: 58vh; min-height: 320px; } .area-wizard { min-width: 0; }
   .area__bar > * { width: 100%; } .area__bar .row .btn { flex: 1; }
 }
+/* Touch targets of at least 44 px everywhere in "Minha área", including compact buttons and the map zoom control. */
+.area .btn--sm { min-height: var(--touch); }
+.area__map .maplibregl-ctrl-group button { width: var(--touch); height: var(--touch); }
