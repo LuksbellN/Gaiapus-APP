@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { extname } from 'node:path';
 import { validators, routeContracts } from '@gaiapus/contracts';
 import { publicHandlers } from './modules/geography/public.js';
+import { simulationHandlers } from './modules/simulations/public.js';
 import { ApiError } from './plugins/errors.js';
 import { personalHandlers, type PrivateRequest } from './modules/account/personal.js';
 import type { Identity, Repository } from './plugins/repository.js';
@@ -60,7 +61,7 @@ export function createApp(dependencies: Dependencies = {}) {
     })().finally(() => { refreshPending = null; });
     await refreshPending;
   });
-  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers() };
+  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers(), ...simulationHandlers() };
   for (const [method, url, bodySchema, parameterSchema, responseSchema, privateRoute] of routeContracts) {
     const handler = handlers[`${method} ${url}` as keyof typeof handlers];
     if (!handler) continue;

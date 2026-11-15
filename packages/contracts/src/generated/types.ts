@@ -49,6 +49,115 @@ export type LocationReason =
  * via the `definition` "LocationLayerStatus".
  */
 export type LocationLayerStatus = 'available' | 'unavailable';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationRunKey".
+ */
+export type SimulationRunKey = string;
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationCapabilityStatus".
+ */
+export type SimulationCapabilityStatus =
+  'ready' | 'research' | 'needs_input' | 'queued' | 'missing_data' | 'out_of_domain' | 'unsupported';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationReason".
+ */
+export type SimulationReason =
+  | 'insufficient_history'
+  | 'unsupported_crop_engine'
+  | 'unknown_yield_lag'
+  | 'model_out_of_domain'
+  | 'model_not_validated_for_planning'
+  | 'source_unavailable'
+  | 'invalid_calendar'
+  | 'insufficient_soil_inputs'
+  | 'flooded_system_not_represented'
+  | 'perennial_engine_missing'
+  | 'season_already_started_without_observations'
+  | 'unsupported';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationResearchStatus".
+ */
+export type SimulationResearchStatus =
+  | 'research_confirmed'
+  | 'gain_not_confirmed'
+  | 'reference_selected'
+  | 'underpowered'
+  | 'not_executed'
+  | 'not_evaluated';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeasonPosition".
+ */
+export type SimulationSeasonPosition = 'pre_season' | 'in_season_partial' | 'post_cutoff' | 'post_harvest_pre_release';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationOutputMode".
+ */
+export type SimulationOutputMode = 'simulation_conditional_on_historical_weather' | 'in_season_forecast';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationScientificStatus".
+ */
+export type SimulationScientificStatus = 'physical_experimental' | 'reference' | 'research' | 'unavailable';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationWeatherKind".
+ */
+export type SimulationWeatherKind = 'observed' | 'short_forecast' | 'seasonal_forecast' | 'climatological_scenario';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationYield".
+ */
+export type SimulationYield =
+  | {
+      status: 'unavailable';
+      reason_code: SimulationReason;
+      value_kg_ha: null;
+    }
+  | {
+      status: 'reference';
+      method: string;
+      value_kg_ha: number;
+      years_used: number[];
+      last_label_year: number;
+      history_horizon_years: number;
+      label_release_rule: string;
+      research_status: SimulationResearchStatus;
+      exposure_flags: string[];
+      conditional_on_scenario: false;
+      interval_method: null;
+      scale: string;
+    }
+  | {
+      status: 'research' | 'reference';
+      method: string;
+      model_version: string;
+      value_kg_ha: number;
+      scenario_range: {
+        p10: number;
+        p50: number;
+        p90: number;
+        method: 'ensemble_spread_uncalibrated';
+      } | null;
+      predictive_range: {
+        p10: number;
+        p50: number;
+        p90: number;
+        interval_method: string;
+      } | null;
+      position_vs_season: SimulationSeasonPosition;
+      last_label_year: number;
+      history_horizon_years: number;
+      label_release_rule: string;
+      research_status: SimulationResearchStatus;
+      exposure_flags: string[];
+      conditional_on_scenario: boolean;
+      scale: string;
+    };
 
 export interface GaiapusContracts {
   YieldPayload?: YieldPayload;
@@ -123,6 +232,31 @@ export interface GaiapusContracts {
   LocationCore?: LocationCore;
   LocationSummary?: LocationSummary;
   LocationPage?: LocationPage;
+  SimulationRunKey?: SimulationRunKey;
+  SimulationIdParams?: SimulationIdParams;
+  SimulationCapabilityStatus?: SimulationCapabilityStatus;
+  SimulationReason?: SimulationReason;
+  SimulationResearchStatus?: SimulationResearchStatus;
+  SimulationSeasonPosition?: SimulationSeasonPosition;
+  SimulationOutputMode?: SimulationOutputMode;
+  SimulationScientificStatus?: SimulationScientificStatus;
+  SimulationWeatherKind?: SimulationWeatherKind;
+  SimulationQuery?: SimulationQuery;
+  SimulationCapability?: SimulationCapability;
+  SimulationPlaceCapabilities?: SimulationPlaceCapabilities;
+  SimulationCatalog?: SimulationCatalog;
+  SimulationArtifact?: SimulationArtifact;
+  SimulationPublication?: SimulationPublication;
+  SimulationPublicationList?: SimulationPublicationList;
+  SimulationYield?: SimulationYield;
+  SimulationSeason?: SimulationSeason;
+  SimulationRun?: SimulationRun;
+  SimulationSeriesMember?: SimulationSeriesMember;
+  SimulationSeries?: SimulationSeries;
+  SimulationCatalogResponse?: SimulationCatalogResponse;
+  SimulationPublicationListResponse?: SimulationPublicationListResponse;
+  SimulationRunResponse?: SimulationRunResponse;
+  SimulationSeriesResponse?: SimulationSeriesResponse;
   LocationPageResponse?: LocationPageResponse;
   LocationCoreResponse?: LocationCoreResponse;
   GeographyPageResponse?: GeographyPageResponse;
@@ -1466,6 +1600,322 @@ export interface LocationSummary {
 export interface LocationPage {
   items: LocationSummary[];
   next_cursor: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationIdParams".
+ */
+export interface SimulationIdParams {
+  id: SimulationRunKey;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationQuery".
+ */
+export interface SimulationQuery {
+  location_id?: LocationId;
+  crop_id?: string;
+  harvest_year?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationCapability".
+ */
+export interface SimulationCapability {
+  crop_id: string;
+  harvest_year: number;
+  status: SimulationCapabilityStatus;
+  reason_code: SimulationReason | null;
+  run_ids: SimulationRunKey[];
+  water_balance?: 'physical_experimental';
+  yield?: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationPlaceCapabilities".
+ */
+export interface SimulationPlaceCapabilities {
+  location_id: LocationId;
+  name: string;
+  state_code: string;
+  history_years: number;
+  observed_until: string | null;
+  capabilities: SimulationCapability[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationCatalog".
+ */
+export interface SimulationCatalog {
+  contract: 'future-simulation-capabilities.v1';
+  as_of: string;
+  harvest_years: number[];
+  places: SimulationPlaceCapabilities[];
+  /**
+   * Reproduction inputs of the publication (places, seed, member limit)
+   */
+  inputs: {};
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationArtifact".
+ */
+export interface SimulationArtifact {
+  kind: 'run' | 'series' | 'members';
+  path: string;
+  sha256: string;
+  bytes: number;
+  compression: 'gzip' | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationPublication".
+ */
+export interface SimulationPublication {
+  run_id: SimulationRunKey;
+  location_id: LocationId;
+  place_name: string;
+  plan_id: string;
+  crops: string[];
+  harvest_years: number[];
+  as_of: string;
+  issued_at: string;
+  visibility: 'public_regional' | 'private';
+  publication_version: string;
+  current: boolean;
+  artifacts: SimulationArtifact[];
+  measured: {
+    seconds: number;
+    peak_python_mib: number;
+    series_bytes_raw: number;
+    series_bytes_gzip: number;
+    members: number;
+    days: number;
+    note: string;
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationPublicationList".
+ */
+export interface SimulationPublicationList {
+  as_of: string;
+  items: SimulationPublication[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeason".
+ */
+export interface SimulationSeason {
+  crop_id: string;
+  harvest_year: number;
+  season_label: string;
+  sowing_date: string;
+  expected_harvest_date: string;
+  cycle_days: number;
+  calendar_source: string;
+  quantiles: {
+    [k: string]: {
+      p10: number;
+      p50: number;
+      p90: number;
+      n: number;
+    };
+  };
+  events: {
+    event_id: string;
+    share_of_members: number;
+    members: number;
+  }[];
+  interval_method: string;
+  members: {
+    [k: string]: {
+      [k: string]: number;
+    };
+  };
+  yield: SimulationYield;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationRun".
+ */
+export interface SimulationRun {
+  run_id: SimulationRunKey;
+  contract: 'future-simulation-run.v1';
+  protocol_id: string;
+  execution_status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+  output_mode: SimulationOutputMode;
+  scientific_status: {
+    weather: 'climatological_scenario' | 'observed' | 'seasonal_forecast' | 'mixed';
+    water_balance: SimulationScientificStatus;
+    phenology: SimulationScientificStatus;
+    yield: SimulationScientificStatus;
+  };
+  location_id: LocationId;
+  place_name: string;
+  state_code: string;
+  plan_id: string;
+  harvest_years: number[];
+  as_of: string;
+  issued_at: string;
+  simulation_start: string;
+  simulation_end: string;
+  weather_segments: {
+    kind: SimulationWeatherKind;
+    start: string;
+    end: string;
+    origin: string;
+  }[];
+  ensemble: {
+    method: string;
+    members: number;
+    effective_source_years: number;
+    analog_years: number[];
+    eligible_years: number[];
+    excluded_years: {
+      [k: string]: string;
+    };
+    coverage_class: 'standard' | 'limited';
+    seed: number;
+    analog_years_requested: number[] | null;
+    calendar_mapping: {
+      method: string;
+      max_month_day_drift_days: number;
+      note: string;
+    };
+  };
+  /**
+   * Provenance of history, observed prefix and ET0 method (files, checksums, periods)
+   */
+  sources: {};
+  engine: {
+    version: string;
+    parameter_set_id: string;
+    daily_order: string[];
+  };
+  soil: {
+    capacity_mm: number;
+    profile_id: string;
+    is_hypothesis: boolean;
+  };
+  calendar_rules: {
+    rule: string;
+    harvest_year: number;
+    state_calendar: string;
+    used: string;
+  }[];
+  seasons: SimulationSeason[];
+  representative: {
+    central: string;
+    dry: string;
+    wet: string;
+    rule: string;
+  };
+  initial_condition: {
+    storage_fraction: number;
+    is_hypothesis: boolean;
+    warm_up: {
+      start: string;
+      end: string;
+      source: string;
+    } | null;
+    sensitivity: {
+      [k: string]: {
+        [k: string]: number;
+      };
+    };
+    sensitivity_metric: string;
+  };
+  limitations: string[];
+  /**
+   * Canonical scientific identity hashed into run_id
+   */
+  identity: {};
+  checksums: {
+    series_sha256: string;
+    identity_sha256: string;
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeriesMember".
+ */
+export interface SimulationSeriesMember {
+  member_id: string;
+  analog_year: number | null;
+  role: 'central' | 'dry' | 'wet';
+  crop_id: (string | null)[];
+  phase_code: string[];
+  precipitation_mm: number[];
+  et0_mm: number[];
+  etc_mm: number[];
+  eta_mm: number[];
+  et_deficit_mm: number[];
+  storage_mm: number[];
+  drainage_mm: number[];
+  stress_coefficient: number[];
+  mass_balance_residual_mm: number[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeries".
+ */
+export interface SimulationSeries {
+  run_id: SimulationRunKey;
+  dates: string[];
+  capacity_mm: number;
+  day_kind: SimulationWeatherKind[];
+  members: SimulationSeriesMember[];
+  bands: {
+    storage_mm: {
+      p10: number[];
+      p50: number[];
+      p90: number[];
+    };
+    precipitation_mm: {
+      p10: number[];
+      p50: number[];
+      p90: number[];
+    };
+    et_deficit_mm: {
+      p10: number[];
+      p50: number[];
+      p90: number[];
+    };
+  };
+  full_members_artifact: SimulationArtifact;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationCatalogResponse".
+ */
+export interface SimulationCatalogResponse {
+  data: SimulationCatalog;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationPublicationListResponse".
+ */
+export interface SimulationPublicationListResponse {
+  data: SimulationPublicationList;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationRunResponse".
+ */
+export interface SimulationRunResponse {
+  data: SimulationRun;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "SimulationSeriesResponse".
+ */
+export interface SimulationSeriesResponse {
+  data: SimulationSeries;
+  meta: ResponseMeta;
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema

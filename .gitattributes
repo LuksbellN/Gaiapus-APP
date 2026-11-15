@@ -7,3 +7,4 @@ services/science-adapter/delivery/** -text -whitespace
 *.npz binary
 *.png -text
 *.jpg -text
+*.gz binary

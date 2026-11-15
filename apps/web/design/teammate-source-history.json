@@ -240,6 +240,42 @@
       "date": "2026-11-15",
       "reason": "unified place screen with country/state/place picker; NDVI daily axis",
       "sha256": "023b68252dc97ca6509828ff72fbb15d7bfd45f2de9d85eb8cb7103259b422c4"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "bfd14b090dc543414c5bb4434c7dc15b29f726c4b56ddcf333e8fbbf594bc35c"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "442480613a0455219a8a225a2dab12022fe80e521025e1e792479f2c2a27188c"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "7ec56975c03a086fabd621f1469722ebfb6d2e1051f00015003bb990486dd47a"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "eeb43702cbc6c300a5256f77b77d276b6007915fdf8cb12a816db25dcb3de054"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "soil-profile roots: show/hide roots and cutaway toggles; illustrative root architectures (no calculated depth in the current engine)",
+      "sha256": "0f64538ae8070ebdc87569b6f25be0c9197733a0a31d756ceab6afa580917196"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "season planning 2027/2028 entry (modo=planejamento) routed to the calculated published runs",
+      "sha256": "8ca4ff7699a21ec3b7784fac94b77c236103863b9c02ecb50304dc215bfadf69"
     }
   ]
 }
