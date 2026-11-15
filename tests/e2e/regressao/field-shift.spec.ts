@@ -76,3 +76,56 @@ test.describe('Field Shift no celular', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
   });
 });
+
+test.describe('Field Shift — solo nu, decisão e guia', () => {
+  test('cartão de solo nu com rótulos, sensibilidade e posição pela prioridade', async ({ page, errors }) => {
+    await page.goto('/#/field-shift');
+    const bare = page.getByTestId('fs-bare');
+    await expect(bare).toHaveAttribute('data-highlight', 'true');
+    await expect(page.getByTestId('fs-bare-table').locator('tr[data-metric="bare_days_nov_apr"] [data-strategy="soy_long_fallow"]')).toHaveText(/\d/);
+    await expect(bare).toContainText('proxy de exposição à erosão, não erosão');
+    await expect(bare).toContainText('Teste de sensibilidade (não é projeção climática).');
+    await expect(page.getByTestId('fs-bare-sens').locator('tr[data-highlight]')).toHaveCount(4);
+    await expect(page.getByTestId('fs-cards-footer')).toHaveText('Apoia, não substitui, a decisão do produtor e do agrônomo.');
+    await expect(page.getByTestId('fs-priority-sentence')).toContainText('dias de solo nu por ano');
+    await page.getByRole('radio', { name: 'Produção' }).check();
+    await expect(page.getByTestId('fs-bare')).not.toHaveAttribute('data-highlight', 'true');
+    await expect(page.getByTestId('fs-priority-sentence')).toContainText('C não cultiva milho');
+    expect(errors).toEqual([]);
+  });
+
+  test('em inglês: solo nu, frase, rodapé e guia sem português', async ({ page, errors }) => {
+    await page.addInitScript(prefsWith('en'));
+    await page.goto('/#/field-shift');
+    const bare = page.getByTestId('fs-bare');
+    await expect(bare.getByRole('heading', { name: 'Bare soil and vulnerable seasons' })).toBeVisible();
+    await expect(bare).toContainText('erosion-exposure proxy, not erosion');
+    await expect(bare).toContainText('Sensitivity test (not a climate projection).');
+    await expect(bare).toContainText('Temperature +1.5 °C: not simulated');
+    await expect(page.getByTestId('fs-cards-footer')).toHaveText('Supports, does not replace, the decision of the farmer and the agronomist.');
+    await expect(page.getByTestId('fs-priority-sentence')).toContainText('bare-soil days per year');
+    const guide = page.getByTestId('reading-guide');
+    await guide.locator('summary').click();
+    await expect(guide.locator('[data-term="ndvi"]')).toContainText('cloud-free days');
+    await expect(guide.locator('[data-term="sources"]')).toContainText('synthetic data');
+    for (const pt of ['Solo nu', 'solo nu', 'não erosão', 'Apoia', 'sem nuvem', 'Sondas', 'Chuva']) await expect(page.locator('main')).not.toContainText(pt);
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('Field Shift a 375 px', () => {
+  test.use({ ...MOBILE, viewport: { width: 375, height: 812 } });
+  for (const locale of ['pt-BR', 'en']) {
+    test(`${locale}: tabelas A/B/C rolam dentro do quadro e a página não rola para o lado`, async ({ page }) => {
+      await page.addInitScript(prefsWith(locale));
+      await page.goto('/#/field-shift');
+      for (const id of ['fs-strategy-table', 'fs-bare-table', 'fs-bare-sens']) {
+        const wrap = page.getByTestId(id).locator('xpath=ancestor::div[contains(@class,"table-wrap")][1]');
+        await expect(wrap).toBeVisible();
+        expect(await wrap.evaluate((el) => getComputedStyle(el).overflowX)).toMatch(/auto|scroll/);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+      await page.screenshot({ path: `test-results/field-shift-375-${locale}.png`, fullPage: true });
+    });
+  }
+});

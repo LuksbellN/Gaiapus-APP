@@ -130,7 +130,7 @@ export const weather = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<WaterProjection>('water-soy-5107925-N10', signal);
-    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: `${result.meta.note ?? ''} · contrato water_risk_projection` } };
+    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: `${result.meta.note ?? ''} · ${translate('source.contract', { name: 'water_risk_projection' })}` } };
   },
   async dailySeries(code: string, signal?: AbortSignal): Promise<Sourced<Daily>> {
     await wait(signal);

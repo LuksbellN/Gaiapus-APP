@@ -11,6 +11,20 @@ O `main` já tinha as três estratégias (pacote `field-shift-v2-0d12285bf7a9`),
 3. **Decisão** (`b117d79`): rodapé "Apoia, não substitui, a decisão do produtor e do agrônomo." nos cartões; frase gerada no seletor de prioridade, com os números do ponto de chuva na tela; `plan.form.priorityNote` passou a dizer "Ordena os indicadores do Field Shift; não altera os cálculos." (o texto anterior dizia que a prioridade não alterava nada).
 4. **README e documentos**: seção "How Gaiapus answers Field Shift" no `README.md` e esta pasta.
 5. **Guia de leitura**: o bloco "Como ler estes números" ganhou a reserva de água do solo (AD4, 55 mm, lida do pacote), NDVI (HLS, 30 m, só em dias sem nuvem) e satélite × estação × sonda (POWER/IMERG = ponto de grade do município; HLS = talhão; sonda = um ponto a 15 e 40 cm). A tela Sondas aparece como demonstrativa, com dados sintéticos.
+6. **Inglês e celular**: a varredura de 15 rotas em inglês achou só o rodapé de fonte em português ("Publicação science-…", "contrato water_risk_projection", vindo de `adapters/http.ts`, `locations.ts` e `index.ts`); agora ele passa por `translate`. O e2e `tests/e2e/regressao/field-shift.spec.ts` ganhou o cartão de solo nu (pt-BR), a tela em inglês sem português e as tabelas A/B/C a 375 px em pt-BR e en (rolagem dentro do quadro, página sem rolagem lateral).
+
+## Resultado dos testes (15/11/2026, nesta branch)
+
+| Comando | Resultado |
+|---|---|
+| `pnpm --filter @gaiapus/web typecheck` | sem erros |
+| `pnpm --filter @gaiapus/web test` | 52 arquivos, 442 de 442 |
+| `pnpm test` (contratos e API) | 28 de 28 · 56 de 56 |
+| `pytest tests/test_field_shift_rotations.py` | 7 de 7 |
+| `pnpm exec playwright test` (Vite 5174 → API 3001 em modo fixture) | 145 de 145 |
+| `vite build` | concluído |
+
+Numa das execuções completas da suíte web, falhou o teste intermitente "Brazil → US → Brazil", já registrado em `Docs/sprint-final/ESTADO.md`. Ele passou isolado 2 de 2 vezes, e as execuções seguintes deram 442 de 442.
 
 **Escolhas registradas**
 - O déficit na implantação na tela continua 1,57 mm (v2, 6 safras). O 1,88 mm da extensão (5 transições) só aparece na nota de `NUMEROS-DEMO.md`.
@@ -45,6 +59,8 @@ Novos:
 Modificados:
 - `apps/web/src/teammate/adapters/index.ts` (`simulations.fieldShiftBareSoil`)
 - `apps/web/src/teammate/pages/FieldShift.tsx` (posição do cartão, frase), `FieldShiftDecision.tsx` (frase, rodapé, nota da matriz), `FieldShift.test.tsx`
+- `apps/web/src/teammate/adapters/http.ts`, `locations.ts` (rodapé de fonte traduzido)
+- `tests/e2e/regressao/field-shift.spec.ts`
 - `apps/web/src/teammate/ui/ScienceReadingGuide.tsx` (reserva, NDVI, satélite × estação × sonda)
 - `apps/web/src/teammate/i18n/messages/{pt-BR,en,es,fr,de}.ts`
 - `README.md`
@@ -58,5 +74,6 @@ Chaves novas, todas em `fieldShift.v2`, exceto a última:
 - `matrix.erosionLink`
 - `card.footer`
 - `guide.soil`, `guide.ndvi`, `guide.sources`
+- `source.version`, `source.contract` (fora de `fieldShift.v2`: rodapé de fonte)
 - `priority.sentence.conservacao`, `priority.sentence.producao`, `priority.sentence.margem`
 - `plan.form.priorityNote` (texto trocado)

@@ -32,7 +32,7 @@ const m: DeepPartial<Messages> = {
     openFailed: 'Impossible d’ouvrir cet écran', recordsSafe: 'Vos enregistrements restent sauvegardés sur cet appareil.', loadingScreen: 'Chargement de l’écran…',
     failedStart: 'Impossible de démarrer. Vérifiez la connexion et rechargez la page.',
   },
-  source: { publicacao: 'Publication de l’API', fixture: 'Donnée d’exemple du paquet', mock: 'Donnée illustrative', local: 'Sauvegardé sur cet appareil', sintetico: 'Donnée synthétique', label: 'Source : {source}' },
+  source: { version: 'Publication {version}', contract: 'contrat {name}', publicacao: 'Publication de l’API', fixture: 'Donnée d’exemple du paquet', mock: 'Donnée illustrative', local: 'Sauvegardé sur cet appareil', sintetico: 'Donnée synthétique', label: 'Source : {source}' },
   errors: {
     offlineTitle: 'Hors connexion. ', unreachableTitle: 'Service indisponible. ', genericTitle: 'Chargement impossible. ', generic: 'Une erreur est survenue lors de la récupération des données.', code: '(code : {code})',
     network: 'Les données déjà chargées restent à l’écran ; réessayez lorsque la connexion sera rétablie.',

@@ -32,7 +32,7 @@ const m: DeepPartial<Messages> = {
     openFailed: 'No se pudo abrir esta pantalla', recordsSafe: 'Sus registros siguen guardados en este dispositivo.', loadingScreen: 'Cargando la pantalla…',
     failedStart: 'No se pudo iniciar. Revise la conexión y recargue la página.',
   },
-  source: { publicacao: 'Publicación de la API', fixture: 'Dato de ejemplo del paquete', mock: 'Dato ilustrativo', local: 'Guardado en este dispositivo', sintetico: 'Dato sintético', label: 'Fuente: {source}' },
+  source: { version: 'Publicación {version}', contract: 'contrato {name}', publicacao: 'Publicación de la API', fixture: 'Dato de ejemplo del paquete', mock: 'Dato ilustrativo', local: 'Guardado en este dispositivo', sintetico: 'Dato sintético', label: 'Fuente: {source}' },
   errors: {
     offlineTitle: 'Sin conexión. ', unreachableTitle: 'Servicio no disponible. ', genericTitle: 'No se pudo cargar. ', generic: 'Ocurrió un error al obtener los datos.', code: '(código: {code})',
     network: 'Los datos ya cargados permanecen en pantalla; reintente cuando se restablezca la conexión.',

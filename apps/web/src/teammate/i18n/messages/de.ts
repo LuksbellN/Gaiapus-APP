@@ -32,7 +32,7 @@ const m: DeepPartial<Messages> = {
     openFailed: 'Diese Ansicht konnte nicht geöffnet werden', recordsSafe: 'Ihre Einträge sind weiterhin auf diesem Gerät gespeichert.', loadingScreen: 'Ansicht wird geladen…',
     failedStart: 'Start fehlgeschlagen. Prüfen Sie die Verbindung und laden Sie die Seite neu.',
   },
-  source: { publicacao: 'API-Veröffentlichung', fixture: 'Beispieldaten aus dem Paket', mock: 'Illustrative Daten', local: 'Auf diesem Gerät gespeichert', sintetico: 'Synthetische Daten', label: 'Quelle — {source}' },
+  source: { version: 'Veröffentlichung {version}', contract: 'Vertrag {name}', publicacao: 'API-Veröffentlichung', fixture: 'Beispieldaten aus dem Paket', mock: 'Illustrative Daten', local: 'Auf diesem Gerät gespeichert', sintetico: 'Synthetische Daten', label: 'Quelle — {source}' },
   errors: {
     offlineTitle: 'Keine Verbindung. ', unreachableTitle: 'Dienst nicht verfügbar. ', genericTitle: 'Laden fehlgeschlagen. ', generic: 'Beim Abrufen der Daten ist ein Fehler aufgetreten.', code: '(Code {code})',
     network: 'Bereits geladene Daten bleiben sichtbar. Versuchen Sie es erneut, sobald die Verbindung wiederhergestellt ist.',

@@ -3,11 +3,12 @@
 import type { LocationCore, LocationPage, LocationSummary } from '@gaiapus/contracts';
 import { request } from './http';
 import type { Sourced } from './core';
+import { translate } from '../i18n';
 
 export type { LocationCore, LocationSummary };
 export type WeatherRow = { date: string; rain_mm: number; et0_mm: number; tmin_c: number | null; tmax_c: number | null };
 
-const meta = (version?: string) => ({ kind: 'publicacao' as const, source: 'API /v1/locations', note: version ? `Publicação ${version}` : undefined });
+const meta = (version?: string) => ({ kind: 'publicacao' as const, source: 'API /v1/locations', note: version ? translate('source.version', { version }) : undefined });
 
 export const locations = {
   async list(signal?: AbortSignal): Promise<LocationSummary[]> {

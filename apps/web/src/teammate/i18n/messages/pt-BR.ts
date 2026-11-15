@@ -32,7 +32,7 @@ const ptBR = {
     openFailed: 'Não foi possível abrir esta tela', recordsSafe: 'Seus registros continuam salvos neste aparelho.', loadingScreen: 'Carregando a tela…',
     failedStart: 'Não foi possível iniciar. Confira a conexão e recarregue a página.',
   },
-  source: { publicacao: 'Publicação da API', fixture: 'Dado de exemplo do pacote', mock: 'Dado ilustrativo', local: 'Salvo neste aparelho', sintetico: 'Dado sintético', label: 'Fonte: {source}' },
+  source: { version: 'Publicação {version}', contract: 'contrato {name}', publicacao: 'Publicação da API', fixture: 'Dado de exemplo do pacote', mock: 'Dado ilustrativo', local: 'Salvo neste aparelho', sintetico: 'Dado sintético', label: 'Fonte: {source}' },
   errors: {
     offlineTitle: 'Sem conexão. ', unreachableTitle: 'Serviço indisponível. ', genericTitle: 'Não foi possível carregar. ', generic: 'Algo falhou ao buscar os dados.', code: '(código: {code})',
     network: 'Os dados já carregados continuam na tela; tente de novo quando a rede voltar.',

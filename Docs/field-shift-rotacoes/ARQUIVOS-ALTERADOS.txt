@@ -2,7 +2,9 @@ A	Docs/field-shift-rotacoes/ARQUIVOS-ALTERADOS.txt
 A	Docs/field-shift-rotacoes/LEIA-PRIMEIRO.md
 A	Docs/field-shift-rotacoes/NUMEROS-DEMO.md
 M	README.md
+M	apps/web/src/teammate/adapters/http.ts
 M	apps/web/src/teammate/adapters/index.ts
+M	apps/web/src/teammate/adapters/locations.ts
 A	apps/web/src/teammate/data/sorriso-field-shift-rotations.json
 M	apps/web/src/teammate/i18n/messages/de.ts
 M	apps/web/src/teammate/i18n/messages/en.ts
@@ -18,3 +20,4 @@ A	apps/web/src/teammate/sim/field-shift-bare-soil.ts
 M	apps/web/src/teammate/ui/ScienceReadingGuide.tsx
 A	services/science-adapter/field_shift_rotations.py
 A	services/science-adapter/tests/test_field_shift_rotations.py
+M	tests/e2e/regressao/field-shift.spec.ts

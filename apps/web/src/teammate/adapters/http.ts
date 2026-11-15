@@ -1,6 +1,7 @@
 import { api, ApiError } from '../../lib/api/client';
 import type { CoverageResult, ExampleDetail, GeographyPage, MeResult } from '@gaiapus/contracts';
 import { AdapterError, type Sourced } from './core';
+import { translate } from '../i18n';
 
 export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   try {
@@ -19,7 +20,7 @@ export async function publishedExample<T>(id: string, signal?: AbortSignal): Pro
   return { data: example.result.data as T, meta: {
     kind: 'publicacao', source: example.source_refs.map(source => source.description).join(' · '),
     generatedAt: example.result.data.generated_at,
-    note: `Publicação ${example.result.meta.publication_version} · ${example.result.meta.result_basis}`,
+    note: `${translate('source.version', { version: example.result.meta.publication_version })} · ${example.result.meta.result_basis}`,
   } };
 }
 

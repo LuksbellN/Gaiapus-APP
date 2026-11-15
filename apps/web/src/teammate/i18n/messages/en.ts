@@ -32,7 +32,7 @@ const m: DeepPartial<Messages> = {
     openFailed: 'Could not open this screen', recordsSafe: 'Your records are still saved on this device.', loadingScreen: 'Loading the screen…',
     failedStart: 'Could not start. Check your connection and reload the page.',
   },
-  source: { publicacao: 'API publication', fixture: 'Example data from the package', mock: 'Illustrative data', local: 'Saved on this device', sintetico: 'Synthetic data', label: 'Source: {source}' },
+  source: { version: 'Publication {version}', contract: 'contract {name}', publicacao: 'API publication', fixture: 'Example data from the package', mock: 'Illustrative data', local: 'Saved on this device', sintetico: 'Synthetic data', label: 'Source: {source}' },
   errors: {
     offlineTitle: 'No connection. ', unreachableTitle: 'Service unavailable. ', genericTitle: 'Could not load. ', generic: 'Something went wrong while fetching the data.', code: '(code: {code})',
     network: 'Data already loaded remains on screen; try again when the connection is restored.',
