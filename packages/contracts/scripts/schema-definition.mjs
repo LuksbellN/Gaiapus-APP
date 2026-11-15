@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { addSimulationDefs, simulationRoutes } from './simulation-definition.mjs';
 const load = name => JSON.parse(readFileSync(new URL(`../upstream/${name}.schema.json`, import.meta.url)));
 const str = (maxLength = 256) => ({ type: 'string', maxLength });
 const text = { type: 'string', minLength: 1, maxLength: 256 };
@@ -122,7 +123,8 @@ defs.LocationCore = obj({
 });
 defs.LocationSummary = obj({ ...Object.fromEntries(Object.entries(defs.LocationPlace.properties).filter(([k]) => k !== 'boundary_url')), layers: ref('LocationLayerStatuses') });
 defs.LocationPage = page(ref('LocationSummary'));
-const responseNames = ['LocationPage', 'LocationCore', 'GeographyPage', 'CoverageResult', 'ObservationsResult', 'ExamplePage', 'ExampleDetail', 'MeResult', 'MonitoredPlace', 'MonitoredPlacePage', 'ComparisonPage', 'ComparisonDetail', 'EvidenceReview', 'EvidenceReviewResult', 'ScientificCatalog'];
+const simulationResponses = addSimulationDefs(defs, { str, text, en, arr, ref, nullable, obj, date, instant, integer, number });
+const responseNames = [...simulationResponses, 'LocationPage', 'LocationCore', 'GeographyPage', 'CoverageResult', 'ObservationsResult', 'ExamplePage', 'ExampleDetail', 'MeResult', 'MonitoredPlace', 'MonitoredPlacePage', 'ComparisonPage', 'ComparisonDetail', 'EvidenceReview', 'EvidenceReviewResult', 'ScientificCatalog'];
 for (const name of responseNames) defs[`${name}Response`] = obj({ data: ref(name), meta: ref('ResponseMeta') });
 export const schema = { $schema: 'https://json-schema.org/draft/2020-12/schema', $id: 'https://gaiapus.local/app/0.1.0', title: 'GaiapusContracts', type: 'object', additionalProperties: false, properties: {}, $defs: defs };
 export const routes = [
@@ -134,6 +136,7 @@ export const routes = [
   ['GET', '/v1/examples/:id', null, 'ExampleIdParams', 'ExampleDetailResponse', false],
   ['GET', '/v1/locations', null, 'PageQuery', 'LocationPageResponse', false],
   ['GET', '/v1/locations/:id/core', null, 'LocationIdParams', 'LocationCoreResponse', false],
+  ...simulationRoutes,
   ['GET', '/v1/me', null, null, 'MeResultResponse', true],
   ['PATCH', '/v1/me', 'UpdateAccountRequest', null, 'MeResultResponse', true],
   ['GET', '/v1/places', null, 'PageQuery', 'MonitoredPlacePageResponse', true],
