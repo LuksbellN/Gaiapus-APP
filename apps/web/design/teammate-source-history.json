@@ -354,6 +354,12 @@
       "date": "2026-11-15",
       "reason": "Mobile: Explore panel becomes a working bottom sheet (drag, three positions, inner scroll, expand/collapse buttons); tutorial invite moved above it",
       "sha256": "5a623c151dcfd91c50ebbce445554889c1540ea2a54d64a8978720569981d75b"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Mobile sweep: grids shrink to the screen, long source strings wrap, 44 px touch targets, no focus ring on the page title",
+      "sha256": "e0e70572bc946fb23735a6436af91e055dd358f6b6ef9429f9111a24ef316b71"
     }
   ]
 }

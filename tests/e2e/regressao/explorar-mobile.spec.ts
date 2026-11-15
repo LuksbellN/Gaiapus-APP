@@ -106,3 +106,32 @@ test.describe('Explorar no desktop', () => {
     expect(await page.locator('.explore__panel-body').evaluate((el) => getComputedStyle(el).overflowY)).toBe('auto');
   });
 });
+
+// Pente fino no celular: nenhuma tela pode ficar mais larga que o aparelho, e o que se toca tem pelo menos 44 px.
+test.describe('Responsividade no celular — todas as telas', () => {
+  const ROUTES = ['/explorar?semwebgl=1', '/visao-geral', '/municipio?mun=3170206', '/planejar', '/simulador?modo=planejamento&local=BR:ibge:3170206&cultura=soy&safra=2027&vista=perfil&semwebgl=1',
+    '/simulador?modo=planejamento&local=BR:ibge:3170206&cultura=soy&safra=2027&secao=indicadores&semwebgl=1', '/simulador?modo=historico&semwebgl=1', '/field-shift', '/propriedades', '/registros', '/dispositivos', '/alertas?mun=5107925', '/conta', '/mais', '/ajuda'];
+  for (const width of [360, 390]) {
+    test(`${width}px: sem rolagem lateral da página nem do conteúdo, alvos de toque de 44 px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 740 });
+      const problems: string[] = [];
+      for (const route of ROUTES) {
+        await page.goto('/#' + route);
+        await expect(page.locator('main h1').first()).toBeAttached({ timeout: 15000 });
+        await page.waitForTimeout(500);
+        const found = await page.evaluate(() => {
+          const out: string[] = []; const doc = document.documentElement; const main = document.querySelector('main')!;
+          if (doc.scrollWidth > doc.clientWidth + 1) out.push(`page wider by ${doc.scrollWidth - doc.clientWidth}px`);
+          if (main.scrollWidth > main.clientWidth + 1) out.push(`content wider by ${main.scrollWidth - main.clientWidth}px`);
+          for (const el of document.querySelectorAll<HTMLElement>('main button, main select, main summary, main .btn, .rail a, header button, header select')) {
+            const b = el.getBoundingClientRect(); if (!b.width || !b.height || el.closest('.sr-only') || getComputedStyle(el).visibility === 'hidden') continue;
+            if (b.height < 40 || b.width < 40) out.push(`small target ${el.tagName.toLowerCase()} "${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 24)}" ${Math.round(b.width)}x${Math.round(b.height)}`);
+          }
+          return out;
+        });
+        for (const f of found) problems.push(`${route.slice(0, 50)} — ${f}`);
+      }
+      expect(problems).toEqual([]);
+    });
+  }
+});
