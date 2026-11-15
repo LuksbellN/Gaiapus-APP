@@ -210,6 +210,12 @@
       "date": "2026-11-15",
       "reason": "i18n catalogs, tutorials (data-tour anchors), draft write outside state updater",
       "sha256": "ee829eb204cb8e7754bac6cfe7be9b2d22b1b791938e71a6a20763b2600e68c2"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-15",
+      "reason": "sonar: explicit button types, dialog backdrop listener, handled promises",
+      "sha256": "9b8adced62ed206159361023f3a141d97019da5180e4dfd4929a96161fdc8e00"
     }
   ]
 }

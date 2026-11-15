@@ -49,7 +49,9 @@ export function TabPanel({ id, children }: { id: string; children: ReactNode }) 
 export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null); const id = useId();
   useEffect(() => { const d = ref.current; if (!d) return; if (open && !d.open) d.showModal(); if (!open && d.open) d.close(); }, [open]);
-  return <dialog ref={ref} aria-labelledby={id} onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose(); }}><div className="stack"><div className="row-between"><h2 id={id}>{title}</h2><button className="btn btn--sm" onClick={onClose}>{translate('common.close')}</button></div>{children}</div></dialog>;
+  // Click on the backdrop closes; keyboard users close with Esc (native to a modal <dialog>) or the Close button.
+  useEffect(() => { const d = ref.current; if (!d) return; const onBackdrop = (e: MouseEvent) => { if (e.target === d) onClose(); }; d.addEventListener('click', onBackdrop); return () => d.removeEventListener('click', onBackdrop); }, [onClose]);
+  return <dialog ref={ref} aria-labelledby={id} onClose={onClose}><div className="stack"><div className="row-between"><h2 id={id}>{title}</h2><button className="btn btn--sm" onClick={onClose}>{translate('common.close')}</button></div>{children}</div></dialog>;
 }
 export function useAsync<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unknown[]) {
   const [s, set] = useState<{ status: 'loading' | 'ok' | 'error'; data?: T; error?: unknown }>({ status: 'loading' }); const [tick, setTick] = useState(0);

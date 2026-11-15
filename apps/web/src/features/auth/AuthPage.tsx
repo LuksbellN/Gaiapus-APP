@@ -68,7 +68,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
     {status === 'ready' && <form className="stack" onSubmit={updatePassword}>
       <label>{t('auth.newPassword')}<input className="input" autoComplete="new-password" type="password" required minLength={8} value={password} disabled={busy} onChange={e => setPassword(e.target.value)} /></label>
       <label>{t('auth.confirmPassword')}<input className="input" autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
-      <button className="btn btn--primary" disabled={busy}>{busy ? t('auth.saving') : t('auth.save')}</button>
+      <button type="submit" className="btn btn--primary" disabled={busy}>{busy ? t('auth.saving') : t('auth.save')}</button>
     </form>}
     {status === 'error' && supabase && <div className="row"><a className="btn" href="/#/conta/recuperar">{t('auth.newLink')}</a><a className="btn" href="/#/conta">{t('auth.signInOrResend')}</a></div>}
     <a className="btn" href={returnPath}>{t('auth.backToExplore')}</a>

@@ -12,7 +12,7 @@ export const contrast = (a: string, b: string) => { const [x, y] = [lum(a), lum(
 export function DesignPreview() {
   const { t } = useI18n();
   const [tab, setTab] = useState<'clima' | 'agua' | 'safra'>('clima'); const [fonts, setFonts] = useState<string | null>(null);
-  useEffect(() => { document.fonts.ready.then(() => { const ok = (f: string) => (document.fonts.check(f) ? 'loaded' : 'missing'); setFonts(`${ok('600 20px "Bricolage Grotesque"')}|${ok('400 16px "Source Sans 3"')}`); }); }, []);
+  useEffect(() => { void document.fonts.ready.then(() => { const ok = (f: string) => (document.fonts.check(f) ? 'loaded' : 'missing'); setFonts(`${ok('600 20px "Bricolage Grotesque"')}|${ok('400 16px "Source Sans 3"')}`); }); }, []);
   const fontState = (s: string) => t(s === 'loaded' ? 'designPreview.fontLoaded' : 'designPreview.fontMissing');
   const [display, body] = fonts?.split('|') ?? [];
   return <div className="page"><div className="page-head"><div className="stack-2"><h1>{t('designPreview.title')}</h1><p>{t('designPreview.subtitle', { year: EDITION.year })}</p></div></div>

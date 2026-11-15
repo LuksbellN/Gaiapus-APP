@@ -426,7 +426,7 @@ const ptBR = {
       exported: 'Arquivo gerado. Nome e e-mail não entram na exportação.',
     },
     signIn: 'Entrar', signUp: 'Criar conta', unavailableTitle: 'Contas indisponíveis.', unavailable: 'Configure o Supabase para entrar. A exploração e os registros locais continuam disponíveis sem conta.',
-    name: 'Seu nome', email: 'E-mail', password: 'Senha', passwordHint: 'Pelo menos 8 caracteres. A confirmação do e-mail é obrigatória.', wait: 'Aguarde…', continueWithout: 'Continuar sem conta',
+    name: 'Seu nome', email: 'E-mail', passwordLabel: 'Senha', passwordHint: 'Pelo menos 8 caracteres. A confirmação do e-mail é obrigatória.', wait: 'Aguarde…', continueWithout: 'Continuar sem conta',
     resend: 'Reenviar confirmação', firstTime: 'Primeira vez?', recover: 'Recuperar acesso', haveAccount: 'Já tem conta?', recoverEmail: 'E-mail da conta', requestRecovery: 'Pedir recuperação', back: 'Voltar',
     connected: 'Conta conectada', profileDown: 'Sua conta está conectada, mas o perfil da API está indisponível.',
     prefs: 'Preferências', prefsNote: 'O idioma fica salvo neste aparelho e vale também sem conta.',

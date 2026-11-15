@@ -43,7 +43,7 @@ export function resetCoverageIndexForTest() { cached = null; }
 
 export function useCoverageIndex() {
   const [index, setIndex] = useState<CoverageIndex | null>(null); const [tick, setTick] = useState(0);
-  useEffect(() => { let alive = true; loadCoverageIndex().then((r) => { if (alive) setIndex(r); }); return () => { alive = false; }; }, [tick]);
+  useEffect(() => { let alive = true; void loadCoverageIndex().then((r) => { if (alive) setIndex(r); }); return () => { alive = false; }; }, [tick]);
   return { index, retry: () => { setIndex(null); setTick((t) => t + 1); } };
 }
 
