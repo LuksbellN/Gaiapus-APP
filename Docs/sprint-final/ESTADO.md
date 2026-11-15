@@ -179,3 +179,26 @@ Não executado: testes com banco (`*.database.test.ts`) e com o serviço Python 
 **Rota para conferir:** `/#/field-shift?chuva=-20` · `/#/field-shift?chuva=20&prioridade=producao&ref=C`.
 **Situação:** commit local; sem push, sem PR, sem produção.
 **Limitações:** sensibilidade de uma variável por vez; o parâmetro `?lang=` não existe no app — o idioma vem do navegador ou da preferência salva.
+
+### Revisão final do branch (revisor independente, 15/11/2026)
+
+Sem achados críticos. Conferências independentes do revisor: o pareamento em TypeScript bate com o do produtor em Python (0 diferenças em 18 métricas × 2 estratégias × 3 pontos de chuva); os bytes do pacote no app são os do pacote gerado; o código da ciência no HEAD bate com `manifest.identity.code`.
+
+**Corrigido (2 importantes):**
+1. A tela, já com o pacote v2, ainda mostrava a tabela "Sensibilidade às hipóteses" e o aviso de hipótese da publicação v1 — outra versão, só B − A, com números diferentes para a mesma grandeza (ex.: Kc 0,75, déficit da soja −0,36 no v1 contra −0,37 pareado no v2). Agora, com o v2 na tela, hipóteses, safras e sensibilidade de parâmetros vêm do pacote, com B − A e C − A; a tabela do v1 só aparece no modo de reserva. Teste novo falhou antes e passa depois.
+2. O manifesto registra `base_git_revision = 56b1af3`, mas esse commit gera outro pacote; o código que gera `0d12285bf7a9` é o de `22f67ad`. Os documentos de submissão agora identificam o código pelos digests e dizem de qual commit reproduzir. O produtor ainda não registra nem recusa árvore suja — lacuna conhecida; mudá-lo alteraria o id do pacote já fixado.
+
+**Mantido por decisão:** a tela continua exigindo a publicação v1 da API para abrir (com a API fora, mostra erro e nenhum número — é o comportamento coberto pelo teste RT-16). O revisor sugeriu torná-la independente; ficou registrado como escolha, não como defeito.
+
+**Menores, não corrigidos (para decidir depois):** possível quadro de "indisponível" ao trocar de lugar antes do carregamento; carregamento sem fim se a execução não tiver a safra pedida; cultura irmã sem publicação some da comparação sem aviso; a frase "A e B reproduzem a publicação anterior" é fixa em vez de ler o manifesto; com referência B ou C as diferenças são pareadas no navegador (mesma operação do produtor, sobre valores publicados); `n` por linha não aparece; o guia atribui a escala de ~0,5° a todo o clima sem separar a chuva IMERG; títulos dos cartões (h3) antes do primeiro h2, cabeçalhos de linha como `td`, traço sem texto para leitor de tela; prioridade de um plano de outro município é aceita; `field_shift_case.main()` (v1, anterior a este sprint) ainda regravaria o exemplo v1 se alguém o executasse; README de submissão usa `python -m pytest` em vez de `uv run`.
+
+#### Verificação final
+
+| Comando | Resultado |
+|---|---|
+| `pnpm --filter @gaiapus/web test` | 42 arquivos, **314 de 314** na última execução |
+| `pnpm exec playwright test` | **117 de 117** |
+| `pnpm --filter @gaiapus/web typecheck` · `build` | sem erros · concluído |
+| API e contratos | sem mudança de código desde 56/56 e 28/28 |
+
+**Teste intermitente, declarado:** em 4 execuções completas da suíte web depois do M3 houve 2 com uma falha cada, sempre em testes de identidade criados neste sprint ("Brazil → US → Brazil" e "changing the harvest year…"), nunca isolados (passaram em todas as repetições individuais e em 4 execuções simultâneas). O primeiro era espera curta; o segundo não teve a mensagem capturada e a causa não foi determinada. Ambos passaram a esperar pelo estado de carregamento com prazo maior. Se voltar a falhar no CI, é esse o ponto a olhar.

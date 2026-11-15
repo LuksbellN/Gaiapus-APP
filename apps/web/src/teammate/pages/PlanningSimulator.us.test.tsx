@@ -127,14 +127,15 @@ it('changing place while answers are late never shows the previous run under the
 it('changing the harvest year waits for the run of that year', async () => {
   const story28 = storyRun(2028), story27 = storyRun(2027);
   open('?modo=planejamento&local=US:fips:19169&cultura=soy&safra=2028&vista=perfil&semwebgl=1');
-  expect(await screen.findByTestId('planning-run')).toHaveTextContent(story28);
+  expect(await screen.findByTestId('planning-run', undefined, SLOW)).toHaveTextContent(story28);
   const release = hold(`series:${story27}`);
   act(() => go('/simulador?modo=planejamento&local=US:fips:19169&cultura=soy&safra=2027&vista=perfil&semwebgl=1'));
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/Carregando/), SLOW); // the state itself, not a fixed pause
   await settle();
   expect(shown()).not.toContain(story28);
   expect(screen.queryByTestId('planning-season')).toBeNull();
   release();
-  await waitFor(() => expect(shown()).toContain(story27));
+  await waitFor(() => expect(shown()).toContain(story27), SLOW);
   expect(screen.getByTestId('planning-season')).toHaveTextContent('2027');
 });
 

@@ -229,3 +229,33 @@ it('a rain value that was not calculated falls back to the historical one instea
   expect(screen.getByTestId('fs-rain')).toHaveAttribute('data-multiplier', '1');
   expect(cell(table, 'year_water_use_mm', '[data-strategy="reference_fallow"]')).toHaveTextContent(num(summary.scenarios.reference_fallow.mean.year_water_use_mm!));
 });
+
+// Final review — one version on screen: with the v2 package shown, no number of the older publication remains.
+it('parameter sensitivity and hypothesis notice come from the v2 package, with C and paired differences against A', async () => {
+  open('?ref=C&chuva=-20');
+  await screen.findByTestId('fs-strategy-table');
+  const table = screen.getByTestId('fs-parameters');
+  expect(table).toHaveTextContent('diferenças pareadas em relação a A');
+  expect(table).toHaveTextContent('com a chuva histórica');
+  const signed2 = (v: number) => (Math.abs(v) < 0.005 ? num(0, 2) : `${v > 0 ? '+' : '−'}${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(v))}`);
+  for (const p of summary.sensitivity.parameters) {
+    const row = table.querySelector(`tr[data-parameter="${p.parameter}"][data-value="${p.value}"]`) as HTMLElement;
+    for (const alt of ['brachiaria', 'soy_long_fallow'] as const) for (const k of ['storage_at_next_sowing_mm', 'soy_deficit_mm', 'next_soy_establishment_deficit_mm', 'year_water_use_mm'] as const) {
+      expect(row.querySelector(`[data-alt="${alt}"][data-metric="${k}"]`), `${p.parameter} ${p.value} ${alt} ${k}`).toHaveTextContent(signed2(p.comparisons[`${alt}_minus_reference_fallow`][k].mean!));
+    }
+  }
+  expect(table.querySelectorAll('tbody tr')).toHaveLength(summary.sensitivity.parameters.length);
+  // v1 publishes -0.36 for the soy deficit at cover Kc 0.75 (difference of means); the package pairs by year and has another value
+  const v1Row = v1.sensitivity.find((s: any) => s.parameter === 'cover_kc' && s.value === 0.75);
+  const v2Mean = summary.sensitivity.parameters.find((p) => p.parameter === 'cover_kc' && p.value === 0.75)!.comparisons.brachiaria_minus_reference_fallow.soy_deficit_mm.mean!;
+  expect(v1Row.difference_soy_deficit_mm).not.toBe(v2Mean);
+  expect(screen.queryByText('Cada linha muda uma hipótese por vez. Valores são B − A, média das 6 safras.')).toBeNull();
+});
+
+it('when the package is refused, the older publication keeps its own sensitivity table', async () => {
+  state.breakPackage = true;
+  open();
+  await screen.findByText('Pacote das três estratégias incoerente');
+  expect(screen.queryByTestId('fs-parameters')).toBeNull();
+  expect(screen.getByText('Cada linha muda uma hipótese por vez. Valores são B − A, média das 6 safras.')).toBeInTheDocument();
+});
