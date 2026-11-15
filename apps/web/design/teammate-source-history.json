@@ -162,6 +162,12 @@
       "date": "2026-11-14",
       "reason": "I5/I3: Simulador, Field Shift, Sondas, Alertas, Propriedades e Registros traduzíveis",
       "sha256": "db7ca5b512843d454af39777a13155c5238be0f72d09aba099de91b0d0bdcaed"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "i18n: map accessible names translated",
+      "sha256": "aa9116eab6c49e7f1e124c83c784a517759e7e8e5f5fef6f7ead6e29d7c2107d"
     }
   ]
 }
