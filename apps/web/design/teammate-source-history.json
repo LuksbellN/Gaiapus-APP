@@ -270,6 +270,12 @@
       "date": "2026-11-15",
       "reason": "soil-profile roots: show/hide roots and cutaway toggles; illustrative root architectures (no calculated depth in the current engine)",
       "sha256": "0f64538ae8070ebdc87569b6f25be0c9197733a0a31d756ceab6afa580917196"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "season planning 2027/2028 entry (modo=planejamento) routed to the calculated published runs",
+      "sha256": "8ca4ff7699a21ec3b7784fac94b77c236103863b9c02ecb50304dc215bfadf69"
     }
   ]
 }
