@@ -294,6 +294,18 @@
       "date": "2026-11-15",
       "reason": "world list: every country with published data is highlighted and listed first (Brazil and US counties), derived from the catalogues",
       "sha256": "e41891ba700d9c26d08a00d13d8da6a617ea4a42d5808c7a07d3d8f43607dc46"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "US counties at Brazil's level: Census county boundaries per state, full county list, county selection without the IBGE card, simulation catalogue counts as data",
+      "sha256": "c2999754672678d5afa0daf1fdd1f545349dd7ddc1d38df610c1b50a521a038b"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "US counties at Brazil's level: Census county boundaries per state, full county list, county selection without the IBGE card, simulation catalogue counts as data",
+      "sha256": "94884a349cd066a2bcb9567a7698f04520b2387a14f398c5b4b7f87b7333109d"
     }
   ]
 }

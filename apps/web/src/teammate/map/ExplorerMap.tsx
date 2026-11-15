@@ -89,7 +89,8 @@ const ExplorerMap = forwardRef<MapHandle, Props>(function ExplorerMap(p, ref) {
     });
     m.on('click', (e) => {
       const f = m.queryRenderedFeatures(e.point, { layers: ['mun-fill', 'states-fill', 'countries'] }); const mun = f.find((x) => x.layer.id === 'mun-fill'); const st = f.find((x) => x.layer.id === 'states-fill'); const ct = f.find((x) => x.layer.id === 'countries');
-      if (mun) latest.current.onPick({ pais: 'BR', uf: String(mun.properties.code).slice(0, 2), mun: String(mun.properties.code) });
+      // Brazilian municipalities (IBGE code) and US counties (US:fips:…, with their state) share the same layer.
+      if (mun) latest.current.onPick(mun.properties.country === 'US' ? { pais: 'USA', uf: String(mun.properties.state), mun: String(mun.properties.code) } : { pais: 'BR', uf: String(mun.properties.code).slice(0, 2), mun: String(mun.properties.code) });
       else if (st) latest.current.onPick(stateSelection(String(st.properties.code)));
       else if (ct?.properties?.ADM0_A3) latest.current.onPick({ pais: ct.properties.ADM0_A3 === 'BRA' ? 'BR' : String(ct.properties.ADM0_A3), uf: null, mun: null }); // qualquer país do globo é selecionável
     });

@@ -1,0 +1,265 @@
+{
+  "source": "us-atlas@3.0.1 counties-10m.json (U.S. Census Bureau cartographic boundary files, 1:10,000,000)",
+  "source_url": "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/counties-10m.json",
+  "source_sha256": "145aaf5d1433352a6a1d8e86b5f149c7c653f9171baf14aaf75ee66575def1b0",
+  "licence": "ISC",
+  "licence_text": "Copyright 2013-2019 Michael Bostock\n\nPermission to use, copy, modify, and/or distribute this software for any purpose\nwith or without fee is hereby granted, provided that the above copyright notice\nand this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH\nREGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND\nFITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,\nINDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS\nOF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER\nTORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF\nTHIS SOFTWARE.",
+  "transform": "TopoJSON decoded to GeoJSON, coordinates rounded to 1e-4 degree, split by state (FIPS → ISO 3166-2)",
+  "files": {
+    "US-AK": {
+      "counties": 29,
+      "bytes": 118352,
+      "sha256": "d62b45a04d7316e36582b566b57f7ab6d0e09fdc99325b6bad60516309b0d3f6"
+    },
+    "US-AL": {
+      "counties": 67,
+      "bytes": 41794,
+      "sha256": "a4ad6be295419f2ce49e49b9494b8718342e590074031b626b9964c16880b8b2"
+    },
+    "US-AR": {
+      "counties": 75,
+      "bytes": 45512,
+      "sha256": "efe39035745aa46f4029530d239cb0a2b7c3508d8296d97a3f60cfcf60814ea7"
+    },
+    "US-AZ": {
+      "counties": 15,
+      "bytes": 14340,
+      "sha256": "443f3a238deb67fcae55f208a1b1eaa094e3399ceae70ee56f817945f1403e08"
+    },
+    "US-CA": {
+      "counties": 58,
+      "bytes": 57714,
+      "sha256": "4ebd5112312c1900a040d5d0db4d92afe49afb949d4bf1c80f9cb71d72510f2b"
+    },
+    "US-CO": {
+      "counties": 64,
+      "bytes": 37022,
+      "sha256": "65460c50f5382551b1d9ad687f5aac60ec6d8585d5134207c3dfe6a30135d4fb"
+    },
+    "US-CT": {
+      "counties": 8,
+      "bytes": 5641,
+      "sha256": "74f3fe4d90d377cf47fd75cf6c92d39fbf36a6baa98f35dab12797a8cfe55e05"
+    },
+    "US-DC": {
+      "counties": 1,
+      "bytes": 373,
+      "sha256": "99da5379b3f51c90c4036d9c809344a052e288f3c7e59535cdcdb1b1d8f71e89"
+    },
+    "US-DE": {
+      "counties": 3,
+      "bytes": 1848,
+      "sha256": "c6ca24afa31d244016bc313bd72d4a99f686aa8636d28b32d16ce40e613078ad"
+    },
+    "US-FL": {
+      "counties": 67,
+      "bytes": 41539,
+      "sha256": "7d486433effacbfdbdb5e77993e51ba03b3be4ab0f86ed974841ad13fb6e398d"
+    },
+    "US-GA": {
+      "counties": 159,
+      "bytes": 80760,
+      "sha256": "f546779c4237af62df99f9ebe3e33eb071a668876cf349aa8c0ae95833939f7d"
+    },
+    "US-HI": {
+      "counties": 5,
+      "bytes": 5176,
+      "sha256": "f16cfda1da11f99dae4af776ab5f0803201d40e55a6951338a6501d8d4310d59"
+    },
+    "US-IA": {
+      "counties": 99,
+      "bytes": 33148,
+      "sha256": "9a58e86b31611c3f0aa0a0ee66cb99765eae20d431803a66d4c5e3e493885c6f"
+    },
+    "US-ID": {
+      "counties": 44,
+      "bytes": 36946,
+      "sha256": "6e0851a5cd1f9b9a3912f9ccf1a276822de8b5f2e1140f64faaeaabcb04c1959"
+    },
+    "US-IL": {
+      "counties": 102,
+      "bytes": 42477,
+      "sha256": "0fff7d3224f47195a6d4cc07cc2655d4b4671609c77f83409fc070ee3763c9bc"
+    },
+    "US-IN": {
+      "counties": 92,
+      "bytes": 37269,
+      "sha256": "a8e88b9931584d0d128f7c7e4e40d8af2962b12bb05aef2b48ce7a1ba4a3a5d0"
+    },
+    "US-KS": {
+      "counties": 105,
+      "bytes": 35769,
+      "sha256": "4dcdf6b60811016bd1dab9a0f4973345444ded6629f80183e7b91febe4b6acf1"
+    },
+    "US-KY": {
+      "counties": 120,
+      "bytes": 64258,
+      "sha256": "beb6f46a0107bd3e5321be24f3d4eb1dd21d10bc7c152a087b394ad093e95221"
+    },
+    "US-LA": {
+      "counties": 64,
+      "bytes": 48671,
+      "sha256": "13f107e3054f82c1179eb13f97e4005232bd4c2840e4f186f84edef29cd61363"
+    },
+    "US-MA": {
+      "counties": 14,
+      "bytes": 11307,
+      "sha256": "d3f7ff58451de8bc878fa727ee461f12084069dc3d1317ad1fa42424b2029291"
+    },
+    "US-MD": {
+      "counties": 24,
+      "bytes": 15976,
+      "sha256": "e158ad3cec86802cb379251a4f7bafc706a35c2b066a2d53938b6f9b8d3e4407"
+    },
+    "US-ME": {
+      "counties": 16,
+      "bytes": 17207,
+      "sha256": "629dfd7ef7b107b07c6baf09948b375d25203d8847fbdb4e70c7438314edc61b"
+    },
+    "US-MI": {
+      "counties": 83,
+      "bytes": 37232,
+      "sha256": "a9facaa57b7a5a70bc2c3eb44e61a06d22e2240acdb97cb97e1a00a5723e74ca"
+    },
+    "US-MN": {
+      "counties": 87,
+      "bytes": 38956,
+      "sha256": "356a9a2cbddd64534b85cc4c2c204a0612b3502a7d426513b3fcb76bf2aeeb35"
+    },
+    "US-MO": {
+      "counties": 115,
+      "bytes": 52035,
+      "sha256": "9e5f1d61befaa3e850bf4ddff36874eb73b3d05e43279c14963b74fe97314370"
+    },
+    "US-MS": {
+      "counties": 82,
+      "bytes": 39303,
+      "sha256": "b9ce14a91a048d85691e5aacec5681ee39eb0ad8ecaaccbe1b758d0891c4fc6c"
+    },
+    "US-MT": {
+      "counties": 56,
+      "bytes": 56070,
+      "sha256": "1ec08678c09172e26086938cb30eab8e455da2c5fd005909062c7cee3871eeef"
+    },
+    "US-NC": {
+      "counties": 100,
+      "bytes": 57550,
+      "sha256": "5dc2cfb60675702d7b6f785724eae2d74d9f88f4bc92b6119381848a1f43fa83"
+    },
+    "US-ND": {
+      "counties": 53,
+      "bytes": 25955,
+      "sha256": "819d08a22175400b837a0a1b3be2f7ca31a18a414527b64d8e793a2840c9aae8"
+    },
+    "US-NE": {
+      "counties": 93,
+      "bytes": 34682,
+      "sha256": "253eb16c99f8963fc456334232ca3837092ce4dc9dbe3959cf7a90c2a72ca9b5"
+    },
+    "US-NH": {
+      "counties": 10,
+      "bytes": 7044,
+      "sha256": "22cce5c3859c4e0894ee8b76f6dc9ac8fdcfc67c9b732950bdee2ecda6617a14"
+    },
+    "US-NJ": {
+      "counties": 21,
+      "bytes": 11559,
+      "sha256": "1dc75125d5d9d6d940c57cf3443d4c81ebb539c80cb3bfd864a5c209049b1701"
+    },
+    "US-NM": {
+      "counties": 33,
+      "bytes": 19669,
+      "sha256": "0f3c0da32180d97dc73a0727a8d2a8b9957ba4506c1367545293c2334a38ecdc"
+    },
+    "US-NV": {
+      "counties": 17,
+      "bytes": 11985,
+      "sha256": "e4349f7d5ac8e7af2f22891ab57b0399cba5a8a5842e95fe0eca6a6ad0b7a7fe"
+    },
+    "US-NY": {
+      "counties": 62,
+      "bytes": 34209,
+      "sha256": "92c91d3a649c8241e1236cb66768db5909f9aff81aba3c975a2c32baf0471a64"
+    },
+    "US-OH": {
+      "counties": 88,
+      "bytes": 38282,
+      "sha256": "b88b77dd44d690b3cb5e92d59bc66c7bc40a93f7dd7c6445dae9ed24636699c9"
+    },
+    "US-OK": {
+      "counties": 77,
+      "bytes": 38070,
+      "sha256": "6e84938a325e5f038de09fa10a2886decb4f8422f5d2daef7cbc471116959b3e"
+    },
+    "US-OR": {
+      "counties": 36,
+      "bytes": 31162,
+      "sha256": "b429600232a70d752d13b52003429fdc02540ffefee6084bab3a39924c0b8fd4"
+    },
+    "US-PA": {
+      "counties": 67,
+      "bytes": 36894,
+      "sha256": "211e3e65d5039d382481e477ee0e62a2e3d28ea2001da5cd16ebce27e889ff02"
+    },
+    "US-RI": {
+      "counties": 5,
+      "bytes": 2551,
+      "sha256": "2c82da696fbdca97c7c759e3a97c091d4bdd66b820aef229c0169114d6129408"
+    },
+    "US-SC": {
+      "counties": 46,
+      "bytes": 32305,
+      "sha256": "897da5ad0eafc92cf0a112a29e53306db2b3ae17d87ef5e39d172cf57d14215e"
+    },
+    "US-SD": {
+      "counties": 66,
+      "bytes": 29099,
+      "sha256": "b24f88fab69e51cd38939ca2e8712e961db53a1e45445a32df6891141408b298"
+    },
+    "US-TN": {
+      "counties": 95,
+      "bytes": 53796,
+      "sha256": "da53877cf2a6bb3b3f772e1d1c5f821295e2a8e6fda1527d7ec5bcfb47ef14e6"
+    },
+    "US-TX": {
+      "counties": 254,
+      "bytes": 118711,
+      "sha256": "8b69461da5c6352558d7d016e8f71258b883e7f67b9d5e8856e4d793e66fe388"
+    },
+    "US-UT": {
+      "counties": 29,
+      "bytes": 24128,
+      "sha256": "64fc24ad784e8d9d3eecf6e07a177eedaf21307777aaee1be7f3d08d67eea4d0"
+    },
+    "US-VA": {
+      "counties": 133,
+      "bytes": 69890,
+      "sha256": "ad7a17ad9ebf30ba07939d1b80bafc74ffd65444129b47cb941755c5a1b3f425"
+    },
+    "US-VT": {
+      "counties": 14,
+      "bytes": 8927,
+      "sha256": "174af444831ccca9269eb7ea38c888070eef5a30aef31052c04c8e9a98d63a66"
+    },
+    "US-WA": {
+      "counties": 39,
+      "bytes": 35277,
+      "sha256": "8f458061b33817b770cfb908ccf20ad724dafe3dda8e03d92121433984602afd"
+    },
+    "US-WI": {
+      "counties": 72,
+      "bytes": 32142,
+      "sha256": "15c507aa85edc251be5d8429b7b7f86f654d74b220ed8cf34ac5fc139efa00cd"
+    },
+    "US-WV": {
+      "counties": 55,
+      "bytes": 31744,
+      "sha256": "183d31f7ed863f20ec35ccb0b1387348bf287a0fb19b96c7c3d5a71474bd77de"
+    },
+    "US-WY": {
+      "counties": 23,
+      "bytes": 15674,
+      "sha256": "524a862f7e8646a6760a674f7088388f66babe52cdc313b61f8d337174ac8b76"
+    }
+  }
+}

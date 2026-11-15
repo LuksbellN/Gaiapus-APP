@@ -24,3 +24,30 @@ it('distinguishes unavailable data from a catalog error', async () => {
   expect(screen.queryByText('Ainda não há dados agrícolas publicados para este estado.')).not.toBeInTheDocument();
   expect(screen.getByText(/Não foi possível consultar os dados dos condados/)).toBeVisible();
 });
+
+it('with county boundaries loaded, lists every county of the state: published ones first, the rest selectable', async () => {
+  const { loadUSCounties } = await import('../geo/usStates');
+  const counties = await loadUSCounties('US-IA');
+  const onPickCounty = vi.fn();
+  render(<USStatesPanel {...defaults} states={await loadUSStates()} stateCode="US-IA" counties={counties} onPickCounty={onPickCounty} />);
+  const list = screen.getByTestId('us-county-list');
+  const rows = within(list).getAllByRole('listitem');
+  expect(rows).toHaveLength(99);
+  expect(rows[0]).toHaveTextContent('Story');
+  expect(rows[0]).toHaveTextContent('Com dados');
+  expect(rows[1]).not.toHaveTextContent('Com dados');
+  fireEvent.change(screen.getByLabelText('Buscar condado'), { target: { value: 'Polk' } });
+  fireEvent.click(within(screen.getByTestId('us-county-list')).getByRole('button', { name: /Polk/ }));
+  expect(onPickCounty).toHaveBeenCalledWith('US:fips:19153');
+});
+
+it('a county without data says so; a county with data links to its place screen', async () => {
+  const { loadUSCounties } = await import('../geo/usStates');
+  const counties = await loadUSCounties('US-IA');
+  const props = { ...defaults, states: await loadUSStates(), stateCode: 'US-IA', counties, onPickCounty: vi.fn() };
+  const { rerender } = render(<USStatesPanel {...props} countyCode="US:fips:19153" />);
+  expect(screen.getByTestId('us-county-detail')).toHaveTextContent('Polk');
+  expect(screen.getByTestId('us-county-detail')).toHaveTextContent('Ainda não há dados agrícolas publicados para este condado');
+  rerender(<USStatesPanel {...props} countyCode="US:fips:19169" />);
+  expect(within(screen.getByTestId('us-county-detail')).getByRole('link')).toHaveAttribute('href', '#/municipio?id=US%3Afips%3A19169');
+});

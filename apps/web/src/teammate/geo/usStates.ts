@@ -7,6 +7,13 @@ export const US_STATES_SOURCE = 'Natural Earth · Admin 1 · 1:50m · public dom
 export async function loadUSStates(): Promise<FC> {
   return (await import('../data/geo/us-states.json')).default as unknown as FC;
 }
+// County boundaries per state, built by scripts/build-us-counties.mjs (us-atlas@3.0.1, U.S. Census Bureau, ISC); loaded on demand.
+const COUNTY_FILES = import.meta.glob<{ default: unknown }>('../data/geo/us-counties/US-*.json');
+export async function loadUSCounties(stateCode: string): Promise<FC | null> {
+  const load = COUNTY_FILES[`../data/geo/us-counties/${stateCode}.json`];
+  return load ? ((await load()).default as FC) : null;
+}
+export const US_COUNTIES_SOURCE = 'U.S. Census Bureau cartographic boundaries 1:10M via us-atlas 3.0.1 (ISC)';
 export function stateSelection(code: string): Selection {
   return { pais: code.startsWith('US-') ? 'USA' : 'BR', uf: code, mun: null };
 }
