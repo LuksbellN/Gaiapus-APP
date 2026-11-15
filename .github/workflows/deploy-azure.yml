@@ -1,0 +1,60 @@
+name: Deploy Azure
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: azure-production
+  cancel-in-progress: false
+env:
+  REGISTRY: gaiapusprod4d36.azurecr.io
+  RESOURCE_GROUP: gaiapus-prod
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: eb3a403f-c90e-4e4c-bbdd-4019563f5b3d
+          tenant-id: cd5e6d23-cb99-4189-88ab-1a9021a0c451
+          subscription-id: 4d36d12d-d8eb-4567-a5c4-f79069318570
+      - name: Read public frontend configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp show -g "$RESOURCE_GROUP" -n gaiapus-app > "$RUNNER_TEMP/app.json"
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['RUNNER_TEMP'] + '/app.json') as f:
+              app = json.load(f)
+          env = {v['name']: v.get('value', '') for v in app['properties']['template']['containers'][0]['env']}
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              for source, target in [('SUPABASE_URL', 'VITE_SUPABASE_URL'), ('SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY')]:
+                  value = env[source]
+                  if not value or '\n' in value or '\r' in value:
+                      raise ValueError('Missing or invalid public configuration: ' + source)
+                  f.write(target + '=' + value + '\n')
+          PY
+      - name: Build and push both images
+        shell: bash
+        run: |
+          set -euo pipefail
+          az acr login -n gaiapusprod4d36
+          docker build -f apps/api/Dockerfile --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY -t "$REGISTRY/gaiapus-app:$GITHUB_SHA" .
+          docker build -f services/science-adapter/Dockerfile -t "$REGISTRY/gaiapus-science:$GITHUB_SHA" .
+          docker push "$REGISTRY/gaiapus-app:$GITHUB_SHA"
+          docker push "$REGISTRY/gaiapus-science:$GITHUB_SHA"
+      - name: Deploy Python then application
+        shell: bash
+        run: |
+          set -euo pipefail
+          az extension add --name containerapp --upgrade --only-show-errors
+          az containerapp update -g "$RESOURCE_GROUP" -n gaiapus-science --image "$REGISTRY/gaiapus-science:$GITHUB_SHA" --output none
+          az containerapp update -g "$RESOURCE_GROUP" -n gaiapus-app --image "$REGISTRY/gaiapus-app:$GITHUB_SHA" --output none
+      - name: Verify public endpoints
+        shell: pwsh
+        run: ./scripts/azure-smoke.ps1 -Origin https://gaiapus-app.redplant-fd6a37ae.centralus.azurecontainerapps.io

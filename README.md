@@ -3,6 +3,7 @@
 Personal agricultural evidence workspace: public published geography/history/examples, verified private places and immutable saved comparisons. The frontend is developed separately in `apps/web`; the Node API and internal Python adapter are independently runnable.
 
 - [Primeiro deploy unificado](Docs/2026-11-15-primeiro-deploy.md)
+- [Deploy Azure econômico: configuração e comandos](Docs/azure-deploy.md)
 - [API startup, routes and deployment](apps/api/README.md)
 - [Create/configure Supabase](Docs/2026-11-14-gaiapus-supabase-setup.md)
 - [API/frontend handoff and v7 renderer change](Docs/2026-11-14-gaiapus-api-handoff.md)
