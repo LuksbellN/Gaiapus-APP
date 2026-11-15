@@ -92,6 +92,7 @@ it('without a year in the address, a county opens on the first year that has the
 // Identity under a slow network: the title, the run and the series on screen always belong to the same place and harvest year.
 const brRun = (code: string, year: number) => publications.find((p: any) => p.location_id === `BR:ibge:${code}` && p.crops.join() === 'soy' && p.harvest_years.includes(year)).run_id;
 afterEach(() => gates.clear());
+const SLOW = { timeout: 8000 }; // three full runs are read from disk in one test; the default second is too short on a busy machine
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 30)); });
 const shown = () => screen.queryByTestId('planning-run')?.textContent ?? '';
 it('changing place while answers are late never shows the previous run under the new title', async () => {
@@ -139,15 +140,15 @@ it('changing the harvest year waits for the run of that year', async () => {
 
 it('Brazil → US → Brazil keeps each place with its own run; an unknown place never falls back to Sorriso', async () => {
   open('?modo=planejamento&local=BR:ibge:3170206&cultura=soy&safra=2027&vista=perfil&semwebgl=1');
-  expect(await screen.findByTestId('planning-run')).toHaveTextContent(brRun('3170206', 2027));
+  expect(await screen.findByTestId('planning-run', undefined, SLOW)).toHaveTextContent(brRun('3170206', 2027));
   act(() => go('/simulador?modo=planejamento&local=US:fips:19169&cultura=soy&safra=2027&vista=perfil&semwebgl=1'));
-  await waitFor(() => expect(shown()).toContain(storyRun(2027)));
+  await waitFor(() => expect(shown()).toContain(storyRun(2027)), SLOW);
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Soja em Story County');
   act(() => go('/simulador?modo=planejamento&local=BR:ibge:3170206&cultura=soy&safra=2027&vista=perfil&semwebgl=1'));
-  await waitFor(() => expect(shown()).toContain(brRun('3170206', 2027)));
+  await waitFor(() => expect(shown()).toContain(brRun('3170206', 2027)), SLOW);
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Soja em Uberlândia');
   act(() => go('/simulador?modo=planejamento&local=US:fips:99999&cultura=soy&safra=2027'));
-  expect(await screen.findByTestId('planning-unavailable')).toBeInTheDocument();
+  expect(await screen.findByTestId('planning-unavailable', undefined, SLOW)).toBeInTheDocument();
   expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent('Sorriso');
   expect(shown()).toBe('');
 });

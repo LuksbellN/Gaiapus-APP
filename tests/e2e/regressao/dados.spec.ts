@@ -80,7 +80,7 @@ test.describe('RT-08 culturas e capacidades', () => {
 test.describe('RT-11 Field Shift', () => {
   test('comparação completa e rendimento não avaliado', async ({ page }) => {
     await page.goto('/#/field-shift');
-    await expect(page.getByRole('columnheader', { name: 'A · Pousio' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'A · Pousio' }).first()).toBeVisible();
     await expect(page.getByText('Não avaliado — indisponível')).toBeVisible();
     await expect(page.getByText(/O benefício depende de uma hipótese/)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Sensibilidade às hipóteses' })).toBeVisible();

@@ -183,3 +183,49 @@ it('qualitative agronomy says "not assessed" where no applicable source exists, 
   expect(guide).toHaveTextContent('Um ponto de grade não é a média do município nem a medição de um talhão');
   expect(guide).toHaveTextContent(summary.weather.source);
 });
+
+// M3 — rain sensitivity: three calculated points, never an interpolation.
+const point = (percent: number) => summary.sensitivity.rain.points.find((p) => p.rain_change_percent === percent)!;
+it('rain control offers only the calculated points and says it is not a forecast', async () => {
+  open();
+  await screen.findByTestId('fs-strategy-table');
+  const rain = screen.getByTestId('fs-rain');
+  expect(within(rain).getAllByRole('radio').map((r) => (r as HTMLInputElement).value)).toEqual(['-20', '0', '20']);
+  expect(within(rain).getByRole('radio', { name: 'histórica' })).toBeChecked();
+  expect(rain).toHaveAttribute('data-multiplier', '1');
+  expect(rain).toHaveTextContent('Teste de sensibilidade sobre o clima histórico — não é previsão climática.');
+  expect(rain).toHaveTextContent('Temperatura: não calculada neste pacote');
+  expect(rain.querySelector('input[type="range"]')).toBeNull();
+});
+
+it('−20% and +20% show the recalculated strategies of that point, with the same package', async () => {
+  open();
+  const table = await screen.findByTestId('fs-strategy-table');
+  const base = cell(table, 'year_water_use_mm', '[data-strategy="reference_fallow"]').textContent;
+  const pkg = screen.getByTestId('fs-package').textContent;
+  await userEvent.click(within(screen.getByTestId('fs-rain')).getByRole('radio', { name: '−20%' }));
+  const dry = point(-20), t2 = screen.getByTestId('fs-strategy-table');
+  expect(screen.getByTestId('fs-rain')).toHaveAttribute('data-multiplier', '0.8');
+  for (const s of ['reference_fallow', 'brachiaria', 'soy_long_fallow'] as const) {
+    expect(cell(t2, 'year_water_use_mm', `[data-strategy="${s}"]`)).toHaveTextContent(num(dry.scenarios[s].mean.year_water_use_mm!));
+    expect(cell(t2, 'soy_deficit_mm', `[data-strategy="${s}"]`)).toHaveTextContent(num(dry.scenarios[s].mean.soy_deficit_mm!));
+  }
+  expect(cell(t2, 'year_water_use_mm', '[data-strategy="reference_fallow"]').textContent).not.toBe(base);
+  const published = dry.comparisons.soy_long_fallow_minus_reference_fallow.year_drainage_mm.mean!;
+  expect(cell(t2, 'year_drainage_mm', '[data-delta="soy_long_fallow"]')).toHaveTextContent(`+${num(published)}`);
+  expect(cell(t2, 'maize_deficit_mm', '[data-strategy="soy_long_fallow"]')).toHaveTextContent('não cultivado');
+  expect(screen.getByTestId('fs-rain')).toHaveTextContent(`Chuva −20%: ${num(dry.scenarios.reference_fallow.mean.year_rain_mm!, 0)} mm por ano agrícola.`);
+  expect(screen.getByTestId('fs-rain')).toHaveTextContent('multiplicada por 0,8');
+  expect(screen.getByTestId('fs-package').textContent).toBe(pkg);
+  expect(screen.getByTestId('fs-cards').querySelector('[data-strategy="reference_fallow"] [data-line="soy"]')).toHaveTextContent(num(dry.scenarios.reference_fallow.mean.soy_deficit_mm!));
+  expect(screen.getByText('O gráfico diário mostra o clima histórico, sem alteração.')).toBeInTheDocument();
+  await userEvent.click(within(screen.getByTestId('fs-rain')).getByRole('radio', { name: '+20%' }));
+  expect(cell(screen.getByTestId('fs-strategy-table'), 'year_water_use_mm', '[data-strategy="brachiaria"]')).toHaveTextContent(num(point(20).scenarios.brachiaria.mean.year_water_use_mm!));
+});
+
+it('a rain value that was not calculated falls back to the historical one instead of inventing a result', async () => {
+  open('?chuva=10');
+  const table = await screen.findByTestId('fs-strategy-table');
+  expect(screen.getByTestId('fs-rain')).toHaveAttribute('data-multiplier', '1');
+  expect(cell(table, 'year_water_use_mm', '[data-strategy="reference_fallow"]')).toHaveTextContent(num(summary.scenarios.reference_fallow.mean.year_water_use_mm!));
+});

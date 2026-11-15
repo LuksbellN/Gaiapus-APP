@@ -8,7 +8,7 @@ import { useActiveContext } from '../App';
 import { placeName, plotElsewhere, resolvePlace } from '../context';
 import { ScopeStrip } from '../ui/ScopeStrip';
 import { useI18n, type MessageKey } from '../i18n';
-import { isStrategy, StrategyChart, StrategyOverview, StrategyTable } from './FieldShiftStrategies';
+import { isStrategy, RainControl, rainPoint, StrategyChart, StrategyOverview, StrategyTable } from './FieldShiftStrategies';
 import { orderGroups, resolvePriority, STRATEGIES, STRATEGY_LETTER, type StrategyId } from '../sim/field-shift-decision';
 import { AgronomyMatrix, PriorityPicker, StrategyCards } from './FieldShiftDecision';
 import { ScienceReadingGuide } from '../ui/ScienceReadingGuide';
@@ -29,6 +29,8 @@ export function FieldShiftPage() {
   const put = (key: string, value: string | null) => setParams((prev) => { const p = new URLSearchParams(prev); if (value == null) p.delete(key); else p.set(key, value); return p; }, { replace: true });
   const byLetter = STRATEGIES.find((s) => STRATEGY_LETTER[s] === (params.get('ref') ?? '').toUpperCase()); const reference: StrategyId = isStrategy(params.get('ref')) ? (params.get('ref') as StrategyId) : byLetter ?? 'reference_fallow';
   const v2 = pkg.data?.data ?? null;
+  // Rain sensitivity: only the calculated points of the package; the historical one reads the base summary.
+  const point = v2 ? rainPoint(v2, params.get('chuva')) : null; const input = v2 && point && point.multiplier !== 1 ? point : v2?.summary ?? null;
   // Priority: explicit choice, else the saved plan named in the address (plans of this account), else a visible default.
   const plans = useStore((s) => s.plans); const chosen = resolvePriority({ choice: params.get('prioridade'), planId: params.get('plano'), plans });
   if (f.status === 'error') return <div className="page"><h1>Field Shift</h1><ErrorState error={f.error} onRetry={f.retry} /></div>; if (!f.data) return <div className="page"><h1>Field Shift</h1><Loading rows={6} /></div>;
@@ -43,7 +45,8 @@ export function FieldShiftPage() {
       {v2 && <StrategyOverview pkg={v2} reference={reference} onReference={(s) => put('ref', s === 'reference_fallow' ? null : STRATEGY_LETTER[s])} />}
       {legacy && <Notice tone="warn" title={t('fieldShift.v2.mismatch.title')}>{t('fieldShift.v2.mismatch.text')}</Notice>}
       {v2 && <PriorityPicker priority={chosen.priority} source={chosen.source} planDate={chosen.plan?.createdAt.slice(0, 10) ?? null} onChange={(p) => put('prioridade', p)} />}
-      {v2 && <StrategyCards pkg={v2} input={v2.summary} reference={reference} priority={chosen.priority} />}
+      {v2 && point && <RainControl pkg={v2} point={point} onChange={(percent) => put('chuva', percent === '0' ? null : percent)} />}
+      {v2 && input && <StrategyCards pkg={v2} input={input} reference={reference} priority={chosen.priority} />}
       {!v2 && <div className="grid-3">
         <div className="card"><Stat label={t('fieldShift.stat.covered')} value={signed(diff.covered_days, 0)} unit={t('fieldShift.stat.perYear')} note={t('fieldShift.stat.coveredNote', { a: n0(ref.covered_days), b: n0(bra.covered_days) })} /></div>
         <div className="card"><Stat label={t('fieldShift.stat.reserve')} value={signed(diff.storage_at_next_sowing_mm, 2)} unit="mm" note={t('fieldShift.stat.reserveNote', { a: n1(ref.storage_at_next_sowing_mm), b: n1(bra.storage_at_next_sowing_mm) })} /></div>
@@ -51,7 +54,7 @@ export function FieldShiftPage() {
       </div>}
       <div data-tour="fs-limits"><Notice tone="warn" title={t('fieldShift.hypothesis.title')}>{t('fieldShift.hypothesis.text', { factor: nMax(x.hypotheses.central.straw_factor, 2), noStraw: n2(noStraw?.difference_next_soy_establishment_deficit_mm) })} {x.evidence === EVIDENCE_EN ? t('fieldShift.hypothesis.noField') : x.evidence}</Notice></div>
       {!legacy && <section className="card" data-tour="fs-table"><h2>{t('fieldShift.v2.table.title', { n: v2 ? v2.summary.scenarios[reference].valid_years : 6 })}</h2>
-        {v2 ? <StrategyTable pkg={v2} input={v2.summary} reference={reference} groups={orderGroups(chosen.priority)} /> : pkg.status === 'error' ? <ErrorState error={pkg.error} onRetry={pkg.retry} /> : <Loading rows={6} />}
+        {v2 && input ? <StrategyTable pkg={v2} input={input} reference={reference} groups={orderGroups(chosen.priority)} /> : pkg.status === 'error' ? <ErrorState error={pkg.error} onRetry={pkg.retry} /> : <Loading rows={6} />}
         <Source meta={pkg.data?.meta ?? f.data.meta} extra={t('fieldShift.soil', { cls: x.soil.cad_class, mm: n0(x.soil.capacity_mm) })} /></section>}
       {v2 && <ScienceReadingGuide source={v2.summary.weather.source} />}
       {v2 && <AgronomyMatrix />}
@@ -60,6 +63,7 @@ export function FieldShiftPage() {
         <p className="meta">{t('fieldShift.notSimulated', { list: x.not_simulated.map((k) => (NOT.includes(k) ? t(`fieldShift.not.${k.replace(' ', '_')}` as MessageKey) : k)).join(', '), water: signed(diff.off_season_water_use_mm), drainage: signed(diff.off_season_drainage_mm) })}</p>
         <Source meta={f.data.meta} extra={t('fieldShift.soil', { cls: x.soil.cad_class, mm: n0(x.soil.capacity_mm) })} /></section>}
       <section className="card"><div className="row-between"><h2>{t('fieldShift.daily.title', { year })}</h2><label className="row meta" data-tour="fs-year">{t('municipality.clima.year')}<select className="input" style={{ width: 'auto' }} value={year} onChange={(e) => setYear(e.target.value)}>{x.weather.agricultural_years.map((y) => <option key={y}>{y}</option>)}</select></label></div>
+        {v2 && point && point.multiplier !== 1 && <p className="meta-13">{t('fieldShift.v2.rain.chart')}</p>}
         {v2 ? <StrategyChart pkg={v2} year={year} /> : !legacy ? (pkg.status === 'error' ? null : <Loading />) : d.status === 'error' ? <ErrorState error={d.error} onRetry={d.retry} /> : !A || !B ? <Loading /> : <PhaseTimeline series={{ dates: A.date.slice(a, b), rain: A.rain_mm.slice(a, b), storage: A.storage_end_mm.slice(a, b), storageB: B.storage_end_mm.slice(a, b), stage: A.stage.slice(a, b), land: A.land_cover.slice(a, b), landB: B.land_cover.slice(a, b), deficit: A.et_deficit_mm.slice(a, b), capacity: x.soil.capacity_mm }} labelA={t('fieldShift.daily.labelA')} labelB={t('fieldShift.daily.labelB')} ariaLabel={t('fieldShift.daily.chart', { year })} height={220} />}
         <div className="row"><LinkBtn primary to="/simulador?modo=historico">{t('fieldShift.openSim')}</LinkBtn></div></section>
       <section className="card"><h2>{t('fieldShift.sens.title')}</h2><p className="meta">{t('fieldShift.sens.intro')}</p>

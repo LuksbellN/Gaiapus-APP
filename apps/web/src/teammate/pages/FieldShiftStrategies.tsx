@@ -5,7 +5,7 @@ import { nMax, signed } from '../format';
 import { useI18n, type MessageKey } from '../i18n';
 import { Seg } from '../ui';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
-import { buildComparison, GROUPS, STRATEGIES, STRATEGY_LETTER, type GroupId, type MetricId, type PairStat, type PublishedComparison, type StrategyId } from '../sim/field-shift-decision';
+import { buildComparison, GROUPS, STRATEGIES, STRATEGY_LETTER, type GroupId, type MetricId, type PairStat, type PublishedComparison, type RainPoint, type StrategyId } from '../sim/field-shift-decision';
 
 export const DEFAULT_GROUPS: GroupId[] = ['cover', 'common', 'soy', 'maize', 'own'];
 const V1_METRICS: MetricId[] = ['covered_days', 'storage_at_next_sowing_mm', 'off_season_water_use_mm', 'off_season_drainage_mm', 'soy_deficit_mm', 'next_soy_establishment_deficit_mm', 'maize_deficit_mm', 'maize_stress_days'];
@@ -81,4 +81,22 @@ export function StrategyChart({ pkg, year }: { pkg: FieldShiftPackage; year: str
   return <PhaseTimeline series={{ dates: A.date.slice(a, b), rain: A.rain_mm.slice(a, b), storage: A.storage_end_mm.slice(a, b), storageB: B.storage_end_mm.slice(a, b), storageC: C.storage_end_mm.slice(a, b),
     stage: A.stage.slice(a, b), land: A.land_cover.slice(a, b), landB: B.land_cover.slice(a, b), landC: C.land_cover.slice(a, b), deficit: A.et_deficit_mm.slice(a, b), capacity: pkg.series.capacity_mm }}
     labelA={t('fieldShift.daily.labelA')} labelB={t('fieldShift.daily.labelB')} labelC={t('fieldShift.v2.daily.labelC')} ariaLabel={t('fieldShift.v2.daily.chart', { year })} height={240} />;
+}
+
+/** The rain point on screen: one of the calculated points of the package; anything else is the historical one. */
+export function rainPoint(pkg: FieldShiftPackage, percent: string | null): RainPoint {
+  const points = pkg.summary.sensitivity.rain.points; const base = points.find((p) => p.multiplier === 1)!;
+  return points.find((p) => String(p.rain_change_percent) === percent) ?? base;
+}
+/** Sensitivity to rain: discrete calculated points only (a slider would suggest results between them). Not a forecast. */
+export function RainControl({ pkg, point, onChange }: { pkg: FieldShiftPackage; point: RainPoint; onChange: (percent: string) => void }) {
+  const { t } = useI18n(); const rain = pkg.summary.sensitivity.rain;
+  const label = (p: RainPoint) => (p.rain_change_percent < 0 ? t('fieldShift.v2.rain.minus') : p.rain_change_percent > 0 ? t('fieldShift.v2.rain.plus') : t('fieldShift.v2.rain.base'));
+  return (
+    <section className="card" data-testid="fs-rain" data-multiplier={point.multiplier}>
+      <Seg legend={t('fieldShift.v2.rain.legend')} name="chuva" value={String(point.rain_change_percent)} onChange={onChange} options={rain.points.map((p) => ({ value: String(p.rain_change_percent), label: label(p) }))} />
+      <p className="meta-13"><b>{t('fieldShift.v2.rain.label')}</b>{point.multiplier !== 1 && <> {t('fieldShift.v2.rain.active', { change: label(point), rain: nMax(point.scenarios.reference_fallow.mean.year_rain_mm, 0) })} {t('fieldShift.v2.rain.method', { factor: nMax(point.multiplier, 1) })}</>}</p>
+      <p className="meta-13">{t('fieldShift.v2.rain.temperature')}</p>
+    </section>
+  );
 }

@@ -141,3 +141,41 @@ Vermelho antes: os 6 testes novos da página falhavam (sem seletor, cartões, ma
 **Rota para conferir:** `/#/field-shift?prioridade=producao` · `/#/field-shift?ref=B`.
 **Situação:** commit local; sem push, sem PR, sem produção.
 **Limitações:** a prioridade ordena a leitura, não recomenda estratégia; não há margem nem avaliação agronômica quantitativa.
+
+### M3 / P1 — sensibilidade de chuva
+
+**Mudou**
+- Controle "Chuva" em `/field-shift` com os três pontos calculados no pacote: −20%, histórica e +20% (`?chuva=-20|20`). São botões de opção, alcançáveis por teclado; não há controle deslizante, porque não existe resultado entre os pontos. Valor não calculado no endereço cai na chuva histórica.
+- Em cada ponto, tabela e cartões mostram A, B e C recalculados pelo produtor com a mesma sequência diária e a água do solo contínua; as diferenças são as pareadas daquele ponto. O gráfico diário continua mostrando o clima histórico e diz isso.
+- Rótulo fixo: "Teste de sensibilidade sobre o clima histórico — não é previsão climática." Temperatura aparece como não calculada, com o motivo.
+
+**O que o pacote mostra** (médias de 6 safras; tabela completa gerada em `ideias_nasa/docs/submission/field-shift-numbers.md`):
+
+| Chuva | Chuva no ano (mm) | Água usada A / B / C (mm) | Drenada A / B / C (mm) | Déficit da soja A / B / C (mm) |
+|---|---:|---|---|---|
+| −20% | 1.565 | 723,4 / 722,6 / 588,2 | 841,7 / 842,9 / 977,0 | 16,8 / 16,3 / 16,8 |
+| histórica | 1.956 | 748,8 / 749,5 / 596,2 | 1.205,5 / 1.205,1 / 1.358,1 | 12,6 / 12,3 / 12,6 |
+| +20% | 2.347 | 768,7 / 771,2 / 602,3 | 1.576,3 / 1.573,8 / 1.742,7 | 9,8 / 9,4 / 9,8 |
+
+**Preservado:** nenhum peso ou modelo de rendimento foi tocado; o `simulate(rain_multiplier=…)` antigo segue aceitando só 0–1.
+
+#### Verificação do M3 e regressão do conjunto (15/11/2026)
+
+| Comando | Resultado |
+|---|---|
+| `pnpm --filter @gaiapus/web test` | 42 arquivos, **312 de 312** |
+| `pnpm --filter @gaiapus/api test` | 17 arquivos, **56 de 56** |
+| `pnpm --filter @gaiapus/contracts test` · `pnpm contracts:check` | **28 de 28** · contratos gerados conferem |
+| `pnpm --filter @gaiapus/web typecheck` · `build` | sem erros · build concluído |
+| `pnpm exec playwright test` (Vite 5174 → API 3001, dados de exemplo) | **117 de 117** (111 do lote 1 + 1 de rede lenta + 5 de `field-shift.spec.ts`) |
+
+O que apareceu no caminho, para constar:
+- Primeira passada da suíte web: 311 de 312. O teste "Brazil → US → Brazil" (criado no M0) estourou a espera padrão de 1 s com a máquina ocupada; passou 3 vezes isolado. Recebeu espera de 8 s e a suíte inteira foi repetida: 312 de 312.
+- Primeira passada do navegador: 115 de 117. Dois testes antigos procuravam o cabeçalho "A · Pousio" na página inteira e passaram a encontrar dois (tabela de estratégias e matriz agronômica). Ganharam `.first()`; nenhuma outra asserção antiga mudou.
+- Vermelho antes da implementação: os 3 testes de chuva da página.
+
+Não executado: testes com banco (`*.database.test.ts`) e com o serviço Python ao vivo (`*.science.test.ts`), que dependem de contas e serviço não configurados aqui; smoke contra o build hospedado com fonte real dos EUA; leitor de tela e aparelhos reais.
+
+**Rota para conferir:** `/#/field-shift?chuva=-20` · `/#/field-shift?chuva=20&prioridade=producao&ref=C`.
+**Situação:** commit local; sem push, sem PR, sem produção.
+**Limitações:** sensibilidade de uma variável por vez; o parâmetro `?lang=` não existe no app — o idioma vem do navegador ou da preferência salva.

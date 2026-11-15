@@ -74,7 +74,7 @@ test('imagery and historical simulation load through the adapted project', async
   await expect(page.getByRole('img', { name: /Imagem de satélite/ })).toBeVisible();
   await page.goto('/#/field-shift');
   await expect(page.getByRole('heading', { name: /Field Shift/ }).first()).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'A · Pousio' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'A · Pousio' }).first()).toBeVisible();
   await page.goto('/#/simulador?modo=historico');
   await expect(page.getByRole('heading', { name: /Simulador de safra/ })).toBeAttached();
   await expect(page.locator('canvas')).toBeVisible({ timeout: 20000 });
