@@ -116,3 +116,28 @@ Vermelho antes: os 4 testes de `FieldShift.test.tsx` falhavam por não existir a
 **Rota para conferir:** `/#/field-shift` (referência B ou C: `/#/field-shift?ref=C`).
 **Situação:** commits locais nos dois repositórios; sem push, sem PR, sem produção.
 **Limitações:** três estratégias de manejo, das quais C tem menos culturas — não são três rotações diversificadas; crotalária (D) não foi calculada por falta de parâmetros validados; no celular a tabela rola dentro do próprio quadro.
+
+### M2 / P1 — prioridade do produtor, cartões de decisão e guia de leitura
+
+**Mudou**
+- Seletor "Sua prioridade" em `/field-shift` (margem, produção, conservação). Origem: escolha explícita (`?prioridade=`), senão o plano salvo indicado no endereço (`?plano=<id>`, só planos da conta em uso), senão conservação como padrão visível. O plano mais recente nunca é usado em silêncio; rascunho não conta.
+- A prioridade reordena os grupos de indicadores da tabela e as linhas de cada cartão. Não muda clima, modelo, números nem o pacote (testado: os mesmos valores e o mesmo `package_id` antes e depois).
+- Um cartão por estratégia: Por quê · O que a simulação mostra · Evidência · Lacunas · Riscos para revisar no local. Todo número vem do pacote, com a diferença em relação à referência escolhida. Em C, a linha do milho diz "não é cultivado" — não há zero que vença.
+- Margem: não é calculada (o cenário não simula rendimento); a tela lista o que o produtor precisa informar e não usa nenhum valor padrão.
+- Matriz agronômica qualitativa: 5 aspectos × 3 estratégias, todos "não avaliado", com o motivo (a fonte da Embrapa consultada é de hortaliças e não se aplica automaticamente à soja; nenhuma das três tem leguminosa de cobertura).
+- `ui/ScienceReadingGuide.tsx`: ET0, ETc, ETa, déficit, reserva (mm de água disponível, não umidade volumétrica nem leitura de sonda) e escala do ponto de grade.
+
+**Preservado:** tabela e gráfico do M1, publicação A/B anterior como reserva, tutorial da tela (âncoras `fs-*`), cinco idiomas.
+
+#### Verificação do M2
+
+| Comando | Resultado |
+|---|---|
+| `vitest run FieldShift.test.tsx field-shift-decision.test.ts i18n` | **85 de 85** (10 da página, 11 do helper, 64 de idiomas) |
+| `pnpm --filter @gaiapus/web typecheck` | sem erros |
+
+Vermelho antes: os 6 testes novos da página falhavam (sem seletor, cartões, matriz e guia); os 2 do helper falhavam por função inexistente. Suíte inteira (unidade e navegador): roda no fechamento do M3, sobre o mesmo código.
+
+**Rota para conferir:** `/#/field-shift?prioridade=producao` · `/#/field-shift?ref=B`.
+**Situação:** commit local; sem push, sem PR, sem produção.
+**Limitações:** a prioridade ordena a leitura, não recomenda estratégia; não há margem nem avaliação agronômica quantitativa.
