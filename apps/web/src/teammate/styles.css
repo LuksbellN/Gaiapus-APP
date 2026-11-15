@@ -186,8 +186,10 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .search__list { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-control); box-shadow: var(--overlay-shadow); max-height: 300px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; }
 .search__list li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; min-height: 40px; align-items: center; } .search__list li[aria-selected='true'], .search__list li:hover { background: var(--surface-2); }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.list button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 10px; background: none; border: 1px solid transparent; border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
-.list button:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
+.list button, .list > li > a { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 10px; background: none; border: 1px solid transparent; border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; text-align: left; text-decoration: none; }
+.list button:hover, .list > li > a:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
+.list button > span:not(.pill), .list > li > a > span:not(.pill) { min-width: 0; overflow-wrap: anywhere; }
+.list button > :is(svg, .pill), .list > li > a > :is(svg, .pill) { flex-shrink: 0; }
 /* Lista longa (países): só desenha os itens perto da área visível */
 .list--long li { content-visibility: auto; contain-intrinsic-size: auto 44px; }
 .sheet-handle { display: none; }
