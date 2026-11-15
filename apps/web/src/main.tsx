@@ -5,7 +5,7 @@ import '@fontsource/source-sans-3/latin-500.css';
 import '@fontsource/source-sans-3/latin-600.css';
 import './teammate/styles.css';
 import { createRoot } from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter, MemoryRouter } from 'react-router-dom';
 import { App } from './teammate/App';
 import { initializeAuth } from './features/auth/client';
 import { AuthPage } from './features/auth/AuthPage';
@@ -15,7 +15,9 @@ async function start() {
   await initializeAuth();
   await initializeSessionBridge();
   const authRoute = location.pathname === '/auth/callback' || location.pathname === '/auth/recovery';
-  createRoot(document.getElementById('root')!).render(<HashRouter><App authPage={authRoute ? <AuthPage recovery={location.pathname === '/auth/recovery'} /> : undefined} /></HashRouter>);
+  // Email token fragments must reach AuthPage intact; HashRouter rewrites them as routes.
+  const Router = authRoute ? MemoryRouter : HashRouter;
+  createRoot(document.getElementById('root')!).render(<Router><App authPage={authRoute ? <AuthPage recovery={location.pathname === '/auth/recovery'} /> : undefined} /></Router>);
 }
 start().catch(() => {
   // Message chosen by index.html in the boot language; catalogs may be the thing that failed, so it does not use i18n.

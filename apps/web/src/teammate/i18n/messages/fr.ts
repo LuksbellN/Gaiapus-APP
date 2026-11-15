@@ -47,6 +47,7 @@ const m: DeepPartial<Messages> = {
       request_failed: 'Impossible de charger les données.', invalid_response: 'La réponse reçue ne correspond pas au contrat.', unknown: 'Une erreur est survenue ({code}).',
     },
     auth: {
+      auth_rate_limited: 'Le service e-mail a atteint sa limite. Patientez avant de réessayer. Votre demande n’a pas été finalisée.',
       signin_failed: 'Vérifiez l’adresse e-mail et le mot de passe. Confirmez votre adresse e-mail avant de vous connecter.', signup_failed: 'Impossible de créer le compte. Vérifiez les informations et réessayez.',
       reset_failed: 'Impossible d’envoyer le lien. Patientez et réessayez.', resend_failed: 'Impossible de renvoyer le lien. Patientez et réessayez.',
       signout_failed: 'Impossible de vous déconnecter. Réessayez.', identity_unavailable: 'Le service de comptes n’est pas encore configuré dans cet environnement.',
@@ -422,6 +423,7 @@ const m: DeepPartial<Messages> = {
     useComma: 'Utilisez une virgule pour les décimales, par exemple {example}.', usePoint: 'Utilisez un point pour les décimales, par exemple {example}.', onlyNumbers: 'Utilisez uniquement des nombres, par exemple {example}.',
   },
   account: {
+    confirmationTitle: 'Consultez vos e-mails', confirmationSent: 'Demande reçue pour {email}. Ouvrez le message de confirmation pour activer votre compte.', confirmationHelp: 'La livraison peut prendre quelques minutes. Vérifiez les spams. Si vous avez déjà un compte, connectez-vous ou réinitialisez votre mot de passe.', resendWait: 'Renvoyer dans {seconds}s', changeEmail: 'Modifier l’adresse',
     local: { title: 'Mode local.', text: 'Les exploitations, les enregistrements et les plans restent sur cet appareil. L’authentification utilise le service de comptes ; ces enregistrements ne sont pas encore synchronisés par le backend.' },
     err: { name: 'Indiquez votre nom.' },
     msg: {

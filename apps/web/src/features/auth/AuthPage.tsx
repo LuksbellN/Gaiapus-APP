@@ -1,12 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
-import { exchangeEmailCode, supabase } from './client';
+import { completeEmailLink, supabase } from './client';
 import { callbackProblemKey, safeReturnPath } from './urls';
 import { canResumeRecovery, clearRecovery, rememberRecovery } from './recovery';
 import { useI18n, type MessageKey } from '../../teammate/i18n';
 import { LanguageSelect } from '../../teammate/ui/LanguageSelect';
 
-// The PKCE flow is unchanged; only the visible text is a message key, so switching language re-renders it.
 export function AuthPage({ recovery }: { recovery: boolean }) {
   const { t } = useI18n();
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'done'>('loading');
@@ -24,7 +23,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
     let active = true;
     // Remove codes and provider errors from browser history immediately.
     history.replaceState(null, '', location.pathname);
-    if (problem || !code) {
+    if (problem) {
       if (recovery && supabase && !code && !url.hash && !url.searchParams.has('error')) {
         void supabase.auth.getSession().then(({ data, error }) => {
           if (!active) return;
@@ -35,7 +34,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
       } else { setStatus('error'); setMessage(problem ?? 'auth.invalid'); }
       return () => { active = false; };
     }
-    void exchangeEmailCode(code).then(session => {
+    void completeEmailLink(url, recovery).then(session => {
       if (!active) return;
       if (recovery) rememberRecovery(session);
       setStatus(recovery ? 'ready' : 'done');
@@ -70,7 +69,7 @@ export function AuthPage({ recovery }: { recovery: boolean }) {
       <label>{t('auth.confirmPassword')}<input className="input" autoComplete="new-password" type="password" required minLength={8} value={confirm} disabled={busy} onChange={e => setConfirm(e.target.value)} /></label>
       <button type="submit" className="btn btn--primary" disabled={busy}>{busy ? t('auth.saving') : t('auth.save')}</button>
     </form>}
-    {status === 'error' && supabase && <div className="row"><a className="btn" href="/#/conta/recuperar">{t('auth.newLink')}</a><a className="btn" href="/#/conta">{t('auth.signInOrResend')}</a></div>}
+    {status === 'error' && supabase && <div className="row">{recovery && <a className="btn" href="/#/conta/recuperar">{t('auth.newLink')}</a>}<a className="btn" href="/#/conta">{t('auth.signInOrResend')}</a></div>}
     <a className="btn" href={returnPath}>{t('auth.backToExplore')}</a>
   </section></main>;
 }

@@ -47,6 +47,7 @@ const m: DeepPartial<Messages> = {
       request_failed: 'Die Daten konnten nicht geladen werden.', invalid_response: 'Die empfangene Antwort entspricht nicht dem Schnittstellenvertrag.', unknown: 'Ein Fehler ist aufgetreten ({code}).',
     },
     auth: {
+      auth_rate_limited: 'Der E-Mail-Dienst hat sein Versandlimit erreicht. Bitte warten Sie vor einem erneuten Versuch. Ihre Anfrage wurde nicht abgeschlossen.',
       signin_failed: 'Prüfen Sie E-Mail-Adresse und Passwort. Bestätigen Sie Ihre E-Mail-Adresse vor der Anmeldung.', signup_failed: 'Das Konto konnte nicht erstellt werden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.',
       reset_failed: 'Der Link konnte nicht gesendet werden. Warten Sie und versuchen Sie es erneut.', resend_failed: 'Der Link konnte nicht erneut gesendet werden. Warten Sie und versuchen Sie es erneut.',
       signout_failed: 'Abmelden fehlgeschlagen. Versuchen Sie es erneut.', identity_unavailable: 'Der Kontodienst wurde in dieser Umgebung noch nicht eingerichtet.',
@@ -422,6 +423,7 @@ const m: DeepPartial<Messages> = {
     useComma: 'Verwenden Sie ein Komma als Dezimaltrennzeichen, zum Beispiel {example}.', usePoint: 'Verwenden Sie einen Punkt als Dezimaltrennzeichen, zum Beispiel {example}.', onlyNumbers: 'Verwenden Sie nur Zahlen, zum Beispiel {example}.',
   },
   account: {
+    confirmationTitle: 'E-Mails prüfen', confirmationSent: 'Anfrage für {email} erhalten. Öffnen Sie die Bestätigungs-E-Mail, um Ihr Konto zu aktivieren.', confirmationHelp: 'Die Zustellung kann einige Minuten dauern. Prüfen Sie auch den Spamordner. Mit bestehendem Konto können Sie sich anmelden oder das Passwort zurücksetzen.', resendWait: 'Erneut senden in {seconds}s', changeEmail: 'E-Mail korrigieren',
     local: { title: 'Lokaler Modus.', text: 'Betriebe, Einträge und Pläne bleiben auf diesem Gerät. Die Authentifizierung erfolgt über den Kontodienst. Diese Einträge werden noch nicht durch das Backend synchronisiert.' },
     err: { name: 'Geben Sie Ihren Namen an.' },
     msg: {

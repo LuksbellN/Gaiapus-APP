@@ -19,6 +19,11 @@ it('requests email confirmation and never treats a signup as a verified account'
   expect(signup).toHaveBeenCalledWith(expect.objectContaining({ options: { emailRedirectTo: `${location.origin}/auth/callback`, data: { display_name: 'Ana' } } }));
   expect(getState().session).toBeNull();
 });
+it('preserves rate limiting as an actionable authentication error', async () => {
+  signup.mockResolvedValue({ error: { status: 429, code: 'over_email_send_rate_limit' } });
+  await expect(authAccount.signUp('Ana', 'ana@example.com', 'private-password')).rejects.toMatchObject({ code: 'auth_rate_limited', status: 429 });
+  expect(getState().session).toBeNull();
+});
 it('does not authenticate unconfirmed identities or clear a session after a failed logout', async () => {
   syncSession({ user } as never);
   signout.mockResolvedValue({ error: new Error('network') });

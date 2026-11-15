@@ -47,6 +47,7 @@ const m: DeepPartial<Messages> = {
       request_failed: 'No se pudieron cargar los datos.', invalid_response: 'La respuesta recibida no corresponde al contrato.', unknown: 'Ocurrió un error ({code}).',
     },
     auth: {
+      auth_rate_limited: 'El servicio de correo alcanzó su límite de envíos. Espera antes de intentarlo de nuevo. La solicitud no se completó.',
       signin_failed: 'Revise el correo electrónico y la contraseña. Confirme su correo electrónico antes de iniciar sesión.', signup_failed: 'No se pudo crear la cuenta. Revise los datos y reintente.',
       reset_failed: 'No se pudo enviar el enlace. Espere y reintente.', resend_failed: 'No se pudo reenviar el enlace. Espere y reintente.',
       signout_failed: 'No se pudo cerrar la sesión. Reintente.', identity_unavailable: 'El servicio de cuentas aún no está configurado en este entorno.',
@@ -422,6 +423,7 @@ const m: DeepPartial<Messages> = {
     useComma: 'Use coma para los decimales, por ejemplo {example}.', usePoint: 'Use punto para los decimales, por ejemplo {example}.', onlyNumbers: 'Use solo números, por ejemplo {example}.',
   },
   account: {
+    confirmationTitle: 'Revisa tu correo', confirmationSent: 'Solicitud recibida para {email}. Abre el correo de confirmación para activar tu cuenta.', confirmationHelp: 'La entrega puede tardar unos minutos. Revisa el spam. Si ya tienes cuenta, inicia sesión o recupera tu contraseña.', resendWait: 'Reenviar en {seconds}s', changeEmail: 'Corregir correo',
     local: { title: 'Modo local.', text: 'Las propiedades, los registros y los planes permanecen en este dispositivo. La autenticación utiliza el servicio de cuentas; estos registros aún no se sincronizan mediante el backend.' },
     err: { name: 'Indique su nombre.' },
     msg: {

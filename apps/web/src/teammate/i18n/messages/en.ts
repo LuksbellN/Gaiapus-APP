@@ -47,6 +47,7 @@ const m: DeepPartial<Messages> = {
       request_failed: 'Could not load the data.', invalid_response: 'The response received does not match the contract.', unknown: 'Something went wrong ({code}).',
     },
     auth: {
+      auth_rate_limited: 'The email service reached its sending limit. Please wait before trying again. Your request was not completed.',
       signin_failed: 'Check your email and password. Confirm your email before signing in.', signup_failed: 'Could not create the account. Check your details and try again.',
       reset_failed: 'Could not send the link. Wait and try again.', resend_failed: 'Could not resend the link. Wait and try again.',
       signout_failed: 'Could not sign out. Try again.', identity_unavailable: 'The account service has not been configured in this environment yet.',
@@ -422,6 +423,7 @@ const m: DeepPartial<Messages> = {
     useComma: 'Use a comma for decimals, for example {example}.', usePoint: 'Use a period for decimals, for example {example}.', onlyNumbers: 'Use numbers only, for example {example}.',
   },
   account: {
+    confirmationTitle: 'Check your email', confirmationSent: 'Request received for {email}. Open the confirmation email to activate your account.', confirmationHelp: 'Delivery may take a few minutes. Check spam too. If you already have an account, sign in or reset your password.', resendWait: 'Resend in {seconds}s', changeEmail: 'Change email',
     local: { title: 'Local mode.', text: 'Properties, records and plans remain on this device. Authentication uses the account service; these records are not yet synchronized by the backend.' },
     err: { name: 'Enter your name.' },
     msg: {
