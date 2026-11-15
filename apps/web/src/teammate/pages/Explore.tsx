@@ -10,7 +10,14 @@ import { byName, dFull, dNumeric, norm } from '../format';
 import { translate, useI18n, type MessageKey } from '../i18n';
 import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, useAsync, useMedia } from '../ui';
 import { useLazy } from '../lazyPage';
+import { locations, type LocationSummary } from '../adapters/locations';
 import { parseSelection } from '../geo/ids';
+import { countriesWithData, orderCountries } from '../geo/countriesWithData';
+import { loadUSCounties, loadUSStates, stateSelection } from '../geo/usStates';
+import { stateOfCounty } from '../geo/usFips';
+import { simulations } from '../adapters/simulations';
+import { USStatesPanel } from '../ui/USStatesPanel';
+import { usStatesCopy } from '../i18n/usStates';
 import { centerOf, coveredMunicipalities, fieldOf, placesWithData, statesWithData, useCoverageIndex, type PlaceWithData } from '../geo/coverageIndex';
 
 const loadMap = () => import('../map/ExplorerMap');
@@ -30,14 +37,23 @@ export function Explore() {
   const sel: Selection = useMemo(() => parseSelection(params), [params]);
   const select = (s: Selection) => { const p = new URLSearchParams(params); ['pais', 'uf', 'mun'].forEach((k) => p.delete(k)); if (s.pais) p.set('pais', s.pais); if (s.uf) p.set('uf', s.uf); if (s.mun) p.set('mun', s.mun); setParams(p); };
   const wide = useMedia('(min-width: 1100px)'); const mobile = useMedia('(max-width: 760px)');
+  // Places outside Brazil come from the location core (/v1/locations); Brazilian ones stay in the coverage index.
+  const located = useAsync((sg) => locations.list(sg), []); const abroad = (located.data ?? []).filter((l) => !l.legacy_area_id);
   const states = useAsync((sg) => geography.states(sg), []); const world = useAsync((sg) => geography.countries(sg), []); const [worldFilter, setWorldFilter] = useState('');
+  const us = sel.pais === 'USA';
+  const usStates = useAsync(() => us ? loadUSStates() : Promise.resolve(null), [us]);
+  // County boundaries of the selected US state (all counties, Census), and places with published planning runs.
+  const usCounties = useAsync(() => (us && sel.uf ? loadUSCounties(sel.uf) : Promise.resolve(null)), [us, sel.uf]);
+  const simCatalog = useAsync((sg) => simulations.capabilities({}, sg).catch(() => null), []);
+  const simIds = useMemo(() => (simCatalog.data?.places ?? []).filter((p) => p.capabilities.some((c) => c.status === 'ready')).map((p) => p.location_id), [simCatalog.data]);
+  const mapStates = us ? usStates.data ?? null : states.data?.data ?? null;
   const br = sel.pais === 'BR'; const country = sel.pais && !br ? world.data?.data.find((c) => c.code === sel.pais) ?? null : null; const unknownCountry = !!sel.pais && !br && !!world.data && !country;
   // Malha municipal e cobertura: só a resposta do pedido mais recente é aplicada.
   const [mun, setMun] = useState<{ uf: string | null; status: 'idle' | 'loading' | 'ok' | 'error'; fc: FC | null; meta?: Meta; error?: unknown }>({ uf: null, status: 'idle', fc: null });
   const runMun = useRef(latestOnly()).current; const runCov = useRef(latestOnly()).current; const [munTick, setMunTick] = useState(0);
-  useEffect(() => { if (!sel.uf) { setMun({ uf: null, status: 'idle', fc: null }); return; } setMun((m) => ({ uf: sel.uf, status: 'loading', fc: m.uf === sel.uf ? m.fc : null })); const uf = sel.uf; runMun((sg) => geography.municipalities(uf, sg)).then((r) => { if (!r.stale) setMun({ uf, status: 'ok', fc: r.value.data, meta: r.value.meta }); }).catch((error) => setMun({ uf, status: 'error', fc: null, error })); }, [sel.uf, munTick]); // eslint-disable-line
+  useEffect(() => { if (sel.pais !== 'BR' || !sel.uf) { setMun({ uf: null, status: 'idle', fc: null }); return; } setMun((m) => ({ uf: sel.uf, status: 'loading', fc: m.uf === sel.uf ? m.fc : null })); const uf = sel.uf; runMun((sg) => geography.municipalities(uf, sg)).then((r) => { if (!r.stale) setMun({ uf, status: 'ok', fc: r.value.data, meta: r.value.meta }); }).catch((error) => setMun({ uf, status: 'error', fc: null, error })); }, [sel.pais, sel.uf, munTick]); // eslint-disable-line
   const [cov, setCov] = useState<{ code: string | null; status: 'idle' | 'loading' | 'ok' | 'error'; data?: Coverage; meta?: Meta; error?: unknown }>({ code: null, status: 'idle' }); const [covTick, setCovTick] = useState(0);
-  useEffect(() => { if (!sel.mun) { setCov({ code: null, status: 'idle' }); return; } const code = sel.mun; setCov({ code, status: 'loading' }); runCov((sg) => coverage.get(code, sg)).then((r) => { if (!r.stale) setCov({ code, status: 'ok', data: r.value.data, meta: r.value.meta }); }).catch((error) => setCov({ code, status: 'error', error })); }, [sel.mun, covTick]); // eslint-disable-line
+  useEffect(() => { if (!sel.mun || sel.pais !== 'BR') { setCov({ code: null, status: 'idle' }); return; } const code = sel.mun; setCov({ code, status: 'loading' }); runCov((sg) => coverage.get(code, sg)).then((r) => { if (!r.stale) setCov({ code, status: 'ok', data: r.value.data, meta: r.value.meta }); }).catch((error) => setCov({ code, status: 'error', error })); }, [sel.mun, covTick]); // eslint-disable-line
   const [layers, setLayers] = useState<MapLayers>({ municipios: true, cobertura: true, imagem: false }); const [layersOpen, setLayersOpen] = useState(false);
   // Places with data come from the API catalogue (D-09); a failed catalogue is shown as such, never as "no data".
   const cidx = useCoverageIndex(); const withData = useMemo(() => placesWithData(cidx.index), [cidx.index]); const covered = useMemo(() => coveredMunicipalities(cidx.index), [cidx.index]); const ufWithData = useMemo(() => statesWithData(cidx.index), [cidx.index]);
@@ -50,15 +66,15 @@ export function Explore() {
   useEffect(() => { setFilter(''); setMunLimit(80); }, [sel.uf]);
   useEffect(() => { if (mobile && sel.mun) setSheet('media'); }, [sel.mun, mobile]);
 
-  const ufFeature = sel.uf ? states.data?.data.features.find((f) => f.properties.code === sel.uf) : undefined;
+  const ufFeature = sel.uf ? mapStates?.features.find((f) => f.properties.code === sel.uf) : undefined;
   const ufCode = (sigla: string | undefined | null) => states.data?.data.features.find((f) => f.properties.sigla === sigla)?.properties.code ?? '';
-  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }), [withData, states.data]); // eslint-disable-line
+  const markers = useMemo(() => withData.flatMap((p) => { const c = centerOf(p.municipality); return c ? [{ code: p.municipality.id, uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), name: p.municipality.name, lon: c[0], lat: c[1] }] : []; }).concat(abroad.filter(l => !us || !sel.uf || l.admin1_code === sel.uf).map((l) => ({ code: l.id, uf: l.admin1_code, name: l.name, lon: l.centroid[0]!, lat: l.centroid[1]!, href: `#/municipio?id=${encodeURIComponent(l.id)}` }))), [withData, states.data, located.data, us, sel.uf]); // eslint-disable-line
   const catalogArea = sel.mun && cidx.index?.status === 'ok' ? cidx.index.areas.find((a) => a.id === sel.mun) : undefined; const catalogName = catalogArea?.name;
   const catalogBox: BBox | null = catalogArea?.bbox ? [[catalogArea.bbox[0], catalogArea.bbox[1]], [catalogArea.bbox[2], catalogArea.bbox[3]]] : null;
   const munFeature = sel.mun && mun.uf === sel.uf ? mun.fc?.features.find((f) => f.properties.code === sel.mun) : undefined;
   const munList = useMemo(() => { const all = mun.fc?.features ?? []; const f = norm(filter); const hit = f ? all.filter((x) => norm(x.properties.name).includes(f) || x.properties.code.startsWith(f)) : all; return [...hit].sort((a, b) => Number(covered.includes(b.properties.code)) - Number(covered.includes(a.properties.code)) || byName(a.properties.name, b.properties.name)); }, [mun.fc, filter, covered, locale]); // eslint-disable-line
   const sheetPx = mobile ? (sheet === 'recolhida' ? SHEET.recolhida : Math.round(innerHeight * SHEET[sheet === 'expandida' ? 'media' : sheet])) : 0;
-  const padding = mobile ? { top: 132, left: 0, right: 0, bottom: sheetPx } : { top: 0, left: 344 + 16, right: wide && sel.mun ? 312 + 16 : 0, bottom: 0 };
+  const padding = mobile ? { top: 132, left: 0, right: 0, bottom: sheetPx } : { top: 0, left: 344 + 16, right: wide && sel.mun && !us ? 312 + 16 : 0, bottom: 0 };
   const locate = () => {
     if (!navigator.geolocation) { setGeo(t('explore.geo.unsupported')); return; } setGeo(t('explore.geo.locating'));
     navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -75,18 +91,22 @@ export function Explore() {
   };
 
   const brName = world.data?.data.find((c) => c.code === 'BR'); const brLabel = brName ? countryName(brName, locale) : 'Brasil';
-  const title = munFeature ? munFeature.properties.name : sel.mun ? catalogName ?? t('explore.municipality') : ufFeature ? ufFeature.properties.name : br ? brLabel : country ? countryName(country, locale) : sel.pais ? (unknownCountry ? t('explore.countryNotFound') : t('explore.country')) : t('explore.title');
-  const next = sel.mun ? t('explore.next.mun') : sel.uf ? t('explore.next.uf') : br ? t('explore.next.br') : sel.pais ? (country ? t('explore.next.country', { continent: t(`continent.${country.continent}` as MessageKey) }) : '') : t('explore.next.world');
-  const searchBox = <PlaceSearch onPick={(p) => select(p.type === 'pais' ? { pais: p.code, uf: null, mun: null } : { pais: 'BR', uf: p.uf, mun: p.type === 'municipio' ? p.code : null })} />;
-  const worldList = useMemo(() => { const f = norm(worldFilter); const all = world.data?.data ?? []; const hit = f ? all.filter((c) => c.aliases.some((a) => norm(a).includes(f)) || norm(translate(`continent.${c.continent}`)).includes(f)) : all; return [...hit].sort((a, b) => Number(b.code === 'BR') - Number(a.code === 'BR') || byName(countryName(a, locale), countryName(b, locale))); }, [world.data, worldFilter, locale]);
-  const detail = sel.mun ? <div data-tour="explore-coverage"><MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }} go={nav} /></div> : null;
-  const withDataBox = <WithData state={cidx.index} places={withData} open={showWithData} onToggle={() => setShowWithData((v) => !v)} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
+  // US counties are named from the Census boundary (or the published core); the IBGE municipality card does not apply.
+  const usCountyName = us && sel.mun ? (abroad.find((l) => l.id === sel.mun)?.name ?? usCounties.data?.features.find((f) => f.properties.code === sel.mun)?.properties.name ?? null) : null;
+  const title = usCountyName ? usCountyName : munFeature ? munFeature.properties.name : sel.mun ? catalogName ?? t('explore.municipality') : ufFeature ? ufFeature.properties.name : br ? brLabel : country ? countryName(country, locale) : sel.pais ? (unknownCountry ? t('explore.countryNotFound') : t('explore.country')) : t('explore.title');
+  const next = us ? usStatesCopy[locale][sel.uf ? 'counties' : 'choose'] : sel.mun ? t('explore.next.mun') : sel.uf ? t('explore.next.uf') : br ? t('explore.next.br') : sel.pais ? (country ? t(abroad.some((l) => l.country === country.a2) ? 'location.nextWithData' : 'explore.next.country', { continent: t(`continent.${country.continent}` as MessageKey) }) : '') : t('explore.next.world');
+  const searchBox = <PlaceSearch onPick={(p) => select(p.type === 'pais' ? { pais: p.code, uf: null, mun: null } : { pais: p.country ?? 'BR', uf: p.uf, mun: p.type === 'municipio' ? p.code : null })} />;
+  // Countries with data come from the catalogues (Brazilian coverage + published location cores abroad), not from a fixed code.
+  const dataByCountry = useMemo(() => countriesWithData({ brStates: withData.length ? ufWithData : [], abroad: [...abroad, ...simIds.flatMap((id) => { const st = stateOfCounty(id); return st ? [{ country: 'US', admin1_code: st }] : []; })] }), [withData.length, ufWithData, abroad, simIds]);
+  const worldList = useMemo(() => { const f = norm(worldFilter); const all = world.data?.data ?? []; const hit = f ? all.filter((c) => c.aliases.some((a) => norm(a).includes(f)) || norm(translate(`continent.${c.continent}`)).includes(f)) : all; return orderCountries(hit, dataByCountry, (c) => countryName(c, locale), byName); }, [world.data, worldFilter, locale, dataByCountry]);
+  const detail = sel.mun && !us ? <div data-tour="explore-coverage"><MunDetail code={sel.mun} name={munFeature?.properties.name ?? catalogName} uf={ufFeature?.properties.sigla} cov={cov} munStatus={mun.status} meshLoaded={!!mun.fc} found={!!munFeature || !!catalogName} outline={!!munFeature} retry={() => setCovTick((t) => t + 1)} onSeeCovered={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }} go={nav} /></div> : null;
+  const withDataBox = <WithData state={cidx.index} places={withData} abroad={abroad} open={showWithData} onToggle={() => setShowWithData((v) => !v)} onRetry={cidx.retry} onPick={(p) => select({ pais: 'BR', uf: ufCode(p.municipality.stateId?.replace(/^BR-/, '')), mun: p.municipality.id })} />;
 
   return (
     <div className="explore">
       {mapDown ? <div className="explore__map" style={{ display: 'grid', placeItems: 'center', padding: 24, paddingLeft: mobile ? 24 : 384 }}><Notice tone="warn" title={t('explore.map.unavailableTitle')}>{t('explore.map.unavailable')}</Notice></div>
         : mapMod.failed ? <div className="explore__map" style={{ display: 'grid', placeItems: 'center', padding: 24, paddingLeft: mobile ? 24 : 384 }}><div className="stack-2"><Notice tone="warn" title={t('explore.map.downloadTitle')}>{t('explore.map.download')}</Notice><div><button className="btn btn--sm" onClick={mapMod.retry}>{t('common.retry')}</button></div></div></div>
-        : ExplorerMap && <ExplorerMap ref={map} onStatus={(s) => setMapStatus((prev) => (s === 'ready' && prev === 'base-offline' ? prev : s))} selection={sel} states={states.data?.data ?? null} municipalities={mun.uf === sel.uf ? mun.fc : null} covered={covered} layers={layers} countryBox={country?.bbox ?? null} placeBox={!munFeature && catalogBox ? catalogBox : null} padding={padding} image={img.data ? { url: img.data.data.imageUrl, corners: img.data.data.image.corners, field: img.data.data.field.geojson } : null} onPick={select} onUnavailable={setMapDown} markers={markers} />}
+        : ExplorerMap && <ExplorerMap ref={map} onStatus={(s) => setMapStatus((prev) => (s === 'ready' && prev === 'base-offline' ? prev : s))} selection={sel} states={mapStates} municipalities={us ? usCounties.data ?? null : mun.uf === sel.uf ? mun.fc : null} covered={us ? [...abroad.map((l) => l.id), ...simIds] : covered} layers={layers} countryBox={country?.bbox ?? null} placeBox={!munFeature && catalogBox ? catalogBox : null} padding={padding} image={img.data ? { url: img.data.data.imageUrl, corners: img.data.data.image.corners, field: img.data.data.field.geojson } : null} onPick={select} onUnavailable={setMapDown} markers={markers} />}
       {!mapDown && !mapMod.failed && mapStatus === 'loading' && <div className="explore__loading" role="status" style={{ paddingLeft: mobile ? 0 : 360 }}><span className="spinner" aria-hidden /><span>{t('explore.map.loading')}</span></div>}
       {!mapDown && mapStatus === 'base-offline' && <div className="explore__toast" role="status">{t('explore.map.baseOffline')}</div>}
       {mobile && <div className="explore__search-top">{searchBox}</div>}
@@ -95,7 +115,7 @@ export function Explore() {
         <div className="explore__panel-head">
           {!mobile && searchBox}
           <nav className="crumbs" aria-label={t('explore.crumbs')}>
-            {[{ label: t('explore.world'), s: { pais: null, uf: null, mun: null }, on: true }, { label: br ? brLabel : country ? countryName(country, locale) : sel.pais ?? '', s: { pais: sel.pais, uf: null, mun: null }, on: !!sel.pais }, { label: ufFeature?.properties.sigla ?? sel.uf ?? '', s: { pais: 'BR', uf: sel.uf, mun: null }, on: !!sel.uf }, { label: munFeature?.properties.name ?? catalogName ?? sel.mun ?? '', s: sel, on: !!sel.mun }].filter((c) => c.on).map((c, i, a) => <span key={c.label} className="row" style={{ gap: 2 }}>{i > 0 && <ChevronRight size={14} aria-hidden />}{i === a.length - 1 ? <span aria-current="location">{c.label}</span> : <button onClick={() => select(c.s as Selection)}>{c.label}</button>}</span>)}
+            {[{ label: t('explore.world'), s: { pais: null, uf: null, mun: null }, on: true }, { label: br ? brLabel : country ? countryName(country, locale) : sel.pais ?? '', s: { pais: sel.pais, uf: null, mun: null }, on: !!sel.pais }, { label: ufFeature?.properties.sigla ?? sel.uf ?? '', s: { pais: sel.pais, uf: sel.uf, mun: null }, on: !!sel.uf }, { label: usCountyName ?? munFeature?.properties.name ?? catalogName ?? sel.mun ?? '', s: sel, on: !!sel.mun }].filter((c) => c.on).map((c, i, a) => <span key={c.label} className="row" style={{ gap: 2 }}>{i > 0 && <ChevronRight size={14} aria-hidden />}{i === a.length - 1 ? <span aria-current="location">{c.label}</span> : <button onClick={() => select(c.s as Selection)}>{c.label}</button>}</span>)}
           </nav>
           <div><h1 style={{ fontSize: 24 }}>{title}</h1><p className="meta">{next}</p></div>
         </div>
@@ -104,20 +124,20 @@ export function Explore() {
             {withDataBox}
             <label className="sr-only" htmlFor="filtro-pais">{t('explore.filterCountries')}</label>
             <input id="filtro-pais" className="input" name="filtro-pais" autoComplete="off" spellCheck={false} placeholder={t('explore.filterCountriesPh', { count: world.data.data.length })} value={worldFilter} onChange={(e) => setWorldFilter(e.target.value)} />
-            {worldList.length === 0 ? <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty> : <ul className="list list--long" data-tour="explore-country-list" aria-label={t('explore.countries')}>{worldList.map((c) => <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>{c.code === 'BR' ? <span><b>{countryName(c, locale)}</b><br /><span className="meta-13">{t('explore.brStates')}{ufWithData.length ? ` · ${t('explore.dataIn', { states: ufWithData.join(', ') })}` : ''}</span></span> : <span>{countryName(c, locale)} <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span></span>}{c.code === 'BR' && withData.length ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>}
+            {worldList.length === 0 ? <Empty title={t('explore.noCountry')}>{t('explore.noCountryText')}</Empty> : <ul className="list list--long" data-tour="explore-country-list" aria-label={t('explore.countries')}>{worldList.map((c) => <li key={c.code}><button onClick={() => select({ pais: c.code, uf: null, mun: null })}>{c.code === 'BR' ? <span><b>{countryName(c, locale)}</b><br /><span className="meta-13">{t('explore.brStates')}{ufWithData.length ? ` · ${t('explore.dataIn', { states: ufWithData.join(', ') })}` : ''}</span></span> : (c.a2 && dataByCountry.has(c.a2) ? <span><b>{countryName(c, locale)}</b> <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span><br /><span className="meta-13">{c.a2 === 'US' ? `${usStatesCopy[locale].countryLine} · ` : ''}{t('explore.dataIn', { states: dataByCountry.get(c.a2)!.join(', ') })}</span></span> : <span>{countryName(c, locale)} <span className="meta-13">{t(`continent.${c.continent}` as MessageKey)}</span></span>)}{c.a2 && dataByCountry.has(c.a2) ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>}
             <Source meta={world.data.meta} />
           </div>)}
           {sel.pais && !br && (world.status === 'error' ? <ErrorState error={world.error} onRetry={world.retry} /> : !world.data ? <Loading label={t('explore.loadingCountry')} rows={3} /> : unknownCountry ? <Notice tone="risk" title={t('explore.countryNotFoundTitle')}>{t('explore.countryNotFoundText', { code: sel.pais })}</Notice> : <div className="stack" data-testid="country-detail" data-code={sel.pais}>
-            <div><Pill>{t('explore.noAnalysis')}</Pill></div>
+            {us ? <USStatesPanel states={usStates.data ?? null} stateCode={sel.uf} counties={usCounties.data ?? null} countyCode={sel.mun} onPickCounty={(code) => select({ pais: 'USA', uf: sel.uf, mun: code })} extraCovered={simIds} items={abroad} loading={usStates.status === 'loading'} error={usStates.error} retry={usStates.retry} locationsLoading={located.status === 'loading'} locationsError={located.error} retryLocations={located.retry} onPick={code => select(stateSelection(code))} /> : abroad.some((l) => l.country === country?.a2) ? <AbroadList items={abroad.filter((l) => l.country === country?.a2)} /> : <><div><Pill>{t('explore.noAnalysis')}</Pill></div>
             <p>{t('explore.countryText', { country: countryName(country!, locale) })}</p>
-            <Notice>{t('explore.countryNotice', { states: ufWithData.length ? ` (${ufWithData.join(', ')})` : '' })}</Notice>
+            <Notice>{t('explore.countryNotice', { states: ufWithData.length ? ` (${ufWithData.join(', ')})` : '' })}</Notice></>}
             <div className="row"><button className="btn btn--primary" onClick={() => select({ pais: null, uf: null, mun: null })}>{t('explore.keepExploring')}</button><button className="btn" onClick={() => { select({ pais: 'BR', uf: null, mun: null }); setShowWithData(true); }}>{t('explore.seeWithData')}</button></div>
           </div>)}
           {br && !sel.uf && withDataBox}
           {br && !sel.uf && (states.status === 'error' ? <ErrorState error={states.error} onRetry={states.retry} /> : !states.data ? <Loading label={t('explore.loadingStates')} rows={5} /> :
             <ul className="list" aria-label={t('explore.states')}>{[...states.data.data.features].sort((a, b) => Number(ufWithData.includes(b.properties.sigla!)) - Number(ufWithData.includes(a.properties.sigla!)) || byName(a.properties.name, b.properties.name)).map((f) => <li key={f.properties.code}><button onClick={() => select({ pais: 'BR', uf: f.properties.code, mun: null })}><span>{f.properties.name} <span className="meta-13">{f.properties.sigla}</span></span>{ufWithData.includes(f.properties.sigla!) ? <Pill tone="water">{t('explore.withDataPill')}</Pill> : <ChevronRight size={18} aria-hidden />}</button></li>)}</ul>)}
           {sel.uf && !wide && detail}
-          {sel.uf && (mun.status === 'error' ? <ErrorState error={mun.error} onRetry={() => setMunTick((t) => t + 1)} /> : mun.status === 'loading' && !mun.fc ? <Loading label={t('explore.loadingMun')} rows={6} /> : mun.status === 'ok' && !mun.fc ?
+          {br && sel.uf && (mun.status === 'error' ? <ErrorState error={mun.error} onRetry={() => setMunTick((t) => t + 1)} /> : mun.status === 'loading' && !mun.fc ? <Loading label={t('explore.loadingMun')} rows={6} /> : mun.status === 'ok' && !mun.fc ?
             <Empty title={t('explore.munNotLoaded')}>{t('explore.munNotLoadedText')}</Empty> : mun.fc && <div className="stack-2">
               <label className="sr-only" htmlFor="filtro-mun">{t('explore.filterMun', { uf: ufFeature?.properties.name ?? '' })}</label>
               <input id="filtro-mun" className="input" name="filtro-municipio" autoComplete="off" spellCheck={false} placeholder={t('explore.filterMunPh', { count: mun.fc.features.length })} value={filter} onChange={(e) => setFilter(e.target.value)} />
@@ -189,12 +209,21 @@ function MunDetail({ code, name, uf, cov, munStatus, meshLoaded, found, outline,
   );
 }
 
+/** Published location cores outside Brazil (one entry per place; Brazilian places are listed by the coverage index). */
+function AbroadList({ items }: { items: LocationSummary[] }) {
+  const { t } = useI18n();
+  if (!items.length) return null;
+  const countries = [...new Set(items.map((l) => l.country))];
+  return <div className="stack-2" data-testid="abroad-list">{countries.map((c) => <div key={c} className="stack-2"><h3>{t(`location.country.${c}` as MessageKey)}</h3><p className="meta-13">{t('location.usNote')}</p>
+    <ul className="list">{items.filter((l) => l.country === c).map((l) => <li key={l.id}><a href={`#/municipio?id=${encodeURIComponent(l.id)}`}><span><b>{l.name}</b>, {l.admin1_name}<br /><span className="meta-13">{t('location.code', { scheme: l.scheme.toUpperCase(), code: l.code })}</span></span></a></li>)}</ul></div>)}</div>;
+}
+
 /** "Regiões com dados": places listed by the API catalogue, with what each one has. */
-function WithData({ state, places, open, onToggle, onRetry, onPick }: { state: ReturnType<typeof useCoverageIndex>['index']; places: PlaceWithData[]; open: boolean; onToggle: () => void; onRetry: () => void; onPick: (p: PlaceWithData) => void }) {
+function WithData({ state, places, abroad, open, onToggle, onRetry, onPick }: { state: ReturnType<typeof useCoverageIndex>['index']; places: PlaceWithData[]; abroad: LocationSummary[]; open: boolean; onToggle: () => void; onRetry: () => void; onPick: (p: PlaceWithData) => void }) {
   const { t } = useI18n();
   return <div className="stack-2" data-tour="explore-with-data">
-    <button className="btn btn--sm" aria-expanded={open} aria-controls="with-data" onClick={onToggle}>{open ? t('explore.withData.hide') : `${t('explore.withData.show')}${state?.status === 'ok' ? ` (${places.length})` : ''}`}</button>
-    {open && <div id="with-data" data-testid="with-data">{!state ? <Loading label={t('explore.withData.loading')} rows={2} />
+    <button className="btn btn--sm" aria-expanded={open} aria-controls="with-data" onClick={onToggle}>{open ? t('explore.withData.hide') : `${t('explore.withData.show')}${state?.status === 'ok' ? ` (${places.length + abroad.length})` : ''}`}</button>
+    {open && <div id="with-data" data-testid="with-data"><AbroadList items={abroad} />{!state ? <Loading label={t('explore.withData.loading')} rows={2} />
       : state.status === 'failed' ? <Notice tone="warn" title={t('explore.withData.failedTitle')}>{t('explore.withData.failed')} <button className="btn btn--sm" onClick={onRetry}>{t('common.retry')}</button></Notice>
       : <ul className="list" aria-label={t('explore.withData.show')}>{places.map((p) => { const sig = p.municipality.stateId?.replace(/^BR-/, ''); const items = [...p.own.map((x) => x.id), ...p.fields.map(() => 'field')]; return <li key={p.municipality.id}><button onClick={() => onPick(p)}><span className="stack-2" style={{ gap: 2 }}><b>{p.municipality.name}{sig ? `, ${sig}` : ''}</b><span className="meta-13">{items.map((i) => t(`explore.withData.item.${i}` as MessageKey)).join(' · ')}</span></span><ChevronRight size={18} aria-hidden /></button></li>; })}</ul>}</div>}
   </div>;

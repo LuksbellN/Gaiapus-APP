@@ -50,6 +50,54 @@ export const routeContracts = [
   ],
   [
     "GET",
+    "/v1/locations",
+    null,
+    "PageQuery",
+    "LocationPageResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/locations/:id/core",
+    null,
+    "LocationIdParams",
+    "LocationCoreResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/simulations/capabilities",
+    null,
+    "SimulationQuery",
+    "SimulationCatalogResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/simulations/regional",
+    null,
+    "SimulationQuery",
+    "SimulationPublicationListResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/simulations/:id",
+    null,
+    "SimulationIdParams",
+    "SimulationRunResponse",
+    false
+  ],
+  [
+    "GET",
+    "/v1/simulations/:id/series",
+    null,
+    "SimulationIdParams",
+    "SimulationSeriesResponse",
+    false
+  ],
+  [
+    "GET",
     "/v1/me",
     null,
     null,

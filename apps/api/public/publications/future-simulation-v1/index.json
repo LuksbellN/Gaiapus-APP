@@ -1,0 +1,310 @@
+{
+ "as_of": "2026-08-31T23:59:00+00:00",
+ "contract": "future-simulation-publications.v1",
+ "publications": [
+  {
+   "artifacts": [
+    {
+     "bytes": 18167,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_9cd555885306ffcd15715546/run.json",
+     "sha256": "2bf7553fe772a06dc9318f492d3b1712c4d0ba25e5651c844e46b828e90b1ba6"
+    },
+    {
+     "bytes": 1195205,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_9cd555885306ffcd15715546/series.json.gz",
+     "sha256": "1edb8ab84c4bc29f92673f87df4711b2f751096e196d172bed62eb5db080d0d0"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:2903201",
+   "measured": {
+    "days": 1168,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 43.96,
+    "seconds": 4.828,
+    "series_bytes_gzip": 1195205,
+    "series_bytes_raw": 3471825
+   },
+   "place_name": "Barreiras",
+   "plan_id": "soy",
+   "publication_version": "sim_9cd555885306ffcd15715546",
+   "run_id": "sim_9cd555885306ffcd15715546",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 18797,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_88fd3ea122a8ad02ced3f899/run.json",
+     "sha256": "46647c8f3256f7933a84f0f865fd33bd25625e11329647d924c0be8ac08a9616"
+    },
+    {
+     "bytes": 1054338,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_88fd3ea122a8ad02ced3f899/series.json.gz",
+     "sha256": "f7867c824bee8cfa70ba563bee4b36f4c83b7ab0adac14ddd1ba87b7b4f36bca"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:3170206",
+   "measured": {
+    "days": 1153,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 43.02,
+    "seconds": 4.741,
+    "series_bytes_gzip": 1054338,
+    "series_bytes_raw": 3276154
+   },
+   "place_name": "Uberlândia",
+   "plan_id": "soy",
+   "publication_version": "sim_88fd3ea122a8ad02ced3f899",
+   "run_id": "sim_88fd3ea122a8ad02ced3f899",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 33449,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_fd61ab4118a4e32398a12156/run.json",
+     "sha256": "efbc5cac8dc16fa58eadc423da051705efc8ad21149f9f4e600577b054b14e17"
+    },
+    {
+     "bytes": 1203905,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_fd61ab4118a4e32398a12156/series.json.gz",
+     "sha256": "d18a7b9a4ba25b42458a40f6cabd57ce760c7ebca37b2e78fbe42fc6067831e4"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy",
+    "maize2"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:3170206",
+   "measured": {
+    "days": 1273,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 48.47,
+    "seconds": 5.527,
+    "series_bytes_gzip": 1203905,
+    "series_bytes_raw": 3708648
+   },
+   "place_name": "Uberlândia",
+   "plan_id": "soy>maize2",
+   "publication_version": "sim_fd61ab4118a4e32398a12156",
+   "run_id": "sim_fd61ab4118a4e32398a12156",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 18382,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_0ef0f2562258c91c5a13ffff/run.json",
+     "sha256": "f7ac78e673c6478480152b0fb580968e26c0d37a1711dca9eed07f7f8df8e6d9"
+    },
+    {
+     "bytes": 949425,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_0ef0f2562258c91c5a13ffff/series.json.gz",
+     "sha256": "59e8fb288f357728c037c73e558e9c0a638c544943acaaf7d73ca06ebcfbf968"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:5107925",
+   "measured": {
+    "days": 1122,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 41.66,
+    "seconds": 5.019,
+    "series_bytes_gzip": 949425,
+    "series_bytes_raw": 3122596
+   },
+   "place_name": "Sorriso",
+   "plan_id": "soy",
+   "publication_version": "sim_0ef0f2562258c91c5a13ffff",
+   "run_id": "sim_0ef0f2562258c91c5a13ffff",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 32985,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_9ddd1c9949dbe442b92e9ac5/run.json",
+     "sha256": "23c5d3da6e701692f1279bc50e0abb204f9de6e56801632578854454e8b19524"
+    },
+    {
+     "bytes": 1093110,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_9ddd1c9949dbe442b92e9ac5/series.json.gz",
+     "sha256": "07d9a0afa0275c7470c33f962890984d11a874362d01febe3030808262d48d9a"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy",
+    "maize2"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:5107925",
+   "measured": {
+    "days": 1242,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 46.73,
+    "seconds": 5.343,
+    "series_bytes_gzip": 1093110,
+    "series_bytes_raw": 3538542
+   },
+   "place_name": "Sorriso",
+   "plan_id": "soy>maize2",
+   "publication_version": "sim_9ddd1c9949dbe442b92e9ac5",
+   "run_id": "sim_9ddd1c9949dbe442b92e9ac5",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 17923,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_33af8558ac1ce3bd53f064ec/run.json",
+     "sha256": "be362e0d74fec933cf7736b081062edcea7feed98784065178cc6bb2e0670afd"
+    },
+    {
+     "bytes": 1050666,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_33af8558ac1ce3bd53f064ec/series.json.gz",
+     "sha256": "bc7919409c481137ba42be86ca53a748ad4c5a8f4d9f1e05ec751c0ba0dc51ff"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:5218805",
+   "measured": {
+    "days": 1142,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 42.52,
+    "seconds": 4.749,
+    "series_bytes_gzip": 1050666,
+    "series_bytes_raw": 3255112
+   },
+   "place_name": "Rio Verde",
+   "plan_id": "soy",
+   "publication_version": "sim_33af8558ac1ce3bd53f064ec",
+   "run_id": "sim_33af8558ac1ce3bd53f064ec",
+   "visibility": "public_regional"
+  },
+  {
+   "artifacts": [
+    {
+     "bytes": 31841,
+     "compression": null,
+     "kind": "run",
+     "path": "runs/sim_e269df77be6e76cb588194fc/run.json",
+     "sha256": "dfddb67b89f29a5f3ecb8c8125cb9ca6907cebcc45150372bfb0eff3482b0182"
+    },
+    {
+     "bytes": 1200919,
+     "compression": "gzip",
+     "kind": "series",
+     "path": "runs/sim_e269df77be6e76cb588194fc/series.json.gz",
+     "sha256": "7fb65a1bc733e3223cfd16f66c6fdc18007fcfe392851b54bd5f342041aec02a"
+    }
+   ],
+   "as_of": "2026-08-31T23:59:00+00:00",
+   "crops": [
+    "soy",
+    "maize2"
+   ],
+   "current": true,
+   "harvest_years": [
+    2027,
+    2028
+   ],
+   "issued_at": "2026-11-15T13:41:40.164900+00:00",
+   "location_id": "BR:ibge:5218805",
+   "measured": {
+    "days": 1262,
+    "members": 22,
+    "note": "measured on the publishing machine; tracemalloc peak covers Python allocations only",
+    "peak_python_mib": 47.98,
+    "seconds": 5.464,
+    "series_bytes_gzip": 1200919,
+    "series_bytes_raw": 3687271
+   },
+   "place_name": "Rio Verde",
+   "plan_id": "soy>maize2",
+   "publication_version": "sim_e269df77be6e76cb588194fc",
+   "run_id": "sim_e269df77be6e76cb588194fc",
+   "visibility": "public_regional"
+  }
+ ]
+}

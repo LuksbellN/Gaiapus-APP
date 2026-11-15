@@ -27,6 +27,7 @@ const Devices = lazyPage('/dispositivos', () => import('./pages/Devices'), 'Devi
 const Alerts = lazyPage('/alertas', () => import('./pages/Devices'), 'Alerts');
 const DesignPreview = lazyPage(null, () => import('./pages/DesignPreview'), 'DesignPreview');
 const Help = lazyPage('/ajuda', () => import('./pages/Help'), 'Help');
+const LocationPage = lazyPage('/local', () => import('./pages/Location'), 'LocationPage');
 
 // Destinations grouped by the farmer's task (Docs/ux-preservacao/03, section 3). Routes are unchanged.
 // `mobile` items form the bottom bar; every item is also listed, by group, in "Mais".
@@ -117,6 +118,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
           <Route path="/mais" element={<More />} />
           <Route path="/design-preview" element={<DesignPreview />} />
           <Route path="/ajuda" element={<Help />} />
+          <Route path="/local" element={<LocationPage />} />
           <Route path="*" element={<div className="page"><h1>{t('nav.notFound')}</h1><p><Link to="/explorar">{t('nav.backToExplorer')}</Link></p></div>} />
         </Routes></>}</TourProvider>
       </main>

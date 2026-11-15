@@ -12,11 +12,12 @@ import { byName } from '../format';
 import { activeLocale, translate } from '../i18n';
 import type { Locale } from '../i18n/locale';
 import { authAccount } from './session';
+import { loadUSStates } from '../geo/usStates';
 
 export type Feature = { type: 'Feature'; id: number; properties: { code: string; name: string; sigla?: string }; geometry: { type: string; coordinates: any } };
 export type FC = { type: 'FeatureCollection'; features: Feature[] };
 export type BBox = [[number, number], [number, number]];
-export type Place = { type: 'pais' | 'uf' | 'municipio'; code: string; name: string; uf: string; ufSigla: string };
+export type Place = { country?: 'USA'; type: 'pais' | 'uf' | 'municipio'; code: string; name: string; uf: string; ufSigla: string };
 export type SearchResult = { places: Place[]; total: number; remote: 'ok' | 'failed' | 'skipped' };
 /** País ou território do mapa-base. `code` é 'BR' para o Brasil e o ADM0_A3 do Natural Earth para os demais. Só geografia.
  *  `names` por idioma e `aliases` (nomes nas cinco línguas, ISO alfa-2/alfa-3) servem para mostrar e buscar; nunca como identificador. */
@@ -59,6 +60,10 @@ export const geography = {
     for (const uf of this.ufsWithMunicipalities) {
       const fc = (await this.municipalities(uf)).data!;
       for (const f of fc.features) if (norm(f.properties.name).includes(s) || f.properties.code.startsWith(s)) out.push({ type: 'municipio', code: f.properties.code, name: f.properties.name, uf, ufSigla: sig[uf] });
+    }
+    for (const f of (await loadUSStates()).features) {
+      if (norm(f.properties.name).includes(s) || norm(f.properties.sigla ?? '') === s || norm(f.properties.code) === s)
+        out.push({ type: 'uf', country: 'USA', code: f.properties.code, name: f.properties.name, uf: f.properties.code, ufSigla: f.properties.sigla ?? '' });
     }
     const aliasesOf = new Map<string, string[]>();
     for (const c of (await this.countries()).data) if (c.aliases.some((a) => (a.length <= 3 ? norm(a) === s : norm(a).includes(s)))) { aliasesOf.set(c.code, c.aliases); out.push({ type: 'pais', code: c.code, name: countryName(c), uf: '', ufSigla: c.continent }); }

@@ -218,10 +218,112 @@
       "sha256": "9b8adced62ed206159361023f3a141d97019da5180e4dfd4929a96161fdc8e00"
     },
     {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "location core screen, US in Explore, link from Municipality",
+      "sha256": "3c5c1dec337a7a99c1d37b93df43ff04e1df91a9a4b342c0d430c30991685993"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "fa05a4dfa04c626e726b2c42ce29c7017f59af0a8029e50a6143eb5cb9c69482"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "a65a2afc8556fbd1085e8fdc356058f1e2db07ea642b3b0dc1249344d599f525"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "unified place screen with country/state/place picker; NDVI daily axis",
+      "sha256": "023b68252dc97ca6509828ff72fbb15d7bfd45f2de9d85eb8cb7103259b422c4"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "bfd14b090dc543414c5bb4434c7dc15b29f726c4b56ddcf333e8fbbf594bc35c"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8: soil-profile view (Talhão/Perfil do solo toggle) over published daily rows via scene adapter; no recalculation",
+      "sha256": "442480613a0455219a8a225a2dab12022fe80e521025e1e792479f2c2a27188c"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "7ec56975c03a086fabd621f1469722ebfb6d2e1051f00015003bb990486dd47a"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "Lara integration step 8b: optional Gaiapus stake (15/40 cm electrodes, model LED) and true-scale depth ruler in the soil-profile view",
+      "sha256": "eeb43702cbc6c300a5256f77b77d276b6007915fdf8cb12a816db25dcb3de054"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "soil-profile roots: show/hide roots and cutaway toggles; illustrative root architectures (no calculated depth in the current engine)",
+      "sha256": "0f64538ae8070ebdc87569b6f25be0c9197733a0a31d756ceab6afa580917196"
+    },
+    {
+      "file": "pages/Simulator.tsx",
+      "date": "2026-11-15",
+      "reason": "season planning 2027/2028 entry (modo=planejamento) routed to the calculated published runs",
+      "sha256": "8ca4ff7699a21ec3b7784fac94b77c236103863b9c02ecb50304dc215bfadf69"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "Unified frontend: preserve US state navigation alongside Lara and future planning",
+      "sha256": "e12a030252667391e9dfdfd7bdf0260de580f8bd067691c2c8f3a174cfcf7310"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "Unified frontend: preserve US state navigation alongside Lara and future planning",
+      "sha256": "b1736c44329369cadadd72aba652a24dc7612aa505b1f038672a64aa0aa36436"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "world list: every country with published data is highlighted and listed first (Brazil and US counties), derived from the catalogues",
+      "sha256": "e41891ba700d9c26d08a00d13d8da6a617ea4a42d5808c7a07d3d8f43607dc46"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "US counties at Brazil's level: Census county boundaries per state, full county list, county selection without the IBGE card, simulation catalogue counts as data",
+      "sha256": "c2999754672678d5afa0daf1fdd1f545349dd7ddc1d38df610c1b50a521a038b"
+    },
+    {
+      "file": "pages/Explore.tsx",
+      "date": "2026-11-15",
+      "reason": "US counties at Brazil's level: Census county boundaries per state, full county list, county selection without the IBGE card, simulation catalogue counts as data",
+      "sha256": "94884a349cd066a2bcb9567a7698f04520b2387a14f398c5b4b7f87b7333109d"
+    },
+    {
+      "file": "map/ExplorerMap.tsx",
+      "date": "2026-11-15",
+      "reason": "US counties: map attribution names the 2017 Census boundary; county panel separates boundary, agricultural data and scenarios",
+      "sha256": "f610ca75a86be6ecd2620e1bc62766d74a385e80cb49b9fa7d9655456aef4838"
+    },
+    {
       "file": "styles.css",
       "date": "2026-11-15",
       "reason": "Gaiapus logo in header, favicon and boot screen",
       "sha256": "4b55c1a48f0b75c3079690450096f872ef436051dbaf9bd338c02436a8d842ff"
+    },
+    {
+      "file": "styles.css",
+      "date": "2026-11-15",
+      "reason": "Merge of main into feat/logo: Gaiapus logo in header, favicon and boot screen on top of the integrated frontend",
+      "sha256": "76036c2854ebfd765a88a1317c74fe2886dc35dc6cb60e7518bb2b6634038767"
     }
   ]
 }

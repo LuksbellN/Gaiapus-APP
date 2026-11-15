@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"code":"US:fips:11001","fips":"11001","name":"District of Columbia","state":"US-DC","country":"US"},"geometry":{"type":"Polygon","coordinates":[[[-77.1181,38.9342],[-77.0427,38.9944],[-77.0032,38.9652],[-76.9099,38.893],[-77.0391,38.7916],[-77.0427,38.8397],[-77.0391,38.8715],[-77.1181,38.9342]]]}}]}
