@@ -1,17 +1,17 @@
-# Mecânica · estaca, case e pluviômetro
+# Mechanics · stake, case and rain gauge
 
-## Entregáveis
-1. Estaca: corpo que protege a PCB-sonda e permite cravar no solo sem quebrar a placa.
-2. Case IP65 da parte eletrônica: painel solar no topo, janela/guia de luz para 3 LEDs, botão, respiro protegido para o SHT40, QR code.
-3. Pluviômetro de báscula com reed switch: definir **mm por pulso**.
-4. Vista explodida, render e estimativa de custo (impressão 3D e injeção).
+## Deliverables
+1. Stake: body that protects the probe PCB and can be driven into the soil without breaking the board.
+2. IP65 case for the electronics: solar panel on top, light window/guide for 3 LEDs, button, protected vent for the SHT40, QR code.
+3. Tipping-bucket rain gauge with reed switch, with a defined **mm per pulse** (rev G: 0.201 mm).
+4. Exploded view, renders and cost estimate (3D printing and injection moulding).
 
-## Interfaces com a eletrônica (combinar com o hardware)
-- Cotas da PCB (largura, comprimento total, posição dos eletrodos a ~15 e ~40 cm)
-- Furos de fixação e posição do porta-bateria 18650
-- Posição dos LEDs, botão, USB-C, conector da antena e do pluviômetro
+## Interfaces with the electronics (agreed with hardware)
+- PCB dimensions (width, total length, electrode positions at ~15 and ~40 cm)
+- Mounting holes and position of the 18650 battery holder
+- Position of the LEDs, button, USB-C, antenna connector and rain-gauge connector
 
-Exporte a PCB do KiCad em STEP (Arquivo > Exportar > STEP) para encaixar no CAD.
+Export the PCB from KiCad as STEP (File > Export > STEP) to fit it into the CAD.
 
 ---
 
