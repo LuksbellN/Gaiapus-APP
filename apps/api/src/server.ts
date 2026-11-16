@@ -32,7 +32,9 @@ const port = Number(env.PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
 for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { void app.close().then(() => process.exit(0)); });
 await app.listen({ host: env.HOST ?? '127.0.0.1', port });
-// A publication has no user: its first report is the English one. Ensured in the background for every public run the
-// sources list at start-up (the pinned ones are already precomputed); a failure here never affects the simulations.
-if (env.REPORT_WARM !== 'off') void warmReports(dependencies.reports, dependencies.simulations, (runId, message) => app.log.warn({ run_id: runId, message }, 'simulation report warm-up failed'))
+// A publication has no user: its first report is the English one. The pinned Brazilian runs have it precomputed.
+// REPORT_WARM=on also ensures it, in the background at start-up, for every public run the sources list. It is opt-in
+// because that reads every run and series of every source: a remote batch can hold hundreds of runs. Without it the
+// English report of such a run is created by the first request. A failure here never affects the simulations.
+if (env.REPORT_WARM === 'on') void warmReports(dependencies.reports, dependencies.simulations, (runId, message) => app.log.warn({ run_id: runId, message }, 'simulation report warm-up failed'))
   .then(outcome => app.log.info(outcome, 'simulation reports ensured at start-up'), () => app.log.warn('simulation report warm-up could not list the publications'));

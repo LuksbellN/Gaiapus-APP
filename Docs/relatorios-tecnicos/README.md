@@ -87,8 +87,11 @@ na memória do processo, porque uma reinicialização o regeneraria com outra da
    de fixar (`pin-future-simulation.mjs`) ou ativar uma publicação. `reports:check` verifica sem escrever; o
    teste “the reports pinned in the repository are current” falha se os relatórios fixados ficarem defasados.
    Opções: `--source <dir da publicação>`, `--out <dir>`, `--locales en,pt-BR,…`, `--prune`.
-2. **Partida da API.** Em segundo plano, a API garante o relatório em inglês de todo run público que as fontes
-   listam (inclusive um lote remoto dos EUA). `REPORT_WARM=off` desliga. Uma falha aqui só gera um aviso no log.
+2. **Partida da API (opcional).** Com `REPORT_WARM=on`, a API garante em segundo plano o relatório em inglês de
+   todo run público que as fontes listam. Fica **desligado por padrão**: isso lê o `run.json` e a série de todas
+   as execuções de todas as fontes, e o lote dos EUA no Supabase tem 710 execuções (cerca de 152 MB). Sem essa
+   opção, o relatório em inglês de um run que não está fixado no repositório nasce no primeiro pedido. Uma falha
+   aqui só gera um aviso no log.
 3. **Tela.** Ao exibir um run `succeeded`, o planejamento da safra faz um POST com o idioma efetivamente
    renderizado e escopo de execução completa. Trocar o dia, a trajetória, a vista ou o tema não pede nada.
    Trocar o idioma ou o run cancela o pedido anterior; uma resposta atrasada nunca é mostrada.
@@ -111,7 +114,7 @@ idioma resolvido; perfil de exibição; nível de acesso. Tema, câmera, zoom e 
 `facts_digest` (SHA-256 dos fatos canônicos) é o mesmo em todos os idiomas do mesmo run e escopo.
 
 Variáveis: `REPORT_STORE_DIR`, `REPORT_CACHE_MB` (64), `REPORT_GENERATIONS_PER_MINUTE` (120), `REPORT_WARM`
-(`on`).
+(`off`).
 
 **Supabase.** Não há migration nesta entrega. No caminho das simulações o Supabase é uma fonte de publicação
 lida com a chave publicável; a API não tem credencial de escrita, então não poderia gravar relatórios lá. O
