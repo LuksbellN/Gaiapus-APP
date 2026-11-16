@@ -11,15 +11,17 @@
   <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin>
   <style>
     html { background: #0B1411; color: #EAF2EB; }
-    html[data-theme='light'] { background: #F5F7F2; color: #173326; }
+    html[data-theme='light'] { background: #F2F6F3; color: #163C2D; }
     .boot { min-height: 100vh; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 12px; font: 500 16px system-ui, sans-serif; }
     .boot b { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
     .boot i { width: 120px; height: 3px; border-radius: 2px; background: rgba(135, 201, 143, .2); overflow: hidden; position: relative; }
     .boot i::after { content: ''; position: absolute; inset: 0; width: 40%; background: #87C98F; border-radius: 2px; animation: boot 1.1s ease-in-out infinite alternate; }
+    html[data-theme='light'] .boot i { background: rgba(23, 107, 75, .18); }
+    html[data-theme='light'] .boot i::after { background: #176B4B; }
     @keyframes boot { to { transform: translateX(150%); } }
     @media (prefers-reduced-motion: reduce) { .boot i::after { animation: none; width: 100%; opacity: .5; } }
   </style>
-  <script>try { var p = JSON.parse(localStorage.getItem('gaiapus.prefs') || localStorage.getItem('gaiapus.v1.guest') || '{}'); if (p.theme === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) {}
+  <script>try { var p = JSON.parse(localStorage.getItem('gaiapus.prefs') || localStorage.getItem('gaiapus.v1.guest') || '{}'); if (p.theme === 'light') { document.documentElement.dataset.theme = 'light'; document.querySelector('meta[name=theme-color]').setAttribute('content', '#F2F6F3'); } } catch (e) {}
     // Boot language before React: saved preference, then browser languages, then English (same rule as i18n/locale.ts).
     var L = ['pt-BR', 'en', 'es', 'fr', 'de'], lang = 'en';
     try { var s = JSON.parse(localStorage.getItem('gaiapus.prefs') || '{}').locale; if (L.indexOf(s) >= 0) lang = s; else { var n = navigator.languages || [navigator.language]; for (var i = 0; i < n.length; i++) { var c = String(n[i]).slice(0, 2).toLowerCase(), m = c === 'pt' ? 'pt-BR' : L.indexOf(c) >= 0 ? c : null; if (m) { lang = m; break; } } } } catch (e) {}

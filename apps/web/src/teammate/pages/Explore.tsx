@@ -10,6 +10,8 @@ import { byName, dFull, dNumeric, norm } from '../format';
 import { translate, useI18n, type MessageKey } from '../i18n';
 import { Empty, ErrorState, LinkBtn, Loading, Notice, Pill, Source, useAsync, useMedia } from '../ui';
 import { useLazy } from '../lazyPage';
+import { fillCss, mapPalette } from '../map/palette';
+import { usePrefs } from '../prefs';
 import { locations, type LocationSummary } from '../adapters/locations';
 import { parseSelection } from '../geo/ids';
 import { countriesWithData, orderCountries } from '../geo/countriesWithData';
@@ -34,6 +36,8 @@ function pointIn(geom: any, lon: number, lat: number) {
 
 export function Explore() {
   const [params, setParams] = useSearchParams(); const nav = useNavigate(); const { t, locale } = useI18n();
+  // The legend reads the same palette object as the map layers, so swatches and map cannot drift apart.
+  const palette = mapPalette(usePrefs((p) => p.theme));
   const sel: Selection = useMemo(() => parseSelection(params), [params]);
   const select = (s: Selection) => { const p = new URLSearchParams(params); ['pais', 'uf', 'mun'].forEach((k) => p.delete(k)); if (s.pais) p.set('pais', s.pais); if (s.uf) p.set('uf', s.uf); if (s.mun) p.set('mun', s.mun); setParams(p); };
   const wide = useMedia('(min-width: 1100px)'); const mobile = useMedia('(max-width: 760px)');
@@ -195,9 +199,9 @@ export function Explore() {
           <label className="check" style={{ minHeight: 36, padding: 0 }}><input type="checkbox" checked={layers.imagem} onChange={(e) => { setLayers({ ...layers, imagem: e.target.checked }); if (e.target.checked && imgMun === '3170206' && sel.mun !== '3170206') select({ pais: 'BR', uf: '31', mun: '3170206' }); }} /><span>{t('explore.layers.image')}<br /><span className="meta-13">{t('explore.layers.imageField')}{img.data ? ` · ${dNumeric(img.data.data.image.date)}` : ''}</span></span></label>
         </fieldset>}
         <div className="explore__legend explore__legend--key" aria-label={t('explore.legend.label')}>
-          <span className="legend-item"><i className="swatch" style={{ background: 'rgba(135,201,143,.3)', border: '2px solid #87C98F' }} />{t('explore.legend.selected')}</span>
-          <span className="legend-item"><i className="swatch" style={{ background: 'rgba(121,189,216,.5)' }} />{t('explore.legend.withData')}</span>
-          <span className="legend-item"><i className="swatch" style={{ background: '#28503a', border: '1px solid #7d9a89' }} />{t('explore.legend.boundary')}</span>
+          <span className="legend-item"><i className="swatch" style={{ background: fillCss(palette.munSelectedFill), border: `2px solid ${palette.selection}` }} />{t('explore.legend.selected')}</span>
+          <span className="legend-item"><i className="swatch" style={{ background: fillCss(palette.covered), border: `1px solid ${palette.munLine}` }} />{t('explore.legend.withData')}</span>
+          <span className="legend-item"><i className="swatch" style={{ background: palette.brazil, border: `1px solid ${palette.stateLine}` }} />{t('explore.legend.boundary')}</span>
         </div>
         <div className="row" style={{ gap: 6 }}>
           <button className="icon-btn" aria-label={t('explore.controls.layers')} aria-pressed={layersOpen} onClick={() => setLayersOpen(!layersOpen)}><Layers size={20} aria-hidden /></button>

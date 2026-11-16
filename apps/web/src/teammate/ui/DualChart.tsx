@@ -12,8 +12,8 @@ export function DualChart({ dates, line, lineLabel, lineDomain, rejected, bars, 
   return <div className="timeline" ref={ref}><svg width={W} height={H} role="img" aria-label={ariaLabel} style={{ cursor: 'default' }}>
     {line && <>{[lo, (lo + hi) / 2, hi].map((v) => <g key={v}><line x1={m.l} x2={m.l + pw} y1={yL(v)} y2={yL(v)} stroke="var(--border)" /><text x={m.l - 6} y={yL(v) + 4} textAnchor="end">{nMax(v, 2)}</text></g>)}
       <text className="lbl" x={m.l} y={hL + 16}>{lineLabel}</text>
-      {segs.map((d, i) => <path key={i} d={d} fill="none" stroke="var(--action)" strokeWidth={2} />)}
-      {line.map((v, i) => v != null ? <circle key={i} cx={x(i)} cy={yL(v)} r={3} fill="var(--action)"><title>{dShort(dates[i])}: {nMax(v, 3)}</title></circle> : rejected?.[i] ? <path key={i} d={`M${x(i) - 3},${yL(lo) - 3} l6,6 m0,-6 l-6,6`} stroke="var(--text-2)" strokeWidth={1.5}><title>{dShort(dates[i])}: {translate('timeline.rejected')}</title></path> : null)}</>}
+      {segs.map((d, i) => <path key={i} d={d} fill="none" stroke="var(--action)" strokeWidth={2} strokeLinejoin="round" />)}
+      {line.map((v, i) => v != null ? <circle key={i} cx={x(i)} cy={yL(v)} r={3.5} fill="var(--action)" stroke="var(--chart-halo)" strokeWidth={1.5}><title>{dShort(dates[i])}: {nMax(v, 3)}</title></circle> : rejected?.[i] ? <path key={i} d={`M${x(i) - 3},${yL(lo) - 3} l6,6 m0,-6 l-6,6`} stroke="var(--text-2)" strokeWidth={1.5}><title>{dShort(dates[i])}: {translate('timeline.rejected')}</title></path> : null)}</>}
     {[0, 0.5, 1].map((f) => <g key={f}><line x1={m.l} x2={m.l + pw} y1={y0 - f * (hB - 8)} y2={y0 - f * (hB - 8)} stroke="var(--border)" /><text x={m.l - 6} y={y0 - f * (hB - 8) + 4} textAnchor="end">{Math.round(bMax * f)}</text></g>)}
     {bars.map((v, i) => v != null && v > 0 && <rect key={i} x={x(i) - Math.max(1, pw / n - 1) / 2} y={y0 - yB(v)} width={Math.max(1, pw / n - 1)} height={yB(v)} fill="var(--water)"><title>{dShort(dates[i])}: {nMax(v, 1)} mm</title></rect>)}
     <text className="lbl" x={m.l} y={hL + gap + 4}>{barsLabel}</text>

@@ -44,14 +44,18 @@ export function PhaseTimeline({ series, cursor, onCursor, height = 190, labelA, 
         <text x={0} y={m.t - 11}>{t('timeline.phase')}</text>{band(stageRuns, m.t - 24, (v) => STAGE_SHORT[v.split('|')[1]] ?? v, (v) => STAGE_FILL[v.split('|')[1]] ?? 'var(--surface-2)', (v) => STAGE_ABBR[v.split('|')[1]] ?? '', (v) => STAGE_STROKE[v.split('|')[1]] ?? 'var(--border-strong)')}
         {[0, 0.5, 1].map((f) => <g key={f}><line x1={m.l} x2={m.l + pw} y1={yS(cap * f)} y2={yS(cap * f)} stroke="var(--border)" strokeDasharray={f === 1 ? '4 3' : undefined} /><text x={m.l - 6} y={yS(cap * f) + 4} textAnchor="end">{Math.round(cap * f)}{f === 1 ? ' mm' : ''}</text><text x={m.l + pw + 6} y={m.t + ph - f * ph + 4}>{Math.round(rainMax * f)}{f === 1 ? ' mm' : ''}</text></g>)}
         
-        {series.rain.map((v, i) => v > 0 && <rect key={i} x={x(i) - bw / 2} y={m.t + ph - yR(v)} width={bw} height={yR(v)} fill="var(--water)" opacity={0.85} />)}
+        {/* Rain is opaque (its colour no longer depends on what is under it). Every series and the cursor are drawn over a
+            halo in the panel colour, so they stay separate where they cross the bars; B and C keep their dash patterns. */}
+        {series.rain.map((v, i) => v > 0 && <rect key={i} x={x(i) - bw / 2} y={m.t + ph - yR(v)} width={bw} height={yR(v)} fill="var(--water)" />)}
+        <g fill="none" stroke="var(--chart-halo)" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" data-chart-halo>{series.storageB && <path d={path(series.storageB)} />}{series.storageC && <path d={path(series.storageC)} />}<path d={path(series.storage)} /></g>
         {series.storageB && <path d={path(series.storageB)} fill="none" stroke="var(--warn)" strokeWidth={2} strokeDasharray="5 4" />}
         {series.storageC && <path d={path(series.storageC)} fill="none" stroke="var(--soil)" strokeWidth={2} strokeDasharray="2 3" />}
         <path d={path(series.storage)} fill="none" stroke="var(--text)" strokeWidth={2} strokeLinejoin="round" />
         {series.deficit?.map((v, i) => v > 0.05 && <rect key={i} x={x(i) - Math.max(bw, 1.5) / 2} y={m.t + ph + 3} width={Math.max(bw, 1.5)} height={5} fill="var(--risk)" />)}
         {ticks.map((i) => <g key={i}><line x1={x(i)} x2={x(i)} y1={m.t + ph} y2={m.t + ph + 10} stroke="var(--border-strong)" /><text x={x(i)} y={height - 6} textAnchor="middle">{n <= 12 ? dShort(series.dates[i]) : dMonth(series.dates[i])}</text></g>)}
         
-        {c != null && <g pointerEvents="none"><line x1={x(c)} x2={x(c)} y1={2} y2={m.t + ph + 10} stroke="var(--action)" strokeWidth={2} /><circle cx={x(c)} cy={yS(series.storage[c])} r={4.5} fill="var(--action)" stroke="var(--bg)" strokeWidth={1.5} /></g>}
+        {/* Cursor: a line with a handle on top (a shape, not only a colour) over the same halo. */}
+        {c != null && <g pointerEvents="none" data-chart-cursor><line x1={x(c)} x2={x(c)} y1={2} y2={m.t + ph + 10} stroke="var(--chart-halo)" strokeWidth={5} strokeLinecap="round" /><line x1={x(c)} x2={x(c)} y1={2} y2={m.t + ph + 10} stroke="var(--action)" strokeWidth={2} /><path d={`M${x(c) - 6},1 h12 l-6,8 z`} fill="var(--action)" stroke="var(--chart-halo)" strokeWidth={1.5} strokeLinejoin="round" /><circle cx={x(c)} cy={yS(series.storage[c])} r={4.5} fill="var(--action)" stroke="var(--chart-halo)" strokeWidth={2} /></g>}
       </svg>
       <p className="meta-13">{t('timeline.axes', { cap: Math.round(cap) })}</p>
     </div>

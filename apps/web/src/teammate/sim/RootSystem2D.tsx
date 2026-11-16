@@ -1,5 +1,6 @@
 // 2D drawing of a RootLayer (SVG). Geometry comes from root-model.ts; this file only maps metres to pixels.
 import type { RootLayer } from './root-model';
+import { SvgLabel } from './SvgLabel';
 
 export type RootText = { illustrative: string; depth: (cm: number, source: 'modelled' | 'observed') => string; continues: (cm: number) => string };
 
@@ -13,10 +14,10 @@ export function RootSystem2D({ layer, groundY, pxPerM, centerX, text }: { layer:
               strokeWidth={Math.max(0.6, s.radius * 180)} strokeOpacity={layer.source === 'illustrative' ? 0.85 : 1} />
       ))}
       {layer.depthLabelM != null && layer.source !== 'illustrative'
-        ? <text x={X(-1.9)} y={bottom - 4} fill="#efe3c4" fontSize="11">{text.depth(Math.round(layer.depthLabelM * 100), layer.source)}</text>
-        : <text x={X(-1.9)} y={groundY + 34} fill="#efe3c4" fontSize="11">{text.illustrative}</text>}
+        ? <SvgLabel x={X(-1.9)} y={bottom - 4}>{text.depth(Math.round(layer.depthLabelM * 100), layer.source)}</SvgLabel>
+        : <SvgLabel x={X(-1.9)} y={groundY + 42}>{text.illustrative}</SvgLabel>}
       {layer.continuesBelow && layer.depthLabelM != null && (
-        <g data-testid="roots-continue" fill="#efe3c4"><path d={`M${centerX - 7},${bottom - 2} l7,10 l7,-10 z`} /><text x={centerX + 12} y={bottom + 6} fontSize="11">{text.continues(Math.round(layer.drawDepthM * 100))}</text></g>
+        <g data-testid="roots-continue"><path d={`M${centerX - 7},${bottom - 2} l7,10 l7,-10 z`} fill="#efe3c4" stroke="var(--scene-label-text)" strokeWidth="0.75" /><SvgLabel x={centerX + 14} y={bottom + 6}>{text.continues(Math.round(layer.drawDepthM * 100))}</SvgLabel></g>
       )}
     </g>
   );

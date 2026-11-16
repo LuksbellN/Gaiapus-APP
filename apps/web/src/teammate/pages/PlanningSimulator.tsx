@@ -12,7 +12,8 @@ import { useI18n, type MessageKey } from '../i18n';
 import { ErrorState, Field, Loading, Notice, Pill, Seg, Tabs, useAsync, useMedia } from '../ui';
 import { PhaseTimeline, type TimelineSeries } from '../ui/PhaseTimeline';
 import { PlacePicker, type PickItem } from '../ui/PlacePicker';
-import { Field2D, webglAvailable, type FieldState } from '../sim/field-state';
+import { Field2D, fieldNotes, phaseProgress, SceneBoundary, webglAvailable, type FieldState } from '../sim/field-state';
+import { phaseRunAt } from '../sim/visual-state';
 import { comparableRuns, coverageOf, cycleDay, dayInfo, highestSatisfaction, memberOf, memberRows, planningHref, planningPlaceId, seasonIndex, seasonOf, selectPublication, waterSatisfaction, type MemberRole } from '../sim/planning-model';
 import { profileLayers } from '../sim/profile-model';
 import { Profile2D } from '../sim/Profile2D';
@@ -161,7 +162,8 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
   const [gl] = useState(webglAvailable);
   const field3d = useLazy(loadField3D, gl && view === 'talhao'); const profile3d = useLazy(loadProfile3D, gl && view === 'perfil');
   const reduced = useMedia('(prefers-reduced-motion: reduce)');
-  const rows = useMemo(() => memberRows(series, role), [series, role]);
+  const rows = useMemo(() => memberRows(series, role), [series, role]); const [lost, setLost] = useState(false);
+  const lands = useMemo(() => rows.map((r) => r.land_cover), [rows]); const stages = useMemo(() => rows.map((r) => r.phase_code), [rows]);
   const c = Math.min(Math.max(cursor, from), to);
   useEffect(() => { if (!playing) return; const id = setInterval(() => setCursor((v) => { if (v >= to) { setPlaying(false); return v; } return v + 1; }), 1000 / 14); return () => clearInterval(id); }, [playing, to]);
   // The selected day goes into the link, replacing history instead of stacking one entry per step.
@@ -169,13 +171,13 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
   const setPeriod = (v: 'safra' | 'tudo') => { setPlaying(false); setWhole(v === 'tudo'); if (v === 'safra') setCursor((x) => (x < span.from || x > span.to ? window?.start ?? span.from : x)); put({ periodo: v === 'tudo' ? 'tudo' : null }, true); };
 
   const row = rows[c]; const info = dayInfo(series, c);
-  const phaseStart = (() => { let i = c; while (i > 0 && rows[i - 1].phase_code === row.phase_code && rows[i - 1].land_cover === row.land_cover) i--; return i; })();
-  const phaseEnd = (() => { let i = c; while (i < n - 1 && rows[i + 1].phase_code === row.phase_code && rows[i + 1].land_cover === row.land_cover) i++; return i; })();
-  const progress = phaseEnd > phaseStart ? (c - phaseStart) / (phaseEnd - phaseStart) : 1;
+  // The run of this phase is looked up in the WHOLE published run (never in the season window on screen): the plant
+  // follows the real stage and its real position, and a phase that touches the edge of the run keeps a fixed pose.
+  const phase = phaseRunAt(lands, stages, series.dates, c); const progress = phaseProgress(row.phase_code, phase);
   const scene = toSceneState(row, LEGACY_SCENE_CAPS);
   const showStake = params.get('estaca') !== '0', showRoots = params.get('raizes') !== '0', cutaway = params.get('corte') !== '0';
   const layers = profileLayers(scene, progress, { device: showStake, roots: showRoots });
-  const fs: FieldState = { land: row.land_cover, stage: row.phase_code, progress, awf: scene.waterFraction ?? 0, rain: row.precipitation_mm ?? 0, covered: false };
+  const fs: FieldState = { land: row.land_cover, stage: row.phase_code, progress, awf: scene.waterFraction ?? 0, rain: row.precipitation_mm ?? 0, covered: false, phase }; const notes = fieldNotes(fs);
   const cd = row.land_cover !== 'bare' ? cycleDay(run, row.land_cover, run.seasons.find((s) => s.crop_id === row.land_cover && s.sowing_date <= row.date && row.date <= s.expected_harvest_date)?.harvest_year ?? year, row.date) : null;
   const deviceText = { electrode: (depth: number) => t('sim.profile.electrodeNone', { depth }), led: t('sim.profile.led'),
     roots: { illustrative: t('sim.profile.rootsIllustrative'), depth: (cm: number, source: 'modelled' | 'observed') => t('sim.profile.rootDepth', { cm, source: t(source === 'observed' ? 'sim.profile.sourceObserved' : 'sim.profile.sourceModelled') }), continues: (cm: number) => t('sim.profile.rootContinues', { cm }) } };
@@ -224,7 +226,7 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
       </aside>
       <div className="sim__stage" id="panel-campo">
         {view === 'talhao'
-          ? (gl && field3d.mod ? <field3d.mod.default state={fs} seed={7} label={label} /> : gl && !field3d.failed ? loading3d(t('sim.loading3d')) : <Field2D state={fs} label={label} />)
+          ? (gl && !lost && field3d.mod ? <SceneBoundary fallback={<Field2D state={fs} label={label} />}><field3d.mod.default state={fs} seed={7} label={label} onLost={() => setLost(true)} /></SceneBoundary> : gl && !lost && !field3d.failed ? loading3d(t('sim.loading3d')) : <Field2D state={fs} label={label} />)
           : (gl && profile3d.mod ? <profile3d.mod.default layers={layers} label={label} reducedMotion={reduced} deviceText={deviceText} cutaway={cutaway} /> : gl && !profile3d.failed ? loading3d(t('sim.profile.loading')) : <Profile2D scene={scene} layers={layers} label={label} zoneLabel={t('sim.profile.zoneMean')} deviceText={deviceText} />)}
         <div className="sim__overlay"><div className="sim__views"><Seg legend={t('sim.view.legend')} name="vista" value={view} onChange={(v) => put({ vista: v === 'talhao' ? null : v })} options={[{ value: 'talhao', label: t('sim.view.field') }, { value: 'perfil', label: t('sim.view.profile') }]} />
           {view === 'perfil' && <details className="sim__layers"><summary>{t('sim.planning.layers')}</summary>
@@ -232,7 +234,7 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
             <label className="check"><input type="checkbox" checked={showRoots} onChange={(e) => put({ raizes: e.target.checked ? null : '0' })} /><span>{t('sim.profile.rootsToggle')}</span></label>
             <label className="check"><input type="checkbox" checked={cutaway} onChange={(e) => put({ corte: e.target.checked ? null : '0' })} /><span>{t('sim.profile.cutawayToggle')}</span></label></details>}</div>
           <Pill tone={info.kind === 'observed' ? 'soil' : 'warn'}>{t(`sim.planning.origin.${info.kind}`)}</Pill><Pill>{dFull(row.date)}</Pill></div>
-        <p className="sim__caption">{view === 'perfil' ? t('sim.profile.caption') : t('sim.caption')}</p>
+        <p className="sim__caption" data-testid="sim-caption">{view === 'perfil' ? t('sim.profile.caption') : [t('sim.caption'), notes.fixedPose ? t('sim.captionFixedPose') : '', notes.noPlant ? t('sim.noPlant') : '', !gl || lost || field3d.failed ? t('sim.caption2d', { reserve: pct(scene.waterFraction) }) : ''].filter(Boolean).join(' ')}</p>
       </div>
       <div className="sim__timeline">
         <div className="transport" role="group" aria-label={t('sim.transport.label')}>
