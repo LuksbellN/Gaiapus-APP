@@ -30,7 +30,8 @@ export function CropBoard() {
   useEffect(() => {
     const mod = painter.mod; if (!mod || flat) return; let alive = true;
     const ink = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#163C2D'; const dpr = Math.min(2, window.devicePixelRatio || 1);
-    (async () => {
+    // Fire-and-forget on purpose: the body handles its own failure (try/catch below) and stops when the effect is cleaned up.
+    void (async () => {
       const next: Record<string, BoardCount> = {};
       try {
         for (const row of BOARD) {
