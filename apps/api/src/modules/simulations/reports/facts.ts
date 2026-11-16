@@ -90,7 +90,7 @@ function dataSources(run: SimulationRun, warn: Warn, warnings: ReportWarning[]):
   const sources = run.sources as Record<string, unknown>;
   const asOf = utcDay(run.as_of);
   const known = ['history', 'observed', 'et0', 'yield_labels'];
-  const roles = [...known.filter(k => k in sources), ...Object.keys(sources).filter(k => !known.includes(k)).sort()];
+  const roles = [...known.filter(k => k in sources), ...Object.keys(sources).filter(k => !known.includes(k)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))]; // code-unit order, the same on every machine
   const clean = (v: unknown) => (typeof v === 'string' && sanitizeSourceText(v) ? sanitizeSourceText(v).slice(0, 256) : null);
   const out: Facts['data_sources'] = [];
   for (const role of roles) {
@@ -170,9 +170,9 @@ export function buildReportFacts(input: VerifiedReportInput): ReportFacts {
   const conclusions: ReportConclusion[] = [];
   const deficits = seasons.flatMap(s => s.metrics.filter(m => m.metric_id === 'crop_deficit_mm' && m.known));
   if (deficits.length === 1) conclusions.push({ code: 'water_deficit_season', evidence_ids: [deficits[0]!.id] });
-  else if (deficits.length > 1) conclusions.push({ code: 'water_deficit_highest', evidence_ids: [deficits.reduce((best, m) => (m.p50 > best.p50 ? m : best)).id] });
+  else if (deficits.length > 1) conclusions.push({ code: 'water_deficit_highest', evidence_ids: [deficits.reduce((best, m) => (m.p50 > best.p50 ? m : best), deficits[0]!).id] });
   const events = seasons.flatMap(s => s.events).filter(e => e.known && e.count !== null && !(deficits.length && EVENTS[e.event_id]!.indicator === 'deficit'));
-  if (events.length) conclusions.push({ code: 'event_frequency', evidence_ids: [events.reduce((best, e) => (e.share_of_members > best.share_of_members ? e : best)).id] });
+  if (events.length) conclusions.push({ code: 'event_frequency', evidence_ids: [events.reduce((best, e) => (e.share_of_members > best.share_of_members ? e : best), events[0]!).id] });
   const yields = seasons.map(s => s.yield);
   const withYield = yields.filter(y => y.variant !== 'unavailable');
   if (withYield.length) conclusions.push({ code: 'yield_overview', evidence_ids: withYield.slice(0, 6).map(y => y.id) });
