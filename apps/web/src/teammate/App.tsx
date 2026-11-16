@@ -6,7 +6,7 @@ import { useI18n, type Messages } from './i18n';
 import { LanguageSelect } from './ui/LanguageSelect';
 import { cropOptionLabel } from './catalog';
 import { useStore } from './store';
-import { setPrefs, usePrefs } from './prefs';
+import { setPrefs, THEME_COLOR, usePrefs } from './prefs';
 import { Pill } from './ui';
 import { lazyPage, preloadLightPages, preloadRoute } from './lazyPage';
 import { More } from './pages/More';
@@ -53,7 +53,7 @@ export function useActiveContext() {
 export function App({ authPage }: { authPage?: ReactNode } = {}) {
   const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext(); const { t, locale, failed, retry } = useI18n();
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
-  useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'dark' ? '#0B1411' : '#F5F7F2'); }, [theme]);
+  useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', THEME_COLOR[theme]); }, [theme]);
   useEffect(() => { document.getElementById('conteudo')?.scrollTo?.(0, 0); }, [loc.pathname]);
   // Document title follows the visible h1 (and the section when they differ), so tabs and history are distinguishable (D-12).
   useEffect(() => {
