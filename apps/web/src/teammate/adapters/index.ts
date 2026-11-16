@@ -129,7 +129,7 @@ export const weather = {
     await wait(signal);
     if (code !== '5107925') throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<WaterProjection>('water-soy-5107925-N10', signal);
-    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, note: `${result.meta.note ?? ''} · contrato water_risk_projection` } };
+    return { ...result, meta: { ...result.meta, source: `${result.data.forecast.provider} ${result.data.forecast.model}`, contract: 'water_risk_projection' } };
   },
   async dailySeries(code: string, signal?: AbortSignal): Promise<Sourced<Daily>> {
     await wait(signal);
@@ -210,7 +210,7 @@ export const crops = {
     const load = YIELD_FIXTURES[`${req.crop}:${req.municipalityCode}`];
     if (!load) throw new AdapterError('municipality_not_covered', 422);
     const result = await publishedExample<YieldEstimate>(`yield-${req.crop}-${req.municipalityCode}-day${req.municipalityCode === '3170206' ? 20 : 75}`, signal);
-    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), note: result.meta.note } };
+    return { ...result, meta: { ...yieldMeta(result.data, 'API /v1/examples', 'publicacao'), version: result.meta.version, note: result.meta.note } };
   },
   // Todas as respostas de exemplo disponíveis para a cultura (e, se informado, para o município).
   // Sem serviço HTTP ligado, é o que o frontend consegue mostrar; lista vazia = integração pendente, não "sem cobertura".

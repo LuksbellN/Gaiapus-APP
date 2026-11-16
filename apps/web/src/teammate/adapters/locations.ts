@@ -7,7 +7,7 @@ import type { Sourced } from './core';
 export type { LocationCore, LocationSummary };
 export type WeatherRow = { date: string; rain_mm: number; et0_mm: number; tmin_c: number | null; tmax_c: number | null };
 
-const meta = (version?: string) => ({ kind: 'publicacao' as const, source: 'API /v1/locations', note: version ? `Publicação ${version}` : undefined });
+const meta = (version?: string) => ({ kind: 'publicacao' as const, source: 'API /v1/locations', version });
 
 export const locations = {
   async list(signal?: AbortSignal): Promise<LocationSummary[]> {

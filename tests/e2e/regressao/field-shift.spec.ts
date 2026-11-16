@@ -50,6 +50,49 @@ test.describe('Field Shift — A/B/C', () => {
     await expect(page.locator('input[type="range"]')).toHaveCount(0);
   });
 
+  test('chuva nos dias sem cultura nem cobertura: derivada do pacote, segue a referência e o ponto de chuva', async ({ page, errors }) => {
+    await page.goto('/#/field-shift');
+    const rain = (sel: string) => cell(page, 'rain_on_bare_days_mm', sel);
+    await expect(page.locator('[data-testid="fs-strategy-table"] tbody[data-group="cover"] tr[data-metric="rain_on_bare_days_mm"]')).toBeVisible();
+    await expect(rain('[data-strategy="reference_fallow"]')).toHaveText('114,8');
+    await expect(rain('[data-strategy="brachiaria"]')).toHaveText('75,9');
+    await expect(rain('[data-strategy="soy_long_fallow"]')).toHaveText('1.032,3');
+    await expect(cell(page, 'bare_days_wet_months', '[data-strategy="reference_fallow"]')).toHaveText('0');
+    await expect(cell(page, 'bare_days_wet_months', '[data-strategy="soy_long_fallow"]')).toHaveText('93,3');
+    const note = page.getByTestId('fs-exposure-note');
+    await expect(note).toContainText('convenção desta tela para a estação chuvosa em Sorriso: 85% da chuva das 6 safras caiu nesses meses');
+    await expect(page.locator('[data-testid="fs-strategy-table"] tr[data-metric="rain_on_bare_days_mm"] td').first()).toContainText('derivado da série diária');
+    await expect(note).toContainText('não perda de solo');
+    await expect(page.getByTestId('fs-matrix')).toContainText('Erosão não é avaliada');
+    await expect(page.getByTestId('fs-matrix').locator('tr[data-aspect="erosion"]')).toContainText('não avaliado');
+    await page.getByRole('radio', { name: 'C · Pousio prolongado' }).check();
+    await expect(rain('[data-delta="reference_fallow"]')).toContainText('−917,5');
+    await expect(rain('[data-strategy="reference_fallow"]')).toHaveText('114,8');
+    await page.getByTestId('fs-rain').getByRole('radio', { name: '−20%' }).check();
+    await expect(rain('[data-strategy="reference_fallow"]')).toHaveText('91,8');
+    await expect(cell(page, 'bare_days_wet_months', '[data-strategy="soy_long_fallow"]')).toHaveText('93,3');
+    await expect(note).toContainText('Com a chuva multiplicada por 0,8, o calendário é o mesmo');
+    await expect(page.locator('main')).not.toContainText(/solo nu/i);
+    expect(errors).toEqual([]);
+  });
+
+  test('trocar o idioma na mesma tela, sem recarregar, traduz as linhas novas e o rodapé de fonte', async ({ page }) => {
+    await page.goto('/#/field-shift');
+    await expect(page.getByTestId('fs-strategy-table')).toContainText('Chuva nos dias sem cultura nem cobertura, no ano agrícola');
+    await page.locator('[data-testid="language-select"]:visible').first().selectOption('en');
+    await expect(page.getByTestId('fs-strategy-table')).toContainText('Rain on days without crop or cover, in the agricultural year');
+    await expect(page.getByTestId('fs-exposure-note')).toContainText('not soil loss');
+    await expect(page.getByTestId('fs-matrix')).toContainText('Erosion is not assessed.');
+    for (const pt of ['Chuva nos dias', 'perda de solo', 'Erosão']) await expect(page.locator('main')).not.toContainText(pt);
+    // A screen whose footer names a publication served by the API: the words follow the language without a new request.
+    await page.goto('/#/visao-geral');
+    const footer = page.locator('.source').filter({ hasText: /science-/ }).first();
+    await expect(footer).toContainText(/Publication science-\S+ · .* · contract water_risk_projection/);
+    await page.locator('[data-testid="language-select"]:visible').first().selectOption('pt-BR');
+    await expect(footer).toContainText(/Publicação science-\S+ · .* · contrato water_risk_projection/);
+    await expect(footer).not.toContainText('Publication science-');
+  });
+
   test('em inglês a tela inteira das estratégias está traduzida', async ({ page }) => {
     await page.addInitScript(prefsWith('en'));
     await page.goto('/#/field-shift?prioridade=producao&chuva=20');

@@ -468,6 +468,12 @@
       "date": "2026-11-16",
       "reason": "Merge of main (visual refresh) into the stake guide branch: combined content of the pinned sources",
       "sha256": "9df0da990962743c92c1aa17963e8ea845b5fc0a880a34e7b1b25251956dc411"
+    },
+    {
+      "file": "ui/index.tsx",
+      "date": "2026-11-16",
+      "reason": "Field Shift: chuva nos dias sem cultura nem cobertura derivada do pacote v2; rodape de fonte traduzido na apresentacao",
+      "sha256": "6547b626342ca55d3910d99c7a1072b50a21e2a67bb59ace3cfeb9f63773e612"
     }
   ]
 }

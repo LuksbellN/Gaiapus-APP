@@ -3,7 +3,8 @@
 // fixture = bundled in this app; publicacao = publication served by the Gaiapus API (with its version).
 export type Kind = 'fixture' | 'publicacao' | 'mock' | 'local' | 'sintetico';
 /** `source` and `note` may carry original text from the publication; `noteKey` is an interface message translated at render. */
-export type Meta = { kind: Kind; source: string; note?: string; noteKey?: string; noteVars?: Record<string, string | number>; generatedAt?: string };
+/** `version` and `contract` are data: the footer names them in the language on screen when it is drawn, never when the data is loaded. */
+export type Meta = { kind: Kind; source: string; note?: string; noteKey?: string; noteVars?: Record<string, string | number>; generatedAt?: string; version?: string; contract?: string };
 export type Sourced<T> = { data: T; meta: Meta };
 export class AdapterError extends Error { constructor(public code: string, public status: number, message?: string) { super(message ?? code); } }
 

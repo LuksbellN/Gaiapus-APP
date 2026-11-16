@@ -54,14 +54,16 @@ export function checkPackage(manifest: PackageManifest, summary: FieldShiftSumma
 }
 
 /** The producer rounds with Python round(x, 2), which rounds the exact value of the double; toFixed does the same (they differ only on exact binary ties). */
-const pyRound2 = (v: number): number => { const out = Number(v.toFixed(2)); return Object.is(out, -0) ? 0 : out; };
-function pair(alternative: YearRow[], reference: YearRow[], metric: MetricId): PairStat {
+export const pyRound2 = (v: number): number => { const out = Number(v.toFixed(2)); return Object.is(out, -0) ? 0 : out; };
+/** Year-by-year pairing on the seasons both sides have a value for: mean, smallest and largest difference. */
+export function pairedStat<T extends { agricultural_year: string }>(alternative: readonly T[], reference: readonly T[], value: (row: T) => number | null | undefined): PairStat {
   const ref = new Map(reference.map((y) => [y.agricultural_year, y]));
-  const pairs = alternative.flatMap((y) => { const r = ref.get(y.agricultural_year); const a = y[metric], b = r?.[metric]; return a != null && b != null ? [{ year: y.agricultural_year, d: a - b }] : []; });
+  const pairs = alternative.flatMap((y) => { const r = ref.get(y.agricultural_year); const a = value(y), b = r ? value(r) : null; return a != null && b != null ? [{ year: y.agricultural_year, d: a - b }] : []; });
   if (!pairs.length) return { n: 0, mean: null, min: null, max: null, years: [], status: 'not_applicable' };
   const values = pairs.map((p) => p.d);
   return { n: values.length, mean: pyRound2(values.reduce((a, b) => a + b, 0) / values.length), min: pyRound2(Math.min(...values)), max: pyRound2(Math.max(...values)), years: pairs.map((p) => p.year), status: 'ok' };
 }
+const pair = (alternative: YearRow[], reference: YearRow[], metric: MetricId): PairStat => pairedStat(alternative, reference, (y) => y[metric]);
 
 export type CellStatus = 'ok' | 'not_grown' | 'not_simulated';
 export type DecisionRow = { metric: MetricId; values: Record<StrategyId, number | null>; status: Record<StrategyId, CellStatus>; deltas: Record<StrategyId, PairStat | null> };
