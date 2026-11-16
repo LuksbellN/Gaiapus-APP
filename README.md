@@ -230,7 +230,7 @@ In line with the NASA Space Apps rules on AI tools:
 
 - **Code and documentation:** written with the help of AI coding assistants (Claude, by Anthropic, and Codex, by OpenAI), under the team's direction, and reviewed and tested as described above. The idea, the scientific choices and the product direction are the team's.
 - **In the product:** the application calls no language model. Reports and explanations are produced by fixed rules from published data.
-- **Images:** the screens in this README are captures of the published app. For hardware images, see the statement in [`hardware/README.md`](hardware/README.md#ai-assistance).
+- **Images:** the screens in this README are captures of the published app, and the stake image is a render of the team's own CAD model. None of them is AI-generated.
 
 ---
 
