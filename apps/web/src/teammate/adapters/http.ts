@@ -19,7 +19,7 @@ export async function publishedExample<T>(id: string, signal?: AbortSignal): Pro
   return { data: example.result.data as T, meta: {
     kind: 'publicacao', source: example.source_refs.map(source => source.description).join(' · '),
     generatedAt: example.result.data.generated_at,
-    note: `Publicação ${example.result.meta.publication_version} · ${example.result.meta.result_basis}`,
+    version: example.result.meta.publication_version, note: example.result.meta.result_basis,
   } };
 }
 

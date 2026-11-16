@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { weather, coverage, imagery } from './index';
+import { weather, coverage, imagery, crops } from './index';
 import { examples } from '@gaiapus/contracts/fixtures';
 import { mockCatalog } from '../geo/catalog-mock.test-helper';
 import { resetCoverageIndexForTest } from '../geo/coverageIndex';
@@ -39,5 +39,16 @@ it('publicação servida pela API é rotulada como publicação, com a versão (
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ data: example, meta: {} })));
   const result = await weather.waterProjection('5107925');
   expect(result.meta.kind).toBe('publicacao');
-  expect(result.meta.note).toContain(example.result.meta.publication_version);
+  // Version and contract travel as data; the footer words are chosen when it is drawn, in the language on screen.
+  expect(result.meta.version).toBe(example.result.meta.publication_version);
+  expect(result.meta.contract).toBe('water_risk_projection');
+  expect(result.meta.note ?? '').not.toMatch(/Publicação|contrato/);
+});
+
+it('the yield estimate served by the API keeps the publication version in its footer data', async () => {
+  const example = examples.find(e => e.product_id === 'yield_estimate' && e.example_id === 'yield-soy-5107925-day75')!;
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ data: example, meta: {} })));
+  const result = await crops.yieldEstimate({ crop: 'soy', municipalityCode: '5107925' });
+  expect(result.meta.version).toBe(example.result.meta.publication_version);
+  expect(result.meta.note ?? '').not.toMatch(/Publicação/);
 });

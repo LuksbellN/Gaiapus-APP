@@ -73,6 +73,7 @@ export function AgronomyMatrix() {
         <tbody>{ASPECTS.map((a) => <tr key={a} data-aspect={a}><td>{t(`fieldShift.v2.matrix.rows.${a}` as MessageKey)}</td>{STRATEGIES.map((s) => <td key={s} className="meta-13">{t('fieldShift.v2.matrix.notAssessed')}</td>)}</tr>)}</tbody></table></div>
       <p className="meta-13">{t('fieldShift.v2.matrix.nematodes')} <a href="https://www.infoteca.cnptia.embrapa.br/infoteca/bitstream/doc/1120353/1/CT17111022020.pdf" rel="noreferrer" target="_blank">Embrapa</a></p>
       <p className="meta-13">{t('fieldShift.v2.matrix.nitrogen')}</p>
+      <p className="meta-13">{t('fieldShift.v2.matrix.erosion')}</p>
     </section>
   );
 }

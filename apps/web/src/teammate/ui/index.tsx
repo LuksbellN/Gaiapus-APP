@@ -9,7 +9,7 @@ const API_CODES: Record<string, true> = Object.fromEntries(['invalid_input', 'no
 export const KIND_LABEL: Record<string, string> = new Proxy({} as Record<string, string>, { get: (_, k) => (typeof k === 'string' ? translate(`source.${k}`) : undefined) });
 export function Pill({ tone, children, tour }: { tone?: 'water' | 'warn' | 'risk' | 'ok' | 'soil'; children: ReactNode; tour?: string }) { return <span className={`pill${tone ? ` pill--${tone}` : ''}`} data-tour={tour}>{children}</span>; }
 export function Source({ meta, extra }: { meta: Meta; extra?: ReactNode }) {
-  const { t } = useI18n(); const note = [meta.noteKey ? t(meta.noteKey as MessageKey, meta.noteVars) : null, meta.note].filter(Boolean).join(' · ');
+  const { t } = useI18n(); const note = [meta.noteKey ? t(meta.noteKey as MessageKey, meta.noteVars) : null, meta.version ? t('source.version', { version: meta.version }) : null, meta.note, meta.contract ? t('source.contract', { name: meta.contract }) : null].filter(Boolean).join(' · ');
   return <p className="source"><Database size={14} aria-hidden /><span><b>{KIND_LABEL[meta.kind]}</b> · {t('source.label', { source: meta.source })}{note ? ` · ${note}` : ''}{extra ? <> · {extra}</> : null}</span></p>;
 }
 export function Notice({ tone = 'info', title, children }: { tone?: 'info' | 'warn' | 'risk' | 'water'; title?: string; children: ReactNode }) {

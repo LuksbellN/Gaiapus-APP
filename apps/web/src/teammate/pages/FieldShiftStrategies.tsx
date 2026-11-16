@@ -1,10 +1,13 @@
 // Field Shift v2 — three historical strategies of one pinned package. Every number on screen is a published value
 // or the published year-by-year pairing recomputed for the reference chosen here; nothing is estimated in the browser.
+// The two exposure rows are a count and a sum over the published daily columns (sim/field-shift-exposure.ts).
+import { useMemo } from 'react';
 import type { FieldShiftPackage } from '../adapters';
-import { nMax, signed } from '../format';
+import { n0, nMax, signed } from '../format';
 import { useI18n, type MessageKey } from '../i18n';
 import { Seg } from '../ui';
 import { PhaseTimeline } from '../ui/PhaseTimeline';
+import { buildExposure, EXPOSURE_METRICS } from '../sim/field-shift-exposure';
 import { buildComparison, GROUPS, STRATEGIES, STRATEGY_LETTER, type GroupId, type MetricId, type PairStat, type PublishedComparison, type RainPoint, type StrategyId } from '../sim/field-shift-decision';
 
 export const DEFAULT_GROUPS: GroupId[] = ['cover', 'common', 'soy', 'maize', 'own'];
@@ -47,6 +50,9 @@ export function StrategyTable({ pkg, input, reference, groups = DEFAULT_GROUPS }
   const { t } = useI18n(); const names = useStrategyNames(); const label = useMetricLabel();
   const view = buildComparison(input, reference); const row = (k: MetricId) => view.rows.find((r) => r.metric === k)!;
   const x = pkg.summary; const n = input.scenarios[reference].valid_years; const mean = input.scenarios[reference].mean;
+  // Withheld (null) when the daily columns do not reproduce the summary of the package; the published rows are not affected.
+  const derived = useMemo(() => { try { return { view: buildExposure(pkg, input, reference), reason: null }; } catch (error) { return { view: null, reason: (error instanceof Error ? error.message : String(error)).split(':')[0] }; } }, [pkg, input, reference]);
+  const exposure = derived.view;
   const unit = (k: MetricId) => (k.endsWith('_mm') ? 'mm' : t('common.days'));
   const cell = (k: MetricId, s: StrategyId) => { const r = row(k); return r.status[s] === 'ok' ? nMax(r.values[s], 1) : <span className="meta-13">{t(r.status[s] === 'not_grown' ? 'fieldShift.v2.table.notGrown' : 'fieldShift.v2.table.notSimulated')}</span>; };
   return (
@@ -60,12 +66,17 @@ export function StrategyTable({ pkg, input, reference, groups = DEFAULT_GROUPS }
             {GROUPS[g].map((k) => <tr key={k} data-metric={k}><td>{label(k)} <span className="meta-13">({unit(k)})</span></td>
               {STRATEGIES.map((s) => <td key={s} className="num" data-strategy={s}>{cell(k, s)}</td>)}
               {view.others.map((s) => <td key={s} className="num" data-delta={s}><Delta stat={row(k).deltas[s]} /></td>)}</tr>)}
+            {g === 'cover' && EXPOSURE_METRICS.map((k) => { const r = exposure?.rows.find((e) => e.metric === k); return <tr key={k} data-metric={k} data-derived data-reason={derived.reason ?? undefined}>
+              <td>{t(`fieldShift.v2.metric.${k}` as MessageKey)} <span className="meta-13">({k.endsWith('_mm') ? 'mm' : t('common.days')})</span><span className="meta-13 block">{t('fieldShift.v2.exposure.derived')}</span></td>
+              {r ? <>{STRATEGIES.map((s) => <td key={s} className="num" data-strategy={s}>{nMax(r.values[s], 1)}</td>)}{view.others.map((s) => <td key={s} className="num" data-delta={s}><Delta stat={r.deltas[s]} /></td>)}</>
+                : <td colSpan={3 + view.others.length} className="meta-13">{t('fieldShift.v2.exposure.unavailable')}</td>}</tr>; })}
           </tbody>)}
           <tbody><tr><td>{t('fieldShift.table.yieldEffect')}</td><td className="num" colSpan={3 + view.others.length}>{t('fieldShift.table.notEvaluated')}</td></tr></tbody>
         </table>
       </div>
       <p className="meta-13">{t('fieldShift.v2.table.context', { rain: nMax(mean.year_rain_mm, 0), days: nMax(mean.year_days, 0) })} {t('fieldShift.v2.table.paired')}</p>
       <p className="meta-13">{t('fieldShift.v2.notes.covered')} {t('fieldShift.v2.notes.drainage')}</p>
+      {exposure && <p className="meta-13" data-testid="fs-exposure-note">{t('fieldShift.v2.notes.exposure', { share: n0(exposure.wetShare * 100), n })}{exposure.multiplier !== 1 && ` ${t('fieldShift.v2.notes.exposureRain', { factor: nMax(exposure.multiplier, 1) })}`}</p>}
       <p className="meta">{t('fieldShift.v2.notSimulated', { list: x.not_simulated.map((k) => { const key = k.split(' ').join('_'); return NOT_KEYS.includes(key) ? t(`fieldShift.v2.not.${key}` as MessageKey) : k; }).join(', ') })}</p>
       <p className="meta-13" data-testid="fs-package" translate="no">{t('fieldShift.v2.package', { id: pkg.id, source: x.weather.source })} · n = {n}</p>
     </>

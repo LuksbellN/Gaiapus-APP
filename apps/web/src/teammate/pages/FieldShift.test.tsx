@@ -10,13 +10,20 @@ import { AdapterError } from '../adapters/core';
 
 const v1 = JSON.parse(readFileSync(join(process.cwd(), '..', '..', 'packages', 'contracts', 'upstream', 'v7', 'contracts', 'examples', 'field-shift-sorriso.json'), 'utf8'));
 const summary = JSON.parse(readFileSync(join(process.cwd(), 'src', 'teammate', 'data', 'field-shift-v2', 'summary.json'), 'utf8')) as FieldShiftSummary;
-const state = vi.hoisted(() => ({ breakPackage: false }));
+const state = vi.hoisted(() => ({ breakPackage: false, breakSeries: false }));
 vi.mock('../../features/auth/client', () => ({ supabase: { auth: {} }, currentAccessToken: () => null }));
 vi.mock('../adapters', async (original) => {
   const real = await original<typeof import('../adapters')>();
   return { ...real, simulations: { ...real.simulations,
     fieldShift: async () => ({ data: v1, meta: { kind: 'publicacao', source: v1.weather.source, note: 'Publicação v7' } }),
-    fieldShiftStrategies: async (code: string) => { if (state.breakPackage) throw new AdapterError('field_shift_package_mismatch', 409); return real.simulations.fieldShiftStrategies(code); } } };
+    fieldShiftStrategies: async (code: string) => {
+      if (state.breakPackage) throw new AdapterError('field_shift_package_mismatch', 409);
+      const result = await real.simulations.fieldShiftStrategies(code);
+      if (!state.breakSeries) return result;
+      // Same package id, but one covered day of C is flagged as without cover: the daily columns no longer reproduce the summary.
+      const series = JSON.parse(JSON.stringify(result.data.series)) as typeof result.data.series; const c = series.scenarios.soy_long_fallow.soil_covered; c[c.indexOf(true)] = false;
+      return { ...result, data: { ...result.data, series } };
+    } } };
 });
 import { FieldShiftPage } from './FieldShift';
 
@@ -25,7 +32,7 @@ globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {
 const open = (query = '') => render(<MemoryRouter initialEntries={[`/field-shift${query}`]}><FieldShiftPage /></MemoryRouter>);
 const num = (v: number, d = 1) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: d }).format(v);
 const cell = (table: HTMLElement, metric: string, sel: string) => table.querySelector(`tr[data-metric="${metric}"] ${sel}`) as HTMLElement;
-afterEach(() => { state.breakPackage = false; });
+afterEach(() => { state.breakPackage = false; state.breakSeries = false; });
 
 it('shows the three calculated strategies with the published means, and absent maize as "not grown"', async () => {
   open();
@@ -258,4 +265,60 @@ it('when the package is refused, the older publication keeps its own sensitivity
   await screen.findByText('Pacote das três estratégias incoerente');
   expect(screen.queryByTestId('fs-parameters')).toBeNull();
   expect(screen.getByText('Cada linha muda uma hipótese por vez. Valores são B − A, média das 6 safras.')).toBeInTheDocument();
+});
+
+// Rain on days without crop or cover (idea from feat/field-shift-rotacoes): derived from the daily columns of the same package.
+it('the cover group shows the days from November to April and the rain on days without crop or cover', async () => {
+  open();
+  const table = await screen.findByTestId('fs-strategy-table');
+  for (const k of ['bare_days_wet_months', 'rain_on_bare_days_mm']) expect(table.querySelector(`tbody[data-group="cover"] tr[data-metric="${k}"]`)).not.toBeNull();
+  expect(cell(table, 'bare_days_wet_months', '[data-strategy="reference_fallow"]')).toHaveTextContent(/^0$/);
+  expect(cell(table, 'bare_days_wet_months', '[data-strategy="brachiaria"]')).toHaveTextContent(/^0$/);
+  expect(cell(table, 'bare_days_wet_months', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(num(93.33));
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-strategy="reference_fallow"]')).toHaveTextContent(/^114,8$/);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-strategy="brachiaria"]')).toHaveTextContent(/^75,9$/);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(/^1\.032,3$/); // 1032.348, rounded once
+  // The two rows say on screen that they are derived from the daily series, not published indicators.
+  for (const k of ['bare_days_wet_months', 'rain_on_bare_days_mm']) expect(table.querySelector(`tr[data-metric="${k}"] td`)).toHaveTextContent('derivado da série diária');
+  expect(table.querySelector('tr[data-metric="bare_days"] td')).not.toHaveTextContent('derivado');
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-delta="soy_long_fallow"]')).toHaveTextContent(`+${num(917.54)}`);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-delta="brachiaria"]')).toHaveTextContent(`−${num(38.92)}`);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-delta="soy_long_fallow"]')).toHaveTextContent(`entre safras: +${num(625.35)} a +${num(1106.34)}`);
+  expect(table).toHaveTextContent('Chuva nos dias sem cultura nem cobertura, no ano agrícola (mm)');
+  const note = screen.getByTestId('fs-exposure-note');
+  expect(note).toHaveTextContent('Novembro a abril é a convenção desta tela para a estação chuvosa em Sorriso: 85% da chuva das 6 safras caiu nesses meses');
+  expect(note).toHaveTextContent('não perda de solo');
+  expect(note).not.toHaveTextContent('multiplicada');
+  expect(table).not.toHaveTextContent(/solo nu|rotação atual/i);
+  // Erosion stays "not assessed"; the matrix only says where the exposure is.
+  expect(screen.getByTestId('fs-matrix')).toHaveTextContent('Erosão não é avaliada. A chuva nos dias sem cultura nem cobertura, na tabela das estratégias, é exposição sob a hipótese de calendário, não perda de solo.');
+  expect(within(screen.getByTestId('fs-matrix')).getAllByText('não avaliado')).toHaveLength(15);
+});
+
+it('the derived rows follow the reference and the rain point on screen', async () => {
+  open('?ref=C&chuva=-20');
+  const table = await screen.findByTestId('fs-strategy-table');
+  expect(table).toHaveAttribute('data-reference', 'soy_long_fallow');
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-strategy="reference_fallow"]')).toHaveTextContent(/^91,8$/); // 91.847, rounded once
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(/^825,9$/);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-delta="reference_fallow"]')).toHaveTextContent(`−${num(734.03)}`);
+  expect(cell(table, 'rain_on_bare_days_mm', '[data-delta="brachiaria"]')).toHaveTextContent(`−${num(765.17)}`);
+  expect(cell(table, 'bare_days_wet_months', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(num(93.33)); // the calendar does not move with the rain
+  expect(screen.getByTestId('fs-exposure-note')).toHaveTextContent('Com a chuva multiplicada por 0,8, o calendário é o mesmo e a chuva nesses dias muda na mesma proporção.');
+});
+
+it('when the daily columns do not reproduce the summary, only the two derived rows are withheld', async () => {
+  state.breakSeries = true;
+  open();
+  const table = await screen.findByTestId('fs-strategy-table');
+  for (const k of ['bare_days_wet_months', 'rain_on_bare_days_mm']) {
+    const row = table.querySelector(`tr[data-metric="${k}"]`) as HTMLElement;
+    expect(row).toHaveTextContent('não calculado: a série diária não confere com os valores publicados do pacote');
+    expect(row.querySelector('[data-strategy]')).toBeNull();
+    expect(row).toHaveAttribute('data-reason', 'field_shift_exposure_mismatch');
+  }
+  expect(screen.queryByTestId('fs-exposure-note')).toBeNull();
+  expect(cell(table, 'covered_days', '[data-strategy="soy_long_fallow"]')).toHaveTextContent(num(summary.scenarios.soy_long_fallow.mean.covered_days!));
+  expect(cell(table, 'year_drainage_mm', '[data-delta="soy_long_fallow"]')).toHaveTextContent(/\d/);
+  expect(screen.getByTestId('fs-cards')).toBeInTheDocument();
 });
