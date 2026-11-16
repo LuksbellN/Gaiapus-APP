@@ -1,7 +1,7 @@
 // Season planning (future harvest years): calculated, published runs from the API /v1/simulations.
 // The person chooses place, crop, harvest year and climate trajectory on the screen; nothing depends on editing the address.
 // One identity per displayed day: run_id + climate member + date drive the timeline, the panel and the scenes.
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Pause, Play, StepBack, StepForward } from 'lucide-react';
 import type { SimulationCapability, SimulationPlaceCapabilities, SimulationYield } from '@gaiapus/contracts';
@@ -16,6 +16,9 @@ import { Field2D, fieldNotes, phaseProgress, SceneBoundary, webglAvailable, type
 import { phaseRunAt } from '../sim/visual-state';
 import { comparableRuns, coverageOf, cycleDay, dayInfo, highestSatisfaction, memberOf, memberRows, planningHref, planningPlaceId, seasonIndex, seasonOf, selectPublication, waterSatisfaction, type MemberRole } from '../sim/planning-model';
 import { profileLayers } from '../sim/profile-model';
+import { ReportEntry } from '../sim/ReportEntry';
+import { reportHref } from '../sim/report-model';
+import { useSimulationReport } from '../sim/useSimulationReport';
 import { Profile2D } from '../sim/Profile2D';
 import { toSceneState, LEGACY_SCENE_CAPS } from '../sim/scene-adapter';
 import { useLazy } from '../lazyPage';
@@ -27,6 +30,7 @@ const loadProfile3D = () => import('../sim/SoilProfile3D');
 const ROLES: MemberRole[] = ['central', 'dry', 'wet'];
 type Tab = 'campo' | 'indicadores' | 'configurar';
 type Put = (kv: Record<string, string | null>, replace?: boolean) => void;
+const WHOLE_RUN = { kind: 'run' } as const;
 
 const codeOf = (id: string) => id.split(':')[2] ?? id;
 const shiftDate = (iso: string, days: number) => new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
@@ -77,6 +81,9 @@ export function PlanningSimulator() {
   const chosen = cover.dailySeries ? selectPublication(own, crop, year) : null;
   const run = useAsync((s) => (chosen ? simulations.run(chosen.run_id, s) : Promise.resolve(null)), [chosen?.run_id]);
   const series = useAsync((s) => (chosen ? simulations.series(chosen.run_id, s) : Promise.resolve(null)), [chosen?.run_id]);
+  // The technical report of a succeeded run is ensured as soon as the run is on screen: whole run, language on screen, no click.
+  const reportable = !!chosen && run.data?.run_id === chosen.run_id && run.data.execution_status === 'succeeded';
+  const report = useSimulationReport({ runId: reportable ? chosen.run_id : null, scope: WHOLE_RUN });
   const placeLabel = place ? placeLabelOf(place) : locationId.startsWith('BR:') ? placeName(codeOf(locationId)) : locationId;
   const cropLabel = cropName(crop);
   const title = t('sim.planning.title', { crop: cropLabel, place: placeLabel });
@@ -135,16 +142,17 @@ export function PlanningSimulator() {
   if (!current) return shell(<Loading rows={5} label={t('sim.planning.loading')} />);
   const siblings = place.capabilities.filter((c) => c.harvest_year === year && coverageOf(c).dailySeries).map((c) => c.crop_id);
   return <PlanningView key={`${current.run.run_id}:${crop}:${year}`} run={current.run} series={current.series} crop={crop} year={year} title={title} placeLabel={placeLabel} cropLabel={cropLabel}
-    put={put} params={params} where={where} tab={tab} mobile={mobile} locationId={locationId} siblings={siblings} publications={own} />;
+    put={put} params={params} where={where} tab={tab} mobile={mobile} locationId={locationId} siblings={siblings} publications={own}
+    report={<ReportEntry view={report} seasons={current.run.seasons.length} onRetry={report.retry} href={reportHref({ run: current.run.run_id, local: locationId, season: { crop_id: crop, harvest_year: year } })} />} />;
 }
 
 type Run = NonNullable<Awaited<ReturnType<typeof simulations.run>>>;
 type Series = NonNullable<Awaited<ReturnType<typeof simulations.series>>>;
 type Publications = NonNullable<Awaited<ReturnType<typeof simulations.regional>>>['items'];
 type ViewProps = { run: Run; series: Series; crop: string; year: number; title: string; placeLabel: string; cropLabel: string; put: Put; params: URLSearchParams; where: ReactNode; tab: Tab; mobile: boolean;
-  locationId: string; siblings: string[]; publications: Publications };
+  locationId: string; siblings: string[]; publications: Publications; report: ReactNode };
 
-function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, put, params, where, tab, mobile, locationId, siblings, publications }: ViewProps) {
+function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, put, params, where, tab, mobile, locationId, siblings, publications, report }: ViewProps) {
   const { t } = useI18n();
   const role = (ROLES.find((r) => r === params.get('membro')) ?? 'central') as MemberRole;
   const season = seasonOf(run, crop, year);
@@ -166,8 +174,14 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
   const lands = useMemo(() => rows.map((r) => r.land_cover), [rows]); const stages = useMemo(() => rows.map((r) => r.phase_code), [rows]);
   const c = Math.min(Math.max(cursor, from), to);
   useEffect(() => { if (!playing) return; const id = setInterval(() => setCursor((v) => { if (v >= to) { setPlaying(false); return v; } return v + 1; }), 1000 / 14); return () => clearInterval(id); }, [playing, to]);
-  // The selected day goes into the link, replacing history instead of stacking one entry per step.
-  useEffect(() => { if (playing) return; const want = String(c + 1); if (params.get('dia') !== want) put({ dia: want }, true); }, [c, playing]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The selected day goes into the link, replacing history instead of stacking one entry per step — but only once the
+  // user (or the playback) has moved it. Opening a run never rewrites the address: that write would use the
+  // parameters of this render and, landing after a navigation made meanwhile, would bring the previous place back.
+  const dayMoved = useRef(false);
+  useEffect(() => {
+    if (!dayMoved.current) { dayMoved.current = true; return; }
+    if (playing) return; const want = String(c + 1); if (params.get('dia') !== want) put({ dia: want }, true);
+  }, [c, playing]); // eslint-disable-line react-hooks/exhaustive-deps
   const setPeriod = (v: 'safra' | 'tudo') => { setPlaying(false); setWhole(v === 'tudo'); if (v === 'safra') setCursor((x) => (x < span.from || x > span.to ? window?.start ?? span.from : x)); put({ periodo: v === 'tudo' ? 'tudo' : null }, true); };
 
   const row = rows[c]; const info = dayInfo(series, c);
@@ -223,6 +237,7 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
           <button className="btn btn--sm" onClick={copy}>{t('sim.planning.share')}</button>
           <span className="meta-13" role="status" aria-live="polite">{copied ? t('sim.planning.copied') : ''}</span>
         </div>
+        {!mobile && report}
       </aside>
       <div className="sim__stage" id="panel-campo">
         {view === 'talhao'
@@ -248,6 +263,7 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
         </div>
       </div>
       <aside className="sim__results" id="panel-indicadores" aria-label={t('sim.results')}>
+        {mobile && report}
         <div className="card" data-testid="planning-day"><h2 className="h3">{dFull(row.date)}</h2>
           <p className="meta-13">{t('sim.planning.simDay', { day: info.simDay, total: info.simDays })} · {t(`sim.planning.origin.${info.kind}`)}</p>
           <p className="meta-13">{cd ? t('sim.planning.cycleDay', { crop: isCropId(row.land_cover) ? CROPS[row.land_cover].name : row.land_cover, stage: STAGE[row.phase_code] ?? row.phase_code, day: cd.day, of: cd.of }) : t('sim.planning.fallowDay')}</p>

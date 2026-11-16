@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { extname } from 'node:path';
 import { validators, routeContracts } from '@gaiapus/contracts';
 import { publicHandlers } from './modules/geography/public.js';
-import { simulationHandlers } from './modules/simulations/public.js';
+import { defaultSimulationStore, simulationHandlers } from './modules/simulations/public.js';
+import { reportHandlers } from './modules/simulations/reports/handlers.js';
+import { ReportService } from './modules/simulations/reports/service.js';
 import type { PublicationStore } from './modules/simulations/publication-store.js';
 import { ApiError } from './plugins/errors.js';
 import { personalHandlers, type PrivateRequest } from './modules/account/personal.js';
@@ -27,7 +29,10 @@ export interface Dependencies {
   capabilitiesProvider?: () => Promise<Capabilities>;
   /** Regional simulation publications; defaults to the Brazilian publication pinned in the repository. */
   simulations?: PublicationStore;
+  /** Technical reports of the simulations; defaults to the precomputed reports of the pinned publication plus process memory. */
+  reports?: ReportService;
 }
+let defaultReports: ReportService | null = null;
 export function createApp(dependencies: Dependencies = {}) {
   const app = Fastify({ logger: dependencies.logger ? { redact: ['req.headers.authorization', 'req.body', 'res.body'] } : false, bodyLimit: 65536, genReqId: () => crypto.randomUUID() });
   app.addHook('onRequest', async request => {
@@ -64,8 +69,13 @@ export function createApp(dependencies: Dependencies = {}) {
     })().finally(() => { refreshPending = null; });
     await refreshPending;
   });
-  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers(), ...simulationHandlers(dependencies.simulations) };
-  for (const [method, url, bodySchema, parameterSchema, responseSchema, privateRoute] of routeContracts) {
+  const simulations = dependencies.simulations ?? defaultSimulationStore();
+  const reports = dependencies.reports ?? (dependencies.simulations ? new ReportService(simulations) : (defaultReports ??= new ReportService(simulations)));
+  const handlers = { ...publicHandlers({ origin: dependencies.executor?.origin ?? 'fixture', capabilities }), ...personalHandlers(), ...analysisHandlers({ ...dependencies, capabilities, handles }), ...comparisonHandlers(handles), ...reviewHandlers(), ...simulationHandlers(simulations), ...reportHandlers(reports, simulations) };
+  for (const contract of routeContracts) {
+    const [method, url, bodySchema, parameterSchema, responseSchema, privateRoute] = contract;
+    // Routes with path parameters and a query string name the query schema as a seventh entry.
+    const querySchema = (contract as readonly unknown[])[6] as string | undefined;
     const handler = handlers[`${method} ${url}` as keyof typeof handlers];
     if (!handler) continue;
     app.route({ method, url, handler: async (request, reply) => {
@@ -81,10 +91,12 @@ export function createApp(dependencies: Dependencies = {}) {
       }
       const query = request.query as Record<string, any>;
       if (query.limit !== undefined && typeof query.limit === 'string' && /^\d+$/.test(query.limit)) query.limit = Number(query.limit);
-      for (const [name, value] of [[bodySchema, request.body], [parameterSchema, url.includes(':id') ? request.params : query]] as const) {
+      for (const [name, value] of [[bodySchema, request.body ?? {}], [parameterSchema, url.includes(':id') ? request.params : query], [querySchema, query]] as const) {
         if (name && !validators[name]!(value)) throw new ApiError(422, 'invalid_input', 'Request does not match the contract');
       }
       const output = await handler(request as PrivateRequest, reply);
+      // A handler that already sent a non-JSON representation (HTML or Markdown export) returns the reply itself.
+      if ((output as unknown) === reply) return reply;
       if (responseSchema && !validators[responseSchema]!(output)) throw new ApiError(500, 'internal_error', 'Response contract validation failed');
       return output;
     } });

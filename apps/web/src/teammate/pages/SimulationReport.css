@@ -1,0 +1,110 @@
+/* ── Technical report of a simulation (pages/SimulationReport.tsx, ui/ReportDocument.tsx) ─────────────────────────
+   Loaded only with the report page. Every colour is a design token of styles.css (or a system colour in print),
+   so the light and dark themes and any future palette apply without changes here. */
+.report { max-width: 1040px; }
+.report__header { display: grid; gap: var(--s2); }
+.report__header h1 { overflow-wrap: anywhere; }
+.report__back { margin: 0; font-size: 14px; }
+.report__back a { display: inline-block; min-height: var(--touch); line-height: var(--touch); }
+.report__subtitle { margin: 0; font-weight: 600; color: var(--text-2); }
+.report__bar { display: grid; gap: var(--s3); }
+.report__actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.report__actions .btn { flex: 0 1 auto; }
+.report__status, .report__meta { margin: 0; }
+.report__document { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s6); min-width: 0; }
+.report__section { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s3); padding-top: var(--s4); border-top: 2px solid var(--border-strong); min-width: 0; }
+.report__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); }
+.report__heading { margin: 0; font-size: 22px; min-width: 0; overflow-wrap: anywhere; }
+.report__toggle { display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--touch); padding: 4px 12px 4px 8px; margin-left: -8px; border: 1px solid transparent; border-radius: var(--r-control); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.report__toggle::before { content: ''; flex: none; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform var(--t-hover) var(--ease-out); }
+.report__toggle[aria-expanded='true']::before { transform: rotate(45deg); }
+.report__toggle:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.report__toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.report__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s3); min-width: 0; }
+.report__body[hidden] { display: none; }
+.report__body p { margin: 0; overflow-wrap: anywhere; }
+.report__body h3 { margin: var(--s3) 0 0; }
+.report__note, .report__warning { padding: var(--s2) var(--s3); border-left: 4px solid var(--border-strong); background: var(--surface-2); border-radius: 0 var(--r-control) var(--r-control) 0; }
+.report__warning { border-left-color: var(--warn); background: var(--tint-warn); }
+.report__list { margin: 0; padding-left: 22px; display: grid; gap: var(--s2); }
+.report__list li { overflow-wrap: anywhere; }
+.report__facts { margin: 0; display: grid; }
+.report__facts > div { display: grid; grid-template-columns: minmax(140px, 280px) minmax(0, 1fr); gap: var(--s1) var(--s4); padding: 6px 0; border-bottom: 1px solid var(--border); }
+.report__facts dt { color: var(--text-2); }
+.report__facts dd { margin: 0; overflow-wrap: anywhere; }
+.report code { font-size: .92em; overflow-wrap: anywhere; }
+.report__table { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s2); min-width: 0; }
+.report__table .table-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.report__table table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.report__table caption { text-align: left; font-weight: 600; padding: var(--s2) var(--s3); caption-side: top; }
+/* The app tables keep cells on one line; a report table wraps its text so it fits a phone and a printed page. */
+.report__table th, .report__table td { text-align: left; padding: 6px 10px; border-top: 1px solid var(--border); border-bottom: 0; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
+.report__table thead th { color: var(--text-2); font-weight: 600; overflow-wrap: normal; }
+.report__table tbody th { font-size: inherit; font-weight: 500; color: inherit; background: transparent; min-width: 180px; }
+.report__table code { padding: 0; background: transparent; word-break: break-all; }
+.report__table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.report__notes { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; color: var(--text-2); }
+.report__quote { margin: 0; display: grid; gap: var(--s1); }
+.report__quote blockquote { margin: 0; padding: var(--s2) var(--s3); border-left: 4px solid var(--border-strong); }
+.report__chart { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s2); min-width: 0; }
+.report__chart figcaption { font-weight: 600; }
+.report__chart p { margin: 0; }
+.report__chart > svg { display: block; width: 100%; height: auto; max-width: 900px; color: var(--text); }
+.report-chart__frame { fill: none; stroke: var(--border-strong); }
+.report-chart__grid { stroke: var(--border); }
+.report-chart__tick { stroke: var(--border-strong); }
+.report-chart__phase { stroke: var(--border-strong); stroke-dasharray: 3 3; }
+.report-chart__label { fill: var(--text-2); font-size: 11px; }
+.report-chart__area { fill: var(--water); fill-opacity: .2; stroke: none; }
+.report-chart__line { fill: none; stroke: var(--text); stroke-width: 2.6; }
+/* Pattern and weight identify each line; colour only reinforces it. */
+.report-chart__line--dry { stroke: var(--warn); stroke-width: 2.2; stroke-dasharray: 9 5; }
+.report-chart__line--wet { stroke: var(--water); stroke-width: 2.2; stroke-dasharray: 2 4; stroke-linecap: round; }
+.report-chart__line--capacity { stroke: var(--text-2); stroke-width: 1; stroke-dasharray: 14 4 2 4; }
+.report__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); font-size: 14px; color: var(--text-2); }
+.report__legend li { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.report__legend svg { flex: none; width: 40px; height: 14px; color: var(--text); }
+.report__footer { padding-top: var(--s4); border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .report__heading { font-size: 19px; }
+  .report__facts > div { grid-template-columns: minmax(0, 1fr); }
+  /* Print first and full width; the other actions two by two, so the summary stays near the top of a phone. */
+  .report__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report__actions .btn { padding: 6px 10px; font-size: 14px; line-height: 1.25; text-align: left; justify-content: flex-start; white-space: normal; }
+  .report__actions .btn:first-child { grid-column: 1 / -1; justify-content: center; }
+  .report__table tbody th { min-width: 140px; }
+}
+/* Printing (and "Save as PDF" in the browser dialog): the document alone, every technical section open, ink on
+   paper whatever the theme on screen. System colours are used so no palette value is repeated here. */
+@media print {
+  @page { margin: 16mm; }
+  :root:has(.report) { color-scheme: light; }
+  html:has(.report), html:has(.report) body, html:has(.report) #root { height: auto; background: Canvas; }
+  .app:has(.report) { display: block; height: auto; }
+  .app:has(.report) > .header, .app:has(.report) > .rail, .app:has(.report) .skip, .app:has(.report) .explore__toast, .app:has(.report) .tour-bar, .app:has(.report) .tour-pop, .report__back, .report__bar, .report__status, .report__notice { display: none !important; }
+  .app:has(.report) .main { overflow: visible; }
+  .report { max-width: none; padding: 0; }
+  /* Grid containers split badly across pages (a table that continues on the next page overlapped its notes):
+     the printed document is plain blocks spaced by margins. */
+  .report, .report__header, .report__document, .report__section, .report__body, .report__table, .report__chart, .report__quote, .report__facts, .report__list, .report__notes { display: block !important; }
+  .report__body > * + *, .report__chart > * + *, .report__table > * + *, .report__header > * + *, .report__section > * + * { margin-top: 7pt !important; }
+  /* The short tables under a chart stay whole, so a header row is never left alone at the foot of a page. */
+  .report__chart .report__table { break-inside: avoid; }
+  .report__section { margin-top: 14pt; padding-top: 8pt; }
+  .report__list li + li, .report__notes li + li { margin-top: 3pt; }
+  .report__facts > div { display: grid; }
+  .report__legend { margin-top: 4pt; }
+  .report, .report * { color: CanvasText !important; background: transparent !important; border-color: GrayText !important; box-shadow: none !important; }
+  .report { font-size: 10.5pt; }
+  .report__toggle { padding: 0; margin: 0; border: 0; min-height: 0; }
+  .report__toggle::before { display: none; }
+  .report__heading, .report__body h3, .report__chart figcaption, .report__table caption { break-after: avoid; }
+  .report__table tr, .report__chart > svg, .report__facts > div, .report__quote, .report__note, .report__warning, .report__list li { break-inside: avoid; }
+  .report__table thead { display: table-header-group; }
+  .report__table .table-wrap { overflow: visible; border: 0; }
+  .report__table table { font-size: 9.5pt; }
+  .report-chart__line, .report-chart__frame, .report-chart__tick, .report-chart__phase { stroke: CanvasText !important; }
+  .report-chart__grid { stroke: GrayText !important; }
+  .report-chart__label { fill: CanvasText !important; }
+  .report-chart__area { fill: CanvasText !important; fill-opacity: .14; }
+}

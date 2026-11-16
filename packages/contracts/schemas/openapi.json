@@ -590,6 +590,106 @@
         }
       }
     },
+    "/v1/simulations/{id}/report": {
+      "post": {
+        "operationId": "post__v1_simulations__id_report",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SimulationRunKey"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportGenerationResultResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "get__v1_simulations__id_report",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SimulationRunKey"
+            }
+          },
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReportId"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReportFormat"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportGenerationResultResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Application error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "get__v1_me",
@@ -6769,6 +6869,2627 @@
           "full_members_artifact"
         ]
       },
+      "ReportLocale": {
+        "enum": [
+          "pt-BR",
+          "en",
+          "es",
+          "fr",
+          "de"
+        ]
+      },
+      "ReportFormat": {
+        "enum": [
+          "json",
+          "html",
+          "md"
+        ]
+      },
+      "ReportId": {
+        "type": "string",
+        "pattern": "^rep_[0-9a-f]{32}$"
+      },
+      "ReportScope": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "run"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "season"
+              },
+              "crop_id": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]{2,32}$"
+              },
+              "harvest_year": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              }
+            },
+            "required": [
+              "kind",
+              "crop_id",
+              "harvest_year"
+            ]
+          }
+        ]
+      },
+      "ReportDisplayProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "time_zone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_+/-]+$"
+          },
+          "units": {
+            "const": "canonical_metric"
+          }
+        },
+        "required": [
+          "time_zone",
+          "units"
+        ]
+      },
+      "ReportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "locale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ReportScope"
+          },
+          "display_profile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "time_zone": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_+/-]+$"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": []
+      },
+      "ReportQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "report_id": {
+            "$ref": "#/components/schemas/ReportId"
+          },
+          "format": {
+            "$ref": "#/components/schemas/ReportFormat"
+          }
+        },
+        "required": [
+          "report_id"
+        ]
+      },
+      "ReportLocaleResolution": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requested_locale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 35
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolved_locale": {
+            "$ref": "#/components/schemas/ReportLocale"
+          },
+          "fallback_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "missing",
+                  "invalid",
+                  "unsupported",
+                  "catalog_unavailable"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "requested_locale",
+          "resolved_locale",
+          "fallback_reason"
+        ]
+      },
+      "ReportGenerationState": {
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed"
+        ]
+      },
+      "ReportSectionId": {
+        "enum": [
+          "identification",
+          "summary",
+          "results",
+          "charts",
+          "yield_economics",
+          "methods"
+        ]
+      },
+      "ReportAvailability": {
+        "enum": [
+          "available",
+          "partial",
+          "unavailable"
+        ]
+      },
+      "ReportReason": {
+        "enum": [
+          "no_series_artifact",
+          "series_integrity_failed",
+          "season_outside_series",
+          "no_seasonal_statistics",
+          "unknown_metrics_present",
+          "economics_not_integrated",
+          "yield_and_economics_unavailable",
+          "untranslated_source_notes"
+        ]
+      },
+      "ReportSectionStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ReportSectionId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reason_code"
+        ]
+      },
+      "ReportWarning": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "unknown_metric",
+              "unknown_event",
+              "event_share_inconsistent",
+              "untranslated_source_text",
+              "series_integrity_failed",
+              "source_covers_after_cutoff"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "code",
+          "subject"
+        ]
+      },
+      "ReportTextFact": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "code"
+              },
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "kind",
+              "code"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "lang": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 35
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "text",
+              "lang"
+            ]
+          }
+        ]
+      },
+      "ReportMetricFact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+          },
+          "metric_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "known": {
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "enum": [
+                  "mm",
+                  "days",
+                  "kg_ha"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "p10": {
+            "type": "number"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p90": {
+            "type": "number"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "metric_id",
+          "known",
+          "unit",
+          "p10",
+          "p50",
+          "p90",
+          "n"
+        ]
+      },
+      "ReportEventFact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+          },
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "known": {
+            "type": "boolean"
+          },
+          "share_of_members": {
+            "type": "number"
+          },
+          "members": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "count_status": {
+            "enum": [
+              "derived",
+              "inconsistent"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "known",
+          "share_of_members",
+          "members",
+          "count",
+          "count_status"
+        ]
+      },
+      "ReportYieldFact": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+              },
+              "variant": {
+                "const": "unavailable"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/SimulationReason"
+              }
+            },
+            "required": [
+              "id",
+              "variant",
+              "reason_code"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+              },
+              "variant": {
+                "const": "historical_reference"
+              },
+              "status": {
+                "const": "reference"
+              },
+              "value_kg_ha": {
+                "type": "number"
+              },
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "years_used": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "conditional_on_scenario": {
+                "const": false
+              },
+              "last_label_year": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              "history_horizon_years": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "label_release_rule": {
+                "$ref": "#/components/schemas/ReportTextFact"
+              },
+              "research_status": {
+                "$ref": "#/components/schemas/SimulationResearchStatus"
+              },
+              "exposure_flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "scale": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "municipal",
+                      "county",
+                      "other"
+                    ]
+                  },
+                  "original": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "kind",
+                  "original"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "variant",
+              "status",
+              "value_kg_ha",
+              "method",
+              "years_used",
+              "conditional_on_scenario",
+              "last_label_year",
+              "history_horizon_years",
+              "label_release_rule",
+              "research_status",
+              "exposure_flags",
+              "scale"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+              },
+              "variant": {
+                "const": "model"
+              },
+              "status": {
+                "enum": [
+                  "research",
+                  "reference"
+                ]
+              },
+              "value_kg_ha": {
+                "type": "number"
+              },
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "model_version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "scenario_range": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p10": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p90": {
+                        "type": "number"
+                      },
+                      "method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "p10",
+                      "p50",
+                      "p90",
+                      "method"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "predictive_range": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p10": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p90": {
+                        "type": "number"
+                      },
+                      "interval_method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "p10",
+                      "p50",
+                      "p90",
+                      "interval_method"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "position_vs_season": {
+                "$ref": "#/components/schemas/SimulationSeasonPosition"
+              },
+              "conditional_on_scenario": {
+                "type": "boolean"
+              },
+              "last_label_year": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2100
+              },
+              "history_horizon_years": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "label_release_rule": {
+                "$ref": "#/components/schemas/ReportTextFact"
+              },
+              "research_status": {
+                "$ref": "#/components/schemas/SimulationResearchStatus"
+              },
+              "exposure_flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "scale": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "municipal",
+                      "county",
+                      "other"
+                    ]
+                  },
+                  "original": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "kind",
+                  "original"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "variant",
+              "status",
+              "value_kg_ha",
+              "method",
+              "model_version",
+              "scenario_range",
+              "predictive_range",
+              "position_vs_season",
+              "conditional_on_scenario",
+              "last_label_year",
+              "history_horizon_years",
+              "label_release_rule",
+              "research_status",
+              "exposure_flags",
+              "scale"
+            ]
+          }
+        ]
+      },
+      "ReportSeasonFacts": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+          },
+          "crop_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "harvest_year": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2100
+          },
+          "season_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "sowing_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expected_harvest_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "cycle_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1500
+          },
+          "calendar_source": {
+            "$ref": "#/components/schemas/ReportTextFact"
+          },
+          "calendar_rule": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "rule": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "state_calendar": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "used": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "required": [
+                  "rule",
+                  "state_calendar",
+                  "used"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interval_method": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportMetricFact"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportEventFact"
+            }
+          },
+          "yield": {
+            "$ref": "#/components/schemas/ReportYieldFact"
+          },
+          "phases": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "phase_code": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "start": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "end": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "days": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "required": [
+                    "phase_code",
+                    "start",
+                    "end",
+                    "days"
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trajectories": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "role": {
+                      "enum": [
+                        "central",
+                        "dry",
+                        "wet"
+                      ]
+                    },
+                    "member_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "analog_year": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 2000,
+                          "maximum": 2100
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "season_deficit_mm": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "min_storage_mm": {
+                      "type": "number"
+                    },
+                    "min_storage_date": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "member_id",
+                    "analog_year",
+                    "season_deficit_mm",
+                    "min_storage_mm",
+                    "min_storage_date"
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "day_kinds": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "kind": {
+                      "$ref": "#/components/schemas/SimulationWeatherKind"
+                    },
+                    "start": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "end": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "start",
+                    "end"
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "crop_id",
+          "harvest_year",
+          "season_label",
+          "sowing_date",
+          "expected_harvest_date",
+          "cycle_days",
+          "calendar_source",
+          "calendar_rule",
+          "interval_method",
+          "metrics",
+          "events",
+          "yield",
+          "phases",
+          "trajectories",
+          "day_kinds"
+        ]
+      },
+      "ReportDataSourceFact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportTextFact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "availability": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportTextFact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file_period": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "covers_after_as_of": {
+            "type": "boolean"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "provider",
+          "product",
+          "description",
+          "availability",
+          "file_period",
+          "covers_after_as_of",
+          "sha256"
+        ]
+      },
+      "ReportConclusionCode": {
+        "enum": [
+          "water_deficit_season",
+          "water_deficit_highest",
+          "event_frequency",
+          "yield_overview",
+          "yield_unavailable"
+        ]
+      },
+      "ReportCaveatCode": {
+        "enum": [
+          "soil_capacity_hypothesis",
+          "coverage_limited",
+          "scenarios_not_forecast"
+        ]
+      },
+      "ReportActionCode": {
+        "enum": [
+          "check_soil_capacity",
+          "check_recent_yield_data",
+          "obtain_local_yield",
+          "treat_model_yield_as_research",
+          "check_sowing_calendar",
+          "request_paired_management_run"
+        ]
+      },
+      "ReportConclusion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ReportConclusionCode"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "evidence_ids"
+        ]
+      },
+      "ReportCaveat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ReportCaveatCode"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "evidence_ids"
+        ]
+      },
+      "ReportAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ReportActionCode"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "evidence_ids"
+        ]
+      },
+      "ReportFacts": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract": {
+            "const": "simulation-technical-report-facts.v1"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ReportScope"
+          },
+          "run": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "$ref": "#/components/schemas/SimulationRunKey"
+              },
+              "protocol_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "location_id": {
+                "$ref": "#/components/schemas/LocationId"
+              },
+              "place_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "state_code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "output_mode": {
+                "$ref": "#/components/schemas/SimulationOutputMode"
+              },
+              "execution_status": {
+                "const": "succeeded"
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "issued_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "simulation_start": {
+                "type": "string",
+                "format": "date"
+              },
+              "simulation_end": {
+                "type": "string",
+                "format": "date"
+              },
+              "harvest_years": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "visibility": {
+                "enum": [
+                  "public_regional"
+                ]
+              },
+              "spatial_scale": {
+                "const": "regional"
+              },
+              "seasons_in_run": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "identity_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "series_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "run_id",
+              "protocol_id",
+              "location_id",
+              "place_name",
+              "state_code",
+              "plan_id",
+              "output_mode",
+              "execution_status",
+              "as_of",
+              "issued_at",
+              "simulation_start",
+              "simulation_end",
+              "harvest_years",
+              "visibility",
+              "spatial_scale",
+              "seasons_in_run",
+              "identity_sha256",
+              "series_sha256"
+            ]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "run",
+                    "series"
+                  ]
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "kind",
+                "sha256",
+                "bytes"
+              ]
+            }
+          },
+          "scientific_status": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "weather": {
+                "enum": [
+                  "climatological_scenario",
+                  "observed",
+                  "seasonal_forecast",
+                  "mixed"
+                ]
+              },
+              "water_balance": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              },
+              "phenology": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              },
+              "yield": {
+                "$ref": "#/components/schemas/SimulationScientificStatus"
+              }
+            },
+            "required": [
+              "weather",
+              "water_balance",
+              "phenology",
+              "yield"
+            ]
+          },
+          "weather_segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "$ref": "#/components/schemas/SimulationWeatherKind"
+                },
+                "start": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "end": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "origin": {
+                  "$ref": "#/components/schemas/ReportTextFact"
+                }
+              },
+              "required": [
+                "kind",
+                "start",
+                "end",
+                "origin"
+              ]
+            }
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportSeasonFacts"
+            }
+          },
+          "ensemble": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "method": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "members": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "effective_source_years": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "analog_years": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                }
+              },
+              "eligible_years": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "excluded_years": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "year": {
+                      "type": "integer",
+                      "minimum": 2000,
+                      "maximum": 2100
+                    },
+                    "reason": {
+                      "$ref": "#/components/schemas/ReportTextFact"
+                    }
+                  },
+                  "required": [
+                    "year",
+                    "reason"
+                  ]
+                }
+              },
+              "coverage_class": {
+                "enum": [
+                  "standard",
+                  "limited"
+                ]
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "analog_years_requested": {
+                "type": "boolean"
+              },
+              "calendar_mapping": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "max_month_day_drift_days": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "note": {
+                    "$ref": "#/components/schemas/ReportTextFact"
+                  }
+                },
+                "required": [
+                  "method",
+                  "max_month_day_drift_days",
+                  "note"
+                ]
+              }
+            },
+            "required": [
+              "method",
+              "members",
+              "effective_source_years",
+              "analog_years",
+              "eligible_years",
+              "excluded_years",
+              "coverage_class",
+              "seed",
+              "analog_years_requested",
+              "calendar_mapping"
+            ]
+          },
+          "soil": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "capacity_mm": {
+                "type": "number"
+              },
+              "profile_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "is_hypothesis": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "capacity_mm",
+              "profile_id",
+              "is_hypothesis"
+            ]
+          },
+          "initial_condition": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "storage_fraction": {
+                "type": "number"
+              },
+              "is_hypothesis": {
+                "type": "boolean"
+              },
+              "warm_up": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end",
+                      "source"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sensitivity": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "storage_fraction": {
+                      "type": "number"
+                    },
+                    "season_key": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "storage_fraction",
+                    "season_key",
+                    "value"
+                  ]
+                }
+              },
+              "sensitivity_metric": {
+                "$ref": "#/components/schemas/ReportTextFact"
+              }
+            },
+            "required": [
+              "storage_fraction",
+              "is_hypothesis",
+              "warm_up",
+              "sensitivity",
+              "sensitivity_metric"
+            ]
+          },
+          "engine": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "parameter_set_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "version",
+              "parameter_set_id"
+            ]
+          },
+          "representative": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "central": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "dry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "wet": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "rule": {
+                "$ref": "#/components/schemas/ReportTextFact"
+              }
+            },
+            "required": [
+              "central",
+              "dry",
+              "wet",
+              "rule"
+            ]
+          },
+          "data_sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportDataSourceFact"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+                },
+                "fact": {
+                  "$ref": "#/components/schemas/ReportTextFact"
+                }
+              },
+              "required": [
+                "id",
+                "fact"
+              ]
+            }
+          },
+          "economics": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "const": "unavailable"
+              },
+              "reason_code": {
+                "const": "no_integrated_budget"
+              }
+            },
+            "required": [
+              "status",
+              "reason_code"
+            ]
+          },
+          "management_comparison": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "const": "unavailable"
+              },
+              "reason_code": {
+                "const": "no_paired_management_result"
+              }
+            },
+            "required": [
+              "status",
+              "reason_code"
+            ]
+          },
+          "charts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "$ref": "#/components/schemas/ReportAvailability"
+              },
+              "reason_code": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ReportReason"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "reason_code"
+            ]
+          },
+          "conclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportConclusion"
+            },
+            "maxItems": 3
+          },
+          "caveat": {
+            "$ref": "#/components/schemas/ReportCaveat"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportAction"
+            },
+            "maxItems": 3
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportSectionStatus"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportWarning"
+            }
+          }
+        },
+        "required": [
+          "contract",
+          "scope",
+          "run",
+          "sources",
+          "scientific_status",
+          "weather_segments",
+          "seasons",
+          "ensemble",
+          "soil",
+          "initial_condition",
+          "engine",
+          "representative",
+          "data_sources",
+          "limitations",
+          "economics",
+          "management_comparison",
+          "charts",
+          "conclusions",
+          "caveat",
+          "actions",
+          "sections",
+          "warnings"
+        ]
+      },
+      "ReportTable": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "table"
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "header": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "numeric": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "header",
+                "numeric"
+              ]
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cells": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "maxLength": 4000
+                        },
+                        "style": {
+                          "enum": [
+                            "strong",
+                            "em",
+                            "code"
+                          ]
+                        },
+                        "lang": {
+                          "type": "string",
+                          "maxLength": 35
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ]
+                    }
+                  }
+                }
+              },
+              "required": [
+                "cells"
+              ]
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "maxLength": 4000
+                  },
+                  "style": {
+                    "enum": [
+                      "strong",
+                      "em",
+                      "code"
+                    ]
+                  },
+                  "lang": {
+                    "type": "string",
+                    "maxLength": 35
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "caption",
+          "columns",
+          "rows",
+          "notes"
+        ]
+      },
+      "ReportChart": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "chart"
+          },
+          "chart_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "shapes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "area",
+                    "line"
+                  ]
+                },
+                "role": {
+                  "enum": [
+                    "band",
+                    "central",
+                    "dry",
+                    "wet",
+                    "capacity"
+                  ]
+                },
+                "d": {
+                  "type": "string",
+                  "maxLength": 60000
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "kind",
+                "role",
+                "d",
+                "label"
+              ]
+            }
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "width": {
+                  "type": "number"
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "index": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "x",
+                "width",
+                "label",
+                "index"
+              ]
+            }
+          },
+          "x_ticks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              },
+              "required": [
+                "x",
+                "label"
+              ]
+            }
+          },
+          "y_ticks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "y": {
+                  "type": "number"
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              },
+              "required": [
+                "y",
+                "label"
+              ]
+            }
+          },
+          "y_label": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "plot": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ]
+          },
+          "table": {
+            "$ref": "#/components/schemas/ReportTable"
+          }
+        },
+        "required": [
+          "type",
+          "chart_id",
+          "title",
+          "description",
+          "width",
+          "height",
+          "shapes",
+          "regions",
+          "x_ticks",
+          "y_ticks",
+          "y_label",
+          "plot",
+          "table"
+        ]
+      },
+      "ReportBlock": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "paragraph"
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "maxLength": 4000
+                    },
+                    "style": {
+                      "enum": [
+                        "strong",
+                        "em",
+                        "code"
+                      ]
+                    },
+                    "lang": {
+                      "type": "string",
+                      "maxLength": 35
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
+              },
+              "tone": {
+                "enum": [
+                  "note",
+                  "warning"
+                ]
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][A-Za-z0-9_:.>-]{0,159}$"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "content"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "heading"
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "list"
+              },
+              "ordered": {
+                "type": "boolean"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "maxLength": 4000
+                      },
+                      "style": {
+                        "enum": [
+                          "strong",
+                          "em",
+                          "code"
+                        ]
+                      },
+                      "lang": {
+                        "type": "string",
+                        "maxLength": 35
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ]
+                  }
+                }
+              }
+            },
+            "required": [
+              "type",
+              "ordered",
+              "items"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "definitions"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "term": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "text": {
+                            "type": "string",
+                            "maxLength": 4000
+                          },
+                          "style": {
+                            "enum": [
+                              "strong",
+                              "em",
+                              "code"
+                            ]
+                          },
+                          "lang": {
+                            "type": "string",
+                            "maxLength": 35
+                          }
+                        },
+                        "required": [
+                          "text"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "term",
+                    "content"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "items"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "quote"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "maxLength": 4000
+                    },
+                    "style": {
+                      "enum": [
+                        "strong",
+                        "em",
+                        "code"
+                      ]
+                    },
+                    "lang": {
+                      "type": "string",
+                      "maxLength": 35
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "label",
+              "content"
+            ]
+          },
+          {
+            "$ref": "#/components/schemas/ReportTable"
+          },
+          {
+            "$ref": "#/components/schemas/ReportChart"
+          }
+        ]
+      },
+      "ReportSection": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ReportSectionId"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "technical": {
+            "type": "boolean"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportBlock"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "reason_code",
+          "technical",
+          "blocks"
+        ]
+      },
+      "ReportDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "lang": {
+            "$ref": "#/components/schemas/ReportLocale"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportSection"
+            }
+          },
+          "footer": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "maxLength": 4000
+                },
+                "style": {
+                  "enum": [
+                    "strong",
+                    "em",
+                    "code"
+                  ]
+                },
+                "lang": {
+                  "type": "string",
+                  "maxLength": 35
+                }
+              },
+              "required": [
+                "text"
+              ]
+            }
+          }
+        },
+        "required": [
+          "title",
+          "subtitle",
+          "lang",
+          "sections",
+          "footer"
+        ]
+      },
+      "ReportArtifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "enum": [
+              "html",
+              "md"
+            ]
+          },
+          "mime_type": {
+            "enum": [
+              "text/html; charset=utf-8",
+              "text/markdown; charset=utf-8"
+            ]
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "format",
+          "mime_type",
+          "bytes",
+          "sha256"
+        ]
+      },
+      "ReportRepresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract": {
+            "const": "simulation-technical-report.v1"
+          },
+          "report_id": {
+            "$ref": "#/components/schemas/ReportId"
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ReportScope"
+          },
+          "facts_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "source_hashes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "run",
+                    "series"
+                  ]
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "kind",
+                "sha256"
+              ]
+            }
+          },
+          "report_schema_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "template_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "translation_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "resolved_locale": {
+            "$ref": "#/components/schemas/ReportLocale"
+          },
+          "display_profile": {
+            "$ref": "#/components/schemas/ReportDisplayProfile"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportSectionStatus"
+            }
+          },
+          "conclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportConclusion"
+            }
+          },
+          "caveat": {
+            "$ref": "#/components/schemas/ReportCaveat"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportAction"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportWarning"
+            }
+          },
+          "document": {
+            "$ref": "#/components/schemas/ReportDocument"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportArtifact"
+            }
+          }
+        },
+        "required": [
+          "contract",
+          "report_id",
+          "run_id",
+          "scope",
+          "facts_digest",
+          "source_hashes",
+          "report_schema_version",
+          "template_version",
+          "translation_version",
+          "resolved_locale",
+          "display_profile",
+          "generated_at",
+          "sections",
+          "conclusions",
+          "caveat",
+          "actions",
+          "warnings",
+          "document",
+          "artifacts"
+        ]
+      },
+      "ReportGenerationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ReportGenerationState"
+          },
+          "report_id": {
+            "$ref": "#/components/schemas/ReportId"
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/SimulationRunKey"
+          },
+          "reused": {
+            "type": "boolean"
+          },
+          "locale_resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportLocaleResolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "representation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportRepresentation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "links": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "json": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "html": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "md": {
+                    "type": "string",
+                    "maxLength": 512
+                  }
+                },
+                "required": [
+                  "json",
+                  "html",
+                  "md"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "attempts": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "code",
+                  "attempts"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "report_id",
+          "run_id",
+          "reused",
+          "locale_resolution",
+          "representation",
+          "links",
+          "error"
+        ]
+      },
       "SimulationCatalogResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -6823,6 +9544,22 @@
         "properties": {
           "data": {
             "$ref": "#/components/schemas/SimulationSeries"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "ReportGenerationResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReportGenerationResult"
           },
           "meta": {
             "$ref": "#/components/schemas/ResponseMeta"

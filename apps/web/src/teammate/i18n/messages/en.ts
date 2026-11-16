@@ -739,6 +739,19 @@ const m: DeepPartial<Messages> = {
     usNote: "Global hub: climate, soil water, NDVI and forecasts. No yield estimates for the US in this version.",
   },
   place: { notFoundTitle: "Place not found", notFound: "There is no published data for “{id}”. Choose a place from the list or search by name.", picker: "Choose a place", country: "Country", state: "State", place: "Place", search: "Search places with data", searchPh: "Name or official code (IBGE, FIPS)…", noResult: "No place with data found.", noYieldTitle: "No yield estimate.", noYield: "This version has no yield model for this country; its yield labels have not been audited yet. Climate, soil water, NDVI and the forecast are in the other tabs." },
+  report: {
+    title: 'Technical report', preparing: 'Preparing the technical report…', ready: 'Report ready',
+    meta: 'Report language: {language} · generated on {date} · version {version}',
+    failed: 'The technical report could not be prepared.', simulationIntact: 'The simulation is not affected: only the report failed.', retry: 'Try the report again',
+    backToSimulation: 'Back to the simulation', missingRun: 'No simulation was named for the report.', openPlanning: 'Open season planning',
+    scopeLegend: 'Scope of the report', scopeRun: 'Whole run', scopeSeason: 'Selected season — {crop} {year}',
+    actions: 'Report actions', print: 'Print or save as PDF', copyMd: 'Copy as Markdown', mdCopied: 'Markdown copied', copyFailed: 'Could not copy', downloadMd: 'Download Markdown', openHtml: 'Open HTML version', copyLink: 'Copy link to this report', linkCopied: 'Link copied',
+    printHint: 'The PDF is saved from the print dialog of the browser; the server generates no PDF file.',
+    savedLanguage: 'This saved report is in {reportLanguage}; the app is in {appLanguage}.', openInAppLanguage: 'Open in {appLanguage}',
+    fallback: 'The report is not available in {appLanguage} right now; it is shown in {reportLanguage}.', openCurrent: 'Open the current report of this simulation',
+    sectionStatus: { partial: 'partial', unavailable: 'unavailable' },
+    entry: { title: 'Technical report', open: 'Open technical report', preparing: 'Preparing the technical report of this simulation…', ready: 'Technical report ready.', failed: 'The technical report could not be prepared. The simulation is not affected.', scope: { one: 'Whole run — {count} crop season', other: 'Whole run — {count} crop seasons' } },
+  },
   area,
 };
 export default m;

@@ -159,6 +159,207 @@ export type SimulationYield =
       conditional_on_scenario: boolean;
       scale: string;
     };
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportLocale".
+ */
+export type ReportLocale = 'pt-BR' | 'en' | 'es' | 'fr' | 'de';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportFormat".
+ */
+export type ReportFormat = 'json' | 'html' | 'md';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportId".
+ */
+export type ReportId = string;
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportScope".
+ */
+export type ReportScope =
+  | {
+      kind: 'run';
+    }
+  | {
+      kind: 'season';
+      crop_id: string;
+      harvest_year: number;
+    };
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportGenerationState".
+ */
+export type ReportGenerationState = 'queued' | 'running' | 'succeeded' | 'failed';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportSectionId".
+ */
+export type ReportSectionId = 'identification' | 'summary' | 'results' | 'charts' | 'yield_economics' | 'methods';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportAvailability".
+ */
+export type ReportAvailability = 'available' | 'partial' | 'unavailable';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportReason".
+ */
+export type ReportReason =
+  | 'no_series_artifact'
+  | 'series_integrity_failed'
+  | 'season_outside_series'
+  | 'no_seasonal_statistics'
+  | 'unknown_metrics_present'
+  | 'economics_not_integrated'
+  | 'yield_and_economics_unavailable'
+  | 'untranslated_source_notes';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportTextFact".
+ */
+export type ReportTextFact =
+  | {
+      kind: 'code';
+      code: string;
+    }
+  | {
+      kind: 'text';
+      text: string;
+      lang: string | null;
+    };
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportYieldFact".
+ */
+export type ReportYieldFact =
+  | {
+      id: string;
+      variant: 'unavailable';
+      reason_code: SimulationReason;
+    }
+  | {
+      id: string;
+      variant: 'historical_reference';
+      status: 'reference';
+      value_kg_ha: number;
+      method: string;
+      years_used: number[];
+      conditional_on_scenario: false;
+      last_label_year: number;
+      history_horizon_years: number;
+      label_release_rule: ReportTextFact;
+      research_status: SimulationResearchStatus;
+      exposure_flags: string[];
+      scale: {
+        kind: 'municipal' | 'county' | 'other';
+        original: string;
+      };
+    }
+  | {
+      id: string;
+      variant: 'model';
+      status: 'research' | 'reference';
+      value_kg_ha: number;
+      method: string;
+      model_version: string;
+      scenario_range: {
+        p10: number;
+        p50: number;
+        p90: number;
+        method: string;
+      } | null;
+      predictive_range: {
+        p10: number;
+        p50: number;
+        p90: number;
+        interval_method: string;
+      } | null;
+      position_vs_season: SimulationSeasonPosition;
+      conditional_on_scenario: boolean;
+      last_label_year: number;
+      history_horizon_years: number;
+      label_release_rule: ReportTextFact;
+      research_status: SimulationResearchStatus;
+      exposure_flags: string[];
+      scale: {
+        kind: 'municipal' | 'county' | 'other';
+        original: string;
+      };
+    };
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportConclusionCode".
+ */
+export type ReportConclusionCode =
+  'water_deficit_season' | 'water_deficit_highest' | 'event_frequency' | 'yield_overview' | 'yield_unavailable';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportCaveatCode".
+ */
+export type ReportCaveatCode = 'soil_capacity_hypothesis' | 'coverage_limited' | 'scenarios_not_forecast';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportActionCode".
+ */
+export type ReportActionCode =
+  | 'check_soil_capacity'
+  | 'check_recent_yield_data'
+  | 'obtain_local_yield'
+  | 'treat_model_yield_as_research'
+  | 'check_sowing_calendar'
+  | 'request_paired_management_run';
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportBlock".
+ */
+export type ReportBlock =
+  | {
+      type: 'paragraph';
+      content: {
+        text: string;
+        style?: 'strong' | 'em' | 'code';
+        lang?: string;
+      }[];
+      tone?: 'note' | 'warning';
+      evidence_ids?: string[];
+    }
+  | {
+      type: 'heading';
+      text: string;
+    }
+  | {
+      type: 'list';
+      ordered: boolean;
+      items: {
+        text: string;
+        style?: 'strong' | 'em' | 'code';
+        lang?: string;
+      }[][];
+    }
+  | {
+      type: 'definitions';
+      items: {
+        term: string;
+        content: {
+          text: string;
+          style?: 'strong' | 'em' | 'code';
+          lang?: string;
+        }[];
+      }[];
+    }
+  | {
+      type: 'quote';
+      label: string;
+      content: {
+        text: string;
+        style?: 'strong' | 'em' | 'code';
+        lang?: string;
+      }[];
+    }
+  | ReportTable
+  | ReportChart;
 
 export interface GaiapusContracts {
   YieldPayload?: YieldPayload;
@@ -255,10 +456,46 @@ export interface GaiapusContracts {
   SimulationRun?: SimulationRun;
   SimulationSeriesMember?: SimulationSeriesMember;
   SimulationSeries?: SimulationSeries;
+  ReportLocale?: ReportLocale;
+  ReportFormat?: ReportFormat;
+  ReportId?: ReportId;
+  ReportScope?: ReportScope;
+  ReportDisplayProfile?: ReportDisplayProfile;
+  ReportRequest?: ReportRequest;
+  ReportQuery?: ReportQuery;
+  ReportLocaleResolution?: ReportLocaleResolution;
+  ReportGenerationState?: ReportGenerationState;
+  ReportSectionId?: ReportSectionId;
+  ReportAvailability?: ReportAvailability;
+  ReportReason?: ReportReason;
+  ReportSectionStatus?: ReportSectionStatus;
+  ReportWarning?: ReportWarning;
+  ReportTextFact?: ReportTextFact;
+  ReportMetricFact?: ReportMetricFact;
+  ReportEventFact?: ReportEventFact;
+  ReportYieldFact?: ReportYieldFact;
+  ReportSeasonFacts?: ReportSeasonFacts;
+  ReportDataSourceFact?: ReportDataSourceFact;
+  ReportConclusionCode?: ReportConclusionCode;
+  ReportCaveatCode?: ReportCaveatCode;
+  ReportActionCode?: ReportActionCode;
+  ReportConclusion?: ReportConclusion;
+  ReportCaveat?: ReportCaveat;
+  ReportAction?: ReportAction;
+  ReportFacts?: ReportFacts;
+  ReportTable?: ReportTable;
+  ReportChart?: ReportChart;
+  ReportBlock?: ReportBlock;
+  ReportSection?: ReportSection;
+  ReportDocument?: ReportDocument;
+  ReportArtifact?: ReportArtifact;
+  ReportRepresentation?: ReportRepresentation;
+  ReportGenerationResult?: ReportGenerationResult;
   SimulationCatalogResponse?: SimulationCatalogResponse;
   SimulationPublicationListResponse?: SimulationPublicationListResponse;
   SimulationRunResponse?: SimulationRunResponse;
   SimulationSeriesResponse?: SimulationSeriesResponse;
+  ReportGenerationResultResponse?: ReportGenerationResultResponse;
   LocationPageResponse?: LocationPageResponse;
   LocationCoreResponse?: LocationCoreResponse;
   GeographyPageResponse?: GeographyPageResponse;
@@ -1901,6 +2138,459 @@ export interface SimulationSeries {
 }
 /**
  * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportDisplayProfile".
+ */
+export interface ReportDisplayProfile {
+  time_zone: string;
+  units: 'canonical_metric';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportRequest".
+ */
+export interface ReportRequest {
+  locale?: string | null;
+  scope?: ReportScope;
+  display_profile?: {
+    time_zone?: string;
+  };
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportQuery".
+ */
+export interface ReportQuery {
+  report_id: ReportId;
+  format?: ReportFormat;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportLocaleResolution".
+ */
+export interface ReportLocaleResolution {
+  requested_locale: string | null;
+  resolved_locale: ReportLocale;
+  fallback_reason: ('missing' | 'invalid' | 'unsupported' | 'catalog_unavailable') | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportSectionStatus".
+ */
+export interface ReportSectionStatus {
+  id: ReportSectionId;
+  status: ReportAvailability;
+  reason_code: ReportReason | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportWarning".
+ */
+export interface ReportWarning {
+  code:
+    | 'unknown_metric'
+    | 'unknown_event'
+    | 'event_share_inconsistent'
+    | 'untranslated_source_text'
+    | 'series_integrity_failed'
+    | 'source_covers_after_cutoff';
+  subject: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportMetricFact".
+ */
+export interface ReportMetricFact {
+  id: string;
+  metric_id: string;
+  known: boolean;
+  unit: ('mm' | 'days' | 'kg_ha') | null;
+  p10: number;
+  p50: number;
+  p90: number;
+  n: number;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportEventFact".
+ */
+export interface ReportEventFact {
+  id: string;
+  event_id: string;
+  known: boolean;
+  share_of_members: number;
+  members: number;
+  count: number | null;
+  count_status: 'derived' | 'inconsistent';
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportSeasonFacts".
+ */
+export interface ReportSeasonFacts {
+  id: string;
+  crop_id: string;
+  harvest_year: number;
+  season_label: string;
+  sowing_date: string;
+  expected_harvest_date: string;
+  cycle_days: number;
+  calendar_source: ReportTextFact;
+  calendar_rule: {
+    rule: string;
+    state_calendar: string;
+    used: string;
+  } | null;
+  interval_method: string;
+  metrics: ReportMetricFact[];
+  events: ReportEventFact[];
+  yield: ReportYieldFact;
+  phases:
+    | {
+        phase_code: string;
+        start: string;
+        end: string;
+        days: number;
+      }[]
+    | null;
+  trajectories:
+    | {
+        role: 'central' | 'dry' | 'wet';
+        member_id: string;
+        analog_year: number | null;
+        season_deficit_mm: number | null;
+        min_storage_mm: number;
+        min_storage_date: string;
+      }[]
+    | null;
+  day_kinds:
+    | {
+        kind: SimulationWeatherKind;
+        start: string;
+        end: string;
+      }[]
+    | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportDataSourceFact".
+ */
+export interface ReportDataSourceFact {
+  id: string;
+  role: string;
+  provider: string | null;
+  product: string | null;
+  description: ReportTextFact | null;
+  availability: ReportTextFact | null;
+  file_period: {
+    start: string;
+    end: string;
+  } | null;
+  covers_after_as_of: boolean;
+  sha256: string | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportConclusion".
+ */
+export interface ReportConclusion {
+  code: ReportConclusionCode;
+  evidence_ids: string[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportCaveat".
+ */
+export interface ReportCaveat {
+  code: ReportCaveatCode;
+  evidence_ids: string[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportAction".
+ */
+export interface ReportAction {
+  code: ReportActionCode;
+  evidence_ids: string[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportFacts".
+ */
+export interface ReportFacts {
+  contract: 'simulation-technical-report-facts.v1';
+  scope: ReportScope;
+  run: {
+    run_id: SimulationRunKey;
+    protocol_id: string;
+    location_id: LocationId;
+    place_name: string;
+    state_code: string;
+    plan_id: string;
+    output_mode: SimulationOutputMode;
+    execution_status: 'succeeded';
+    as_of: string;
+    issued_at: string;
+    simulation_start: string;
+    simulation_end: string;
+    harvest_years: number[];
+    visibility: 'public_regional';
+    spatial_scale: 'regional';
+    seasons_in_run: number;
+    identity_sha256: string;
+    series_sha256: string;
+  };
+  sources: {
+    kind: 'run' | 'series';
+    sha256: string;
+    bytes: number;
+  }[];
+  scientific_status: {
+    weather: 'climatological_scenario' | 'observed' | 'seasonal_forecast' | 'mixed';
+    water_balance: SimulationScientificStatus;
+    phenology: SimulationScientificStatus;
+    yield: SimulationScientificStatus;
+  };
+  weather_segments: {
+    kind: SimulationWeatherKind;
+    start: string;
+    end: string;
+    origin: ReportTextFact;
+  }[];
+  seasons: ReportSeasonFacts[];
+  ensemble: {
+    method: string;
+    members: number;
+    effective_source_years: number;
+    analog_years: number[];
+    eligible_years: number;
+    excluded_years: {
+      year: number;
+      reason: ReportTextFact;
+    }[];
+    coverage_class: 'standard' | 'limited';
+    seed: number;
+    analog_years_requested: boolean;
+    calendar_mapping: {
+      method: string;
+      max_month_day_drift_days: number;
+      note: ReportTextFact;
+    };
+  };
+  soil: {
+    capacity_mm: number;
+    profile_id: string;
+    is_hypothesis: boolean;
+  };
+  initial_condition: {
+    storage_fraction: number;
+    is_hypothesis: boolean;
+    warm_up: {
+      start: string;
+      end: string;
+      source: string;
+    } | null;
+    sensitivity: {
+      storage_fraction: number;
+      season_key: string;
+      value: number;
+    }[];
+    sensitivity_metric: ReportTextFact;
+  };
+  engine: {
+    version: string;
+    parameter_set_id: string;
+  };
+  representative: {
+    central: string;
+    dry: string;
+    wet: string;
+    rule: ReportTextFact;
+  };
+  data_sources: ReportDataSourceFact[];
+  limitations: {
+    id: string;
+    fact: ReportTextFact;
+  }[];
+  economics: {
+    status: 'unavailable';
+    reason_code: 'no_integrated_budget';
+  };
+  management_comparison: {
+    status: 'unavailable';
+    reason_code: 'no_paired_management_result';
+  };
+  charts: {
+    status: ReportAvailability;
+    reason_code: ReportReason | null;
+  };
+  /**
+   * @maxItems 3
+   */
+  conclusions:
+    | []
+    | [ReportConclusion]
+    | [ReportConclusion, ReportConclusion]
+    | [ReportConclusion, ReportConclusion, ReportConclusion];
+  caveat: ReportCaveat;
+  /**
+   * @maxItems 3
+   */
+  actions: [] | [ReportAction] | [ReportAction, ReportAction] | [ReportAction, ReportAction, ReportAction];
+  sections: ReportSectionStatus[];
+  warnings: ReportWarning[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportTable".
+ */
+export interface ReportTable {
+  type: 'table';
+  caption: string;
+  columns: {
+    header: string;
+    numeric: boolean;
+  }[];
+  rows: {
+    cells: {
+      text: string;
+      style?: 'strong' | 'em' | 'code';
+      lang?: string;
+    }[][];
+  }[];
+  notes: {
+    text: string;
+    style?: 'strong' | 'em' | 'code';
+    lang?: string;
+  }[][];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportChart".
+ */
+export interface ReportChart {
+  type: 'chart';
+  chart_id: string;
+  title: string;
+  description: string;
+  width: number;
+  height: number;
+  shapes: {
+    kind: 'area' | 'line';
+    role: 'band' | 'central' | 'dry' | 'wet' | 'capacity';
+    d: string;
+    label: string;
+  }[];
+  regions: {
+    x: number;
+    width: number;
+    label: string;
+    index: number;
+  }[];
+  x_ticks: {
+    x: number;
+    label: string;
+  }[];
+  y_ticks: {
+    y: number;
+    label: string;
+  }[];
+  y_label: string;
+  plot: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  table: ReportTable;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportSection".
+ */
+export interface ReportSection {
+  id: ReportSectionId;
+  title: string;
+  status: ReportAvailability;
+  reason_code: ReportReason | null;
+  technical: boolean;
+  blocks: ReportBlock[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportDocument".
+ */
+export interface ReportDocument {
+  title: string;
+  subtitle: string;
+  lang: ReportLocale;
+  sections: ReportSection[];
+  footer: {
+    text: string;
+    style?: 'strong' | 'em' | 'code';
+    lang?: string;
+  }[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportArtifact".
+ */
+export interface ReportArtifact {
+  format: 'html' | 'md';
+  mime_type: 'text/html; charset=utf-8' | 'text/markdown; charset=utf-8';
+  bytes: number;
+  sha256: string;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportRepresentation".
+ */
+export interface ReportRepresentation {
+  contract: 'simulation-technical-report.v1';
+  report_id: ReportId;
+  run_id: SimulationRunKey;
+  scope: ReportScope;
+  facts_digest: string;
+  source_hashes: {
+    kind: 'run' | 'series';
+    sha256: string;
+  }[];
+  report_schema_version: string;
+  template_version: string;
+  translation_version: string;
+  resolved_locale: ReportLocale;
+  display_profile: ReportDisplayProfile;
+  generated_at: string;
+  sections: ReportSectionStatus[];
+  conclusions: ReportConclusion[];
+  caveat: ReportCaveat;
+  actions: ReportAction[];
+  warnings: ReportWarning[];
+  document: ReportDocument;
+  artifacts: ReportArtifact[];
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportGenerationResult".
+ */
+export interface ReportGenerationResult {
+  state: ReportGenerationState;
+  report_id: ReportId;
+  run_id: SimulationRunKey;
+  reused: boolean;
+  locale_resolution: ReportLocaleResolution | null;
+  representation: ReportRepresentation | null;
+  links: {
+    json: string;
+    html: string;
+    md: string;
+  } | null;
+  error: {
+    code: string;
+    attempts: number;
+  } | null;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
  * via the `definition` "SimulationCatalogResponse".
  */
 export interface SimulationCatalogResponse {
@@ -1929,6 +2619,14 @@ export interface SimulationRunResponse {
  */
 export interface SimulationSeriesResponse {
   data: SimulationSeries;
+  meta: ResponseMeta;
+}
+/**
+ * This interface was referenced by `GaiapusContracts`'s JSON-Schema
+ * via the `definition` "ReportGenerationResultResponse".
+ */
+export interface ReportGenerationResultResponse {
+  data: ReportGenerationResult;
   meta: ResponseMeta;
 }
 /**

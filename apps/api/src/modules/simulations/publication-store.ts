@@ -28,6 +28,10 @@ export interface PublicationSource {
 }
 
 export const ARTIFACT_PATH = /^runs\/sim_[0-9a-f]{24}\/[a-z.]+$/;
+/** An artifact whose bytes do not match the published hash or length. Same response as before; a distinct class so callers can tell it from other failures. */
+export class ArtifactIntegrityError extends ApiError {
+  constructor() { super(500, 'internal_error', 'Artifact integrity check failed'); }
+}
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 /** Latest ISO-8601 instant (UTC strings with the same format compare correctly in code-unit order). */
 const latest = (instants: string[]) => instants.reduce<string | undefined>((max, x) => (max === undefined || x > max ? x : max), undefined);
@@ -138,7 +142,7 @@ export class PublicationStore {
     let bytes: Buffer;
     try { bytes = await source.artifact(artifact); }
     catch (error) { if (error instanceof ApiError) throw error; throw new ApiError(503, 'simulation_source_unavailable', 'A simulation publication source is temporarily unavailable'); }
-    if (bytes.length !== artifact.bytes || sha256(bytes) !== artifact.sha256) throw new ApiError(500, 'internal_error', 'Artifact integrity check failed');
+    if (bytes.length !== artifact.bytes || sha256(bytes) !== artifact.sha256) throw new ArtifactIntegrityError();
     return bytes;
   }
 
@@ -163,6 +167,9 @@ export class PublicationStore {
   private artifactOf(publication: Publication, kind: Artifact['kind']) {
     return publication.artifacts.find(a => a.kind === kind) ?? (() => { throw new ApiError(404, 'not_found', 'Resource not found'); })();
   }
+
+  /** The publication entry of a run (visibility, artifact hashes), as listed by its source. */
+  async publication(id: string): Promise<Publication> { return (await this.find(id)).publication; }
 
   async run(id: string) {
     const { source, publication } = await this.find(id);

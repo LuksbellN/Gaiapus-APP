@@ -1,0 +1,164 @@
+{
+ "contract": "simulation-technical-report-index.v1",
+ "generated_with": {
+  "report_schema_version": "simulation-technical-report.v1",
+  "template_version": "1.0.0",
+  "translation_version": "1.b5267b3fe207"
+ },
+ "reports": [
+  {
+   "report_id": "rep_2d2e21364f905b2f73200179451b8bb6",
+   "run_id": "sim_0ef0f2562258c91c5a13ffff",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "40b172051d6175ee2550ba5004ab18c9957d59b698c6f6da20ceec053a9dc045",
+   "generated_at": "2026-11-15T23:40:22.364Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 69914,
+     "sha256": "5a6b40160ba35528c10b9f814bd5f30eabc6fc887a828344152a3da1c6bec8dc"
+    },
+    {
+     "format": "md",
+     "bytes": 22034,
+     "sha256": "2a3a1f568891ba7214600aff0961ffe0193fb67395ad3f4341908fb989eafbd3"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_c9caf5d8ab751cd61df1d90bc58a8dab",
+   "run_id": "sim_33af8558ac1ce3bd53f064ec",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "c29ea507023772af7a2e264f2ce678304135e7c09b75ec0bda00d0dacf441bd7",
+   "generated_at": "2026-11-15T23:40:22.485Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 68238,
+     "sha256": "074e708b97e112e5256a5e0eabb6e8aff26d40219a5417501cf13d1ccb559bc1"
+    },
+    {
+     "format": "md",
+     "bytes": 20188,
+     "sha256": "0c2bbc0ff45a7e3a461a5d8e776f5417d66dbeb4f62bb1dde403c18696109ad6"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_91eca4de33ece4fe5eac896014c30ba9",
+   "run_id": "sim_88fd3ea122a8ad02ced3f899",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "a5ab4f8403283681288726f1d04a29626ba8e7d7a74343fbfa30e39e8cf22eee",
+   "generated_at": "2026-11-15T23:40:22.552Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 70291,
+     "sha256": "f8f03696cfdd52ce967191a2ce8df8e03e8d2d4c369bb21b7ff8c723a970c85b"
+    },
+    {
+     "format": "md",
+     "bytes": 22274,
+     "sha256": "b9f495a4d917f12fa4db2fdf2f2a90fd50062c3922eaf06b26eb400c70063e42"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_a80d4126d3c19b19efbdc48b3dcad409",
+   "run_id": "sim_9cd555885306ffcd15715546",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "64a99e286d1d87b5e4165ba882a930991128f6b0ecf2b22306eddf98c2e904dd",
+   "generated_at": "2026-11-15T23:40:22.625Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 68549,
+     "sha256": "08e28b4e195bacab4d1db71453e51b294efa63c5919f57bebf0afad037fe27a0"
+    },
+    {
+     "format": "md",
+     "bytes": 20185,
+     "sha256": "96f6e95cf23035ac1312bf6a4ea9163dddfe3d43ae8fbb8c6cd5cc1cd27e9be8"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_e7e3c4a36b9f46181adf7adfd31a228c",
+   "run_id": "sim_9ddd1c9949dbe442b92e9ac5",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "c645ecdba56eb09002c4beccf67ab0ad20ef270a171862209a61e2358f8ae89a",
+   "generated_at": "2026-11-15T23:40:22.697Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 126408,
+     "sha256": "77bc30deba434538c5bfb901bcdcc8007f4e59af334319655439cb7798313836"
+    },
+    {
+     "format": "md",
+     "bytes": 34346,
+     "sha256": "abc5cc75007ce0ec8079e4ca6b05bc85f17ca416ca644d26ec1f5443021cf24d"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_f087e674a7057366ac19090a0c4cd39d",
+   "run_id": "sim_e269df77be6e76cb588194fc",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "a37bfe5d72b26453d12e83267aaf6fcdab68318339aaa31d35a5b435b314910d",
+   "generated_at": "2026-11-15T23:40:22.774Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 122558,
+     "sha256": "ac4374d69fac136bac3140275e4fd0b0fb4477a90dcd6a077391cc35036e26a6"
+    },
+    {
+     "format": "md",
+     "bytes": 30829,
+     "sha256": "1350d502c97ff7045bc37e526ddece5fdbd7e2d5334d323bdc57a601a395cfd2"
+    }
+   ]
+  },
+  {
+   "report_id": "rep_bd76d6f1c14531fb425f913f35e056c1",
+   "run_id": "sim_fd61ab4118a4e32398a12156",
+   "scope": {
+    "kind": "run"
+   },
+   "locale": "en",
+   "facts_digest": "b76879a1ef2c36f5ec27e44e380a091160ffeac77d217d736c6393368c984654",
+   "generated_at": "2026-11-15T23:40:22.852Z",
+   "artifacts": [
+    {
+     "format": "html",
+     "bytes": 126932,
+     "sha256": "f10c571833a27990889ad488fb66633edea7659ff17ef1698bbdf028b8b5324d"
+    },
+    {
+     "format": "md",
+     "bytes": 34522,
+     "sha256": "d8f3a7e20d21a8b4d7288bdd0b8e1f7751aa2ea8616343eaef99cff6c7fdd1ac"
+    }
+   ]
+  }
+ ]
+}

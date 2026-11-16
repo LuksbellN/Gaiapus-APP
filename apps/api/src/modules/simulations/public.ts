@@ -7,9 +7,11 @@ import { PublicationStore, pinnedBrazilSource, type Query } from './publication-
 
 export { SIMULATION_PUBLIC_PREFIX } from './publication-store.js';
 let defaultStore: PublicationStore | null = null;
+/** The store used when none is configured: the Brazilian publication pinned in the repository. */
+export const defaultSimulationStore = () => (defaultStore ??= new PublicationStore([pinnedBrazilSource()]));
 
 export function simulationHandlers(store?: PublicationStore) {
-  const simulations = store ?? (defaultStore ??= new PublicationStore([pinnedBrazilSource()]));
+  const simulations = store ?? defaultSimulationStore();
   async function result(request: FastifyRequest, reply: FastifyReply, data: unknown, immutable: boolean) {
     const { version, degraded } = await simulations.version();
     // A degraded listing (one source down) must not be cached as if it were the full coverage.

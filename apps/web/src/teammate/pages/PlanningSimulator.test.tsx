@@ -190,3 +190,20 @@ it('on a phone the configuration and the indicators are reachable through tabs',
     expect(document.querySelector('.sim')).toHaveAttribute('data-tab', 'configurar');
   } finally { spy.mockRestore(); }
 });
+
+// The address is the user's: opening a run must not rewrite it. A write at mount, made from the parameters of that
+// render, could land after the user had already gone elsewhere and bring the previous place back.
+import { useLocation } from 'react-router-dom';
+import { act as actAddr, fireEvent as fireAddr, waitFor as waitAddr } from '@testing-library/react';
+let address = '';
+function AddressProbe() { address = useLocation().search; return null; }
+it('opening a run leaves the address as it was; the day goes into it only when the user moves the day', async () => {
+  const start = '?modo=planejamento&mun=3170206&cultura=soy&safra=2027&vista=perfil&semwebgl=1';
+  render(<MemoryRouter initialEntries={[`/simulador${start}`]}><AddressProbe /><Simulator /></MemoryRouter>);
+  await screen.findByTestId('planning-day');
+  await actAddr(async () => { await new Promise((r) => setTimeout(r, 60)); });
+  expect(address).toBe(start);
+  fireAddr.click(screen.getByRole('button', { name: 'Avançar 1 dia' }));
+  await waitAddr(() => expect(address).toMatch(/[?&]dia=\d+/));
+  expect(address).toContain('mun=3170206');
+});
