@@ -8,9 +8,8 @@ Gaiapus helps farmers decide **what to plant next, and when**, without leaving t
 
 | 3D model of the stake (real design, generated from the boards and the case) | Product concept (illustrative image, **AI-generated**) |
 |---|---|
-| ![Stake head: case, solar panel, button, LEDs, antenna, rain gauge](mechanical/cad/revG/renders/render-head-gauge-left.png) | ![Concept of the stake in the field](renders/design-base-v1.jpg) |
+| ![Stake head: case, solar panel, button, LEDs, antenna, rain gauge](mechanical/cad/revG%20(final)/renders/render-head-gauge-left.png) | ![Concept of the stake in the field](renders/design-base-v1.jpg) |
 
-*Portuguese version: [`README.pt-BR.md`](README.pt-BR.md).*
 
 ---
 
