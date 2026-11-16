@@ -1,6 +1,7 @@
 // Adding a stake: identify it (QR or identifier + ownership code), name it, choose property and plot, record where
 // it is (the stake has no GPS: the position comes from this phone or is typed), then check for a first reading.
 // The ownership code lives only in this component's memory until the claim call and is cleared right after it.
+import { StakeGuide } from './StakeGuide';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, LocateFixed } from 'lucide-react';
 import { dDateTime } from '../format';
@@ -110,6 +111,7 @@ export function SensorWizard({ open, onClose, prefill, onOpenSensor }: { open: b
       <h3 ref={heading} tabIndex={-1}>{t('area.wizard.progress', { n: ['identify', 'details', 'place', 'verify'].indexOf(step) + 1, total: 4 })} · {title}</h3>
       {step === 'identify' && <form className="stack" onSubmit={claim} noValidate>
         <Notice tone="warn" title={t('area.demo.claimTitle')}>{t('area.demo.claim')}</Notice>
+        {!scanning && <StakeGuide />}
         {scanning ? <><QrScanner onText={onScan} onProblem={() => { setScanning(false); setErr(t('area.wizard.cameraDenied')); }} /><div><button type="button" className="btn" onClick={() => setScanning(false)}>{t('area.wizard.stopScan')}</button></div></>
           : <div className="row"><button type="button" className="btn" disabled={!canScanQr()} onClick={() => { setErr(''); setScanning(true); }}><Camera size={16} aria-hidden />{t('area.wizard.scan')}</button>{!canScanQr() && <span className="meta-13">{t('area.wizard.scanUnavailable')}</span>}</div>}
         <Field label={t('area.wizard.deviceId')} hint={t('area.wizard.deviceIdHint')}>{(a) => <input className="input" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={12} {...a} value={id} onChange={(e) => setId(e.target.value)} />}</Field>

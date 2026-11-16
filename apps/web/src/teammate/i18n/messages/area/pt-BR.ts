@@ -248,6 +248,7 @@ const area = {
     confirm: 'Confirmo que este é o ponto onde a estaca está',
     confirmRequired: 'Confirme o ponto da estaca.',
   },
+  guide: {"title": "Onde fica o QR na estaca", "label": "Modelo 3D da estaca Gaiapus. Arraste para girar; com o teclado, as setas giram e + e − aproximam.", "loading": "Carregando o modelo…", "showQr": "Mostrar o QR", "whole": "Ver a estaca inteira", "where": "O QR fica numa etiqueta na lateral da caixa, do lado oposto ao pluviômetro. Ele traz o identificador da estaca e o código de posse.", "ring": "No modelo, a etiqueta está marcada com um anel.", "rotate": "Arraste para girar e use a roda ou a pinça para aproximar. No teclado: setas giram, + e − aproximam.", "scale": "É o modelo do equipamento em proporção real, sem leitura nem estado da sua estaca.", "failed": "Não foi possível carregar o modelo 3D agora. A descrição acima continua valendo.", "unavailable": "Modelo 3D indisponível neste aparelho. A descrição acima continua valendo."},
   wizard: {
     title: 'Adicionar sensor',
     progress: 'Passo {n} de {total}',
@@ -260,7 +261,7 @@ const area = {
     cameraDenied: 'Não foi possível usar a câmera. Digite os dados abaixo.',
     qr: { unreadable: 'Este QR não é de uma estaca Gaiapus.', invalid_device_id: 'O identificador deste QR não é válido.', missing_claim_code: 'Este QR não traz o código de posse.' },
     deviceId: 'Identificador da estaca',
-    deviceIdHint: '8 caracteres, de 0 a 9 e de a a f. Está na etiqueta.',
+    deviceIdHint: '8 caracteres, de 0 a 9 e de a a f. O QR da estaca já traz esse identificador.',
     claimCode: 'Código de posse',
     claimCodeHint: 'Está na etiqueta, junto do QR. Não é guardado neste aparelho.',
     continue: 'Continuar',
