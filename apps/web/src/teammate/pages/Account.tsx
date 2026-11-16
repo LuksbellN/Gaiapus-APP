@@ -10,11 +10,11 @@ import { dDateTime } from '../format';
 import { useI18n, type MessageKey } from '../i18n';
 import { LanguageSelect } from '../ui/LanguageSelect';
 
-const AUTH_CODES = ['signin_failed', 'signup_failed', 'reset_failed', 'resend_failed', 'signout_failed', 'identity_unavailable', 'account_changed'];
+const AUTH_CODES = ['signin_failed', 'signup_failed', 'reset_failed', 'resend_failed', 'signout_failed', 'identity_unavailable', 'account_changed', 'auth_rate_limited'];
 /** Authentication errors are shown by code in the current language; unknown errors keep their message. */
 function useAuthError() {
   const { t } = useI18n();
-  return (x: unknown) => { const code = (x as { code?: string })?.code; return code && AUTH_CODES.includes(code) ? t(`errors.auth.${code}` as MessageKey) : (x as Error)?.message ?? t('errors.generic'); };
+  return (x: unknown) => { const code = (x as { code?: string })?.code; if (code === 'email_not_confirmed') return t('errors.auth.signin_failed'); return code && AUTH_CODES.includes(code) ? t(`errors.auth.${code}` as MessageKey) : (x as Error)?.message ?? t('errors.generic'); };
 }
 function Local() { const { t } = useI18n(); return <div data-tour="account-local"><Notice tone="warn" title={t('account.local.title')}>{t('account.local.text')}</Notice></div>; }
 function Sign({ mode }: { mode: 'entrar' | 'cadastro' }) {
@@ -22,22 +22,46 @@ function Sign({ mode }: { mode: 'entrar' | 'cadastro' }) {
   const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [err, setErr] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false); const nav = useNavigate(); const errRef = useRef<HTMLParagraphElement>(null);
   // After signing in, go back to the private screen that asked for it (internal, allow-listed destinations only).
   const [query] = useSearchParams(); const back = safeReturn(query.get('voltar'));
+  const [sentTo, setSentTo] = useState('');
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const sentRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (sentTo) sentRef.current?.focus(); }, [sentTo]);
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = setTimeout(() => setCooldown(value => Math.max(0, value - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
   useEffect(() => { if (err) errRef.current?.focus(); }, [err]);
   const go = async (e: React.FormEvent) => { e.preventDefault(); setErr(''); setMsg(''); if (mode === 'cadastro' && !name.trim()) { setErr(t('account.err.name')); return; } setBusy(true); try {
-    if (mode === 'cadastro') { await account.signUp(name.trim(), email.trim(), password); setPassword(''); setMsg(t('account.msg.checkEmail')); }
+    if (mode === 'cadastro') { await account.signUp(name.trim(), email.trim(), password); setPassword(''); setSentTo(email.trim()); setCooldown(60); }
     else { await account.signIn(name.trim(), email.trim(), password); setPassword(''); nav(back ?? '/conta'); }
-  } catch (x) { setErr(authError(x)); } finally { setBusy(false); } };
-  return <div className="page" style={{ maxWidth: 520 }}><div className="row-between"><h1>{mode === 'entrar' ? t('account.signIn') : t('account.signUp')}</h1><LanguageSelect id="idioma-conta" /></div>
+  } catch (x) { setNeedsConfirmation((x as { code?: string })?.code === 'email_not_confirmed'); setErr(authError(x)); } finally { setBusy(false); } };
+  return <div className="page account-auth" style={{ maxWidth: 520 }}><div className="row-between"><h1>{mode === 'entrar' ? t('account.signIn') : t('account.signUp')}</h1><LanguageSelect id="idioma-conta" /></div>
     {!supabase && <Notice tone="warn" title={t('account.unavailableTitle')}>{t('account.unavailable')}</Notice>}
-    <form className="card" data-tour="account-sign" onSubmit={go}>{mode === 'cadastro' && <Field label={t('account.name')}>{(a) => <input className="input" autoComplete="name" required {...a} value={name} onChange={(e) => setName(e.target.value)} />}</Field>}
-      <Field label={t('account.email')}>{(a) => <input className="input" type="email" autoComplete="email" required spellCheck={false} {...a} value={email} onChange={(e) => setEmail(e.target.value)} />}</Field>
-      <Field label={t('account.passwordLabel')} hint={mode === 'cadastro' ? t('account.passwordHint') : undefined}>{(a) => <input className="input" type="password" autoComplete={mode === 'cadastro' ? 'new-password' : 'current-password'} required minLength={mode === 'cadastro' ? 8 : 1} {...a} value={password} onChange={(e) => setPassword(e.target.value)} />}</Field>
+    {sentTo && mode === 'cadastro' ? <section className="card stack" aria-labelledby="confirmation-title">
+      <h2 id="confirmation-title" ref={sentRef} tabIndex={-1}>{t('account.confirmationTitle')}</h2>
+      <p role="status">{t('account.confirmationSent', { email: sentTo })}</p>
+      <p className="meta">{t('account.confirmationHelp')}</p>
+      {err && <p role="alert" ref={errRef} tabIndex={-1} className="notice notice--risk">{err}</p>}
+      {msg && <p role="status" className="notice">{msg}</p>}
+      <button className="btn" disabled={busy || cooldown > 0} onClick={async () => {
+        setBusy(true); setErr(''); setMsg('');
+        try { await account.resend(sentTo); setCooldown(60); setMsg(t('account.msg.resent')); }
+        catch (x) { setErr(authError(x)); setCooldown(60); }
+        finally { setBusy(false); }
+      }}>{busy ? t('account.wait') : cooldown > 0 ? t('account.resendWait', { seconds: cooldown }) : t('account.resend')}</button>
+      <div className="row"><LinkBtn to="/conta">{t('account.signIn')}</LinkBtn><button className="btn" onClick={() => { setSentTo(''); setMsg(''); setErr(''); }}>{t('account.changeEmail')}</button></div>
+      <Link to="/explorar">{t('account.continueWithout')}</Link>
+    </section> : <form className="card account-auth__form" data-tour="account-sign" onSubmit={go} aria-busy={busy}>{mode === 'cadastro' && <Field label={t('account.name')}>{(a) => <input className="input" autoComplete="name" required {...a} value={name} disabled={busy} onChange={(e) => setName(e.target.value)} />}</Field>}
+      <Field label={t('account.email')}>{(a) => <input className="input" type="email" autoComplete="email" required spellCheck={false} {...a} value={email} disabled={busy} onChange={(e) => { setEmail(e.target.value); setNeedsConfirmation(false); }} />}</Field>
+      <Field label={t('account.passwordLabel')} hint={mode === 'cadastro' ? t('account.passwordHint') : undefined}>{(a) => <input className="input" type="password" autoComplete={mode === 'cadastro' ? 'new-password' : 'current-password'} required minLength={mode === 'cadastro' ? 8 : 1} {...a} value={password} disabled={busy} onChange={(e) => setPassword(e.target.value)} />}</Field>
       {err && <p role="alert" ref={errRef} tabIndex={-1} className="notice notice--risk" data-testid="form-error"><span />{err}</p>}
-      <div className="row"><button type="submit" className="btn btn--primary" disabled={busy || !supabase}>{busy ? t('account.wait') : mode === 'entrar' ? t('account.signIn') : t('account.signUp')}</button><LinkBtn to="/explorar">{t('account.continueWithout')}</LinkBtn></div>
+      <button type="submit" className="btn btn--primary account-auth__submit" disabled={busy || !supabase}>{busy ? t('account.wait') : mode === 'entrar' ? t('account.signIn') : t('account.signUp')}</button>
       {msg && <p role="status" className="meta">{msg}</p>}
-      {supabase && <div><button className="btn btn--sm" type="button" disabled={busy || !email.trim()} onClick={async () => { setBusy(true); setErr(''); try { await account.resend(email.trim()); setMsg(t('account.msg.resent')); } catch (x) { setErr(authError(x)); } finally { setBusy(false); } }}>{t('account.resend')}</button></div>}
-    </form>
-    <p className="meta">{mode === 'entrar' ? <>{t('account.firstTime')} <Link to="/conta/cadastro">{t('account.signUp')}</Link> · <Link to="/conta/recuperar">{t('account.recover')}</Link></> : <>{t('account.haveAccount')} <Link to="/conta">{t('account.signIn')}</Link></>}</p></div>;
+      {supabase && mode === 'entrar' && needsConfirmation && <button className="btn" type="button" disabled={busy || cooldown > 0} onClick={async () => { setBusy(true); setErr(''); setMsg(''); try { await account.resend(email.trim()); setCooldown(60); setMsg(t('account.msg.resent')); } catch (x) { setErr(authError(x)); setCooldown(60); } finally { setBusy(false); } }}>{busy ? t('account.wait') : cooldown > 0 ? t('account.resendWait', { seconds: cooldown }) : t('account.resend')}</button>}
+    </form>}
+    {!sentTo && <div className="account-auth__footer"><p>{mode === 'entrar' ? <>{t('account.firstTime')} <Link to="/conta/cadastro">{t('account.signUp')}</Link></> : <>{t('account.haveAccount')} <Link to="/conta">{t('account.signIn')}</Link></>}</p>{mode === 'entrar' && <Link to="/conta/recuperar">{t('account.recover')}</Link>}<Link className="account-auth__explore" to="/explorar">{t('account.continueWithout')}</Link></div>}</div>;
 }
 function Recover() {
   const { t } = useI18n(); const authError = useAuthError();

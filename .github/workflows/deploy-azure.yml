@@ -12,6 +12,11 @@ concurrency:
 env:
   REGISTRY: gaiapusprod4d36.azurecr.io
   RESOURCE_GROUP: gaiapus-prod
+  # Where the API reads the published US simulations from: off | supabase. Brazil always comes from the pinned
+  # publication inside the image. With 'supabase' the API reads the active batch with the public key already in
+  # the app (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY); if that source fails, Brazil keeps being served.
+  # To turn the United States off again, set this to 'off' and deploy.
+  SIMULATION_US_SOURCE: supabase
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -54,7 +59,18 @@ jobs:
           set -euo pipefail
           az extension add --name containerapp --upgrade --only-show-errors
           az containerapp update -g "$RESOURCE_GROUP" -n gaiapus-science --image "$REGISTRY/gaiapus-science:$GITHUB_SHA" --output none
-          az containerapp update -g "$RESOURCE_GROUP" -n gaiapus-app --image "$REGISTRY/gaiapus-app:$GITHUB_SHA" --output none
+          az containerapp update -g "$RESOURCE_GROUP" -n gaiapus-app --image "$REGISTRY/gaiapus-app:$GITHUB_SHA" --set-env-vars "SIMULATION_US_SOURCE=$SIMULATION_US_SOURCE" --output none
       - name: Verify public endpoints
         shell: pwsh
         run: ./scripts/azure-smoke.ps1 -Origin https://gaiapus-app.redplant-fd6a37ae.centralus.azurecontainerapps.io
+      - name: Report simulation sources
+        # Informative only, after the smoke check: a US source that is down must not fail a deploy, because Brazil is
+        # still served. No match in grep is a count of zero, not an error.
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          body=$(curl -sS --max-time 180 --retry 5 --retry-delay 10 --retry-all-errors https://gaiapus-app.redplant-fd6a37ae.centralus.azurecontainerapps.io/v1/simulations/capabilities || true)
+          br=$({ printf '%s' "$body" | grep -o '"location_id":"BR:' || true; } | wc -l); us=$({ printf '%s' "$body" | grep -o '"location_id":"US:' || true; } | wc -l)
+          echo "Places with simulations — BR: $br, US: $us (SIMULATION_US_SOURCE=$SIMULATION_US_SOURCE)"
+          if [ "$SIMULATION_US_SOURCE" = "supabase" ] && [ "$us" -eq 0 ]; then echo "::warning::US source is on but no US place was served; check the source status in the capabilities response"; fi

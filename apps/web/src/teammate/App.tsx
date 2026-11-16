@@ -6,7 +6,7 @@ import { useI18n, type Messages } from './i18n';
 import { LanguageSelect } from './ui/LanguageSelect';
 import { cropOptionLabel } from './catalog';
 import { useStore } from './store';
-import { setPrefs, usePrefs } from './prefs';
+import { setPrefs, THEME_COLOR, usePrefs } from './prefs';
 import { Pill } from './ui';
 import { lazyPage, preloadLightPages, preloadRoute } from './lazyPage';
 import { More } from './pages/More';
@@ -54,7 +54,7 @@ export function useActiveContext() {
 export function App({ authPage }: { authPage?: ReactNode } = {}) {
   const theme = usePrefs((p) => p.theme); const session = useStore((s) => s.session); const loc = useLocation(); const ctx = useActiveContext(); const { t, locale, failed, retry } = useI18n();
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
-  useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', theme === 'dark' ? '#0B1411' : '#F5F7F2'); }, [theme]);
+  useEffect(() => { document.documentElement.dataset.theme = theme; document.querySelector('meta[name=theme-color]')?.setAttribute('content', THEME_COLOR[theme]); }, [theme]);
   useEffect(() => { document.getElementById('conteudo')?.scrollTo?.(0, 0); }, [loc.pathname]);
   // Document title follows the visible h1 (and the section when they differ), so tabs and history are distinguishable (D-12).
   useEffect(() => {
@@ -75,6 +75,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
   }, [loc.pathname]);
   useEffect(() => {
     // Navigation from a native email callback must leave the pathname auth page.
+    if (authPage && loc.pathname !== '/') { window.location.replace('/#' + loc.pathname + loc.search); return; }
     if (authPage && window.location.hash.startsWith('#/')) window.location.replace('/' + window.location.hash);
   }, [authPage, loc.pathname, loc.search]);
   // Arquivos leves das telas em segundo plano (nunca o mapa nem o 3D); desligado com economia de dados.
@@ -103,7 +104,7 @@ export function App({ authPage }: { authPage?: ReactNode } = {}) {
         {NAV_GROUPS.map((g, i) => <div key={g.id} className="rail__group" role="group" aria-label={t(`nav.group.${g.id}`)}>{i > 0 && <hr />}{g.items.map((n) => <NavLink key={n.to} to={n.to} className={n.mobile ? '' : 'more-only'} onPointerEnter={() => preloadRoute(n.to)} onFocus={() => preloadRoute(n.to)} onTouchStart={() => preloadRoute(n.to)}><n.icon size={22} aria-hidden />{t(`nav.item.${n.key}`)}</NavLink>)}</div>)}
         <NavLink to="/mais" className="only-mobile"><Menu size={22} aria-hidden />{t('nav.more')}</NavLink>
       </nav>
-      <main key={session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
+      <main key={authPage ? 'email-auth' : session?.userId ?? 'guest'} className="main" id="conteudo" tabIndex={-1}>
         <TourProvider auto={!authPage}>{authPage ?? <><TourBar /><Routes>
           <Route path="/" element={<Navigate to="/explorar" replace />} />
           <Route path="/explorar" element={<Explore />} />

@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { exchange, update, getSession } = vi.hoisted(() => ({ exchange: vi.fn(), update: vi.fn(), getSession: vi.fn() }));
-vi.mock('./client', () => ({ exchangeEmailCode: exchange, supabase: { auth: { updateUser: update, getSession } } }));
+vi.mock('./client', () => ({ completeEmailLink: exchange, supabase: { auth: { updateUser: update, getSession } } }));
 vi.mock('./AuthPanel', () => ({ AuthPanel: () => <p>Solicite outro link</p> }));
 import { AuthPage } from './AuthPage';
 import { rememberRecovery } from './recovery';
@@ -16,7 +16,7 @@ describe('email callback screens', () => {
     render(<StrictMode><AuthPage recovery={false} /></StrictMode>);
     expect(await screen.findByText('E-mail confirmado. Sua conta está conectada.')).toBeInTheDocument();
     expect(location.search).toBe('');
-    expect(exchange).toHaveBeenCalledWith('one-use');
+    expect(exchange).toHaveBeenCalledWith(expect.objectContaining({ search: '?code=one-use' }), false);
   });
   it('does not expose password updates for missing or expired codes', async () => {
     history.replaceState(null, '', '/auth/recovery#error=access_denied');
@@ -25,6 +25,14 @@ describe('email callback screens', () => {
     expect(screen.queryByLabelText('Nova senha')).not.toBeInTheDocument();
     expect(exchange).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
+  });
+  it('accepts implicit signup links and strips tokens from browser history', async () => {
+    history.replaceState(null, '', '/auth/callback#access_token=access&refresh_token=refresh&type=signup');
+    exchange.mockResolvedValue({ user: { id: 'user' } });
+    render(<AuthPage recovery={false} />);
+    expect(await screen.findByText('E-mail confirmado. Sua conta está conectada.')).toBeInTheDocument();
+    expect(exchange).toHaveBeenCalledWith(expect.objectContaining({ hash: '#access_token=access&refresh_token=refresh&type=signup' }), false);
+    expect(location.hash).toBe('');
   });
   it('requires matching passwords after a successful recovery exchange', async () => {
     history.replaceState(null, '', '/auth/recovery?code=recover');

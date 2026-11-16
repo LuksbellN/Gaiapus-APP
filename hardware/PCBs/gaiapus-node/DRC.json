@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-14T14:29:39-0300",
+    "kicad_version": "8.0.8",
+    "schematic_parity": [],
+    "source": "gaiapus-node.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "Violação do isolamento do furo (configuração das restrições do furo isolamento 0,2500 mm; atual 0,2100 mm)",
+            "items": [
+                {
+                    "description": "Trilha [VBUS] no F.Cu, comprimento 0,9000 mm",
+                    "pos": {
+                        "x": 130.1,
+                        "y": 143.8
+                    },
+                    "uuid": "d10f03c9-9ce6-557c-9908-8eda159118f5"
+                },
+                {
+                    "description": "ilha NPTH de J5",
+                    "pos": {
+                        "x": 130.5,
+                        "y": 143.19
+                    },
+                    "uuid": "ed09a0a0-3559-402f-a598-656cd9b8edc5"
+                }
+            ],
+            "severity": "error",
+            "type": "hole_clearance"
+        },
+        {
+            "description": "Violação do isolamento (regra 'JLC clearance' isolamento 0,1500 mm; atual 0,1000 mm)",
+            "items": [
+                {
+                    "description": "Trilha [VBUS] no F.Cu, comprimento 0,2828 mm",
+                    "pos": {
+                        "x": 125.5,
+                        "y": 141.3
+                    },
+                    "uuid": "8a6227c2-6a70-5f3b-885b-aa06e5b81692"
+                },
+                {
+                    "description": "Ilha B8 [unconnected-(J5-SBU2-PadB8)] de J5 no F.Cu",
+                    "pos": {
+                        "x": 125.85,
+                        "y": 141.93
+                    },
+                    "uuid": "2b3afef9-5a44-4c6a-b90a-c813541dd4e8"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        }
+    ]
+}

@@ -247,6 +247,7 @@ const area: DeepPartial<Messages>['area'] = {
     confirm: 'I confirm this is the point where the stake is',
     confirmRequired: 'Confirm the point of the stake.',
   },
+  guide: {"title": "Where the QR is on the stake", "label": "3D model of the Gaiapus stake. Drag to rotate; with the keyboard, arrows rotate and + and − zoom.", "loading": "Loading the model…", "showQr": "Show the QR", "whole": "See the whole stake", "where": "The QR is on a label on the side of the case, opposite the rain gauge. It carries the identifier of the stake and the ownership code.", "ring": "In the model, the label is marked with a ring.", "rotate": "Drag to rotate and use the wheel or pinch to zoom. On the keyboard: arrows rotate, + and − zoom.", "scale": "This is the model of the equipment in its real proportions, with no reading or state of your stake.", "failed": "The 3D model could not be loaded now. The description above still applies.", "unavailable": "3D model unavailable on this device. The description above still applies."},
   wizard: {
     title: 'Add sensor',
     progress: 'Step {n} of {total}',
@@ -259,7 +260,7 @@ const area: DeepPartial<Messages>['area'] = {
     cameraDenied: 'The camera could not be used. Type the details below.',
     qr: { unreadable: 'This QR is not from a Gaiapus stake.', invalid_device_id: 'The identifier in this QR is not valid.', missing_claim_code: 'This QR does not carry the ownership code.' },
     deviceId: 'Stake identifier',
-    deviceIdHint: '8 characters, from 0 to 9 and from a to f. It is on the label.',
+    deviceIdHint: '8 characters, from 0 to 9 and from a to f. The QR of the stake already carries this identifier.',
     claimCode: 'Ownership code',
     claimCodeHint: 'It is on the label, next to the QR. It is not stored on this device.',
     continue: 'Continue',

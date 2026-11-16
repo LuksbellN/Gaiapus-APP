@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -20,4 +21,14 @@ it('remounts private forms when another account or guest becomes active', () => 
   expect(getState().drafts.property.name).toBe('B-only property');
   act(() => activateAccount(null));
   expect(screen.getByLabelText('Private draft')).toHaveValue('');
+});
+it('preserves the email confirmation screen when authentication activates an account', () => {
+  function ConfirmationProbe() {
+    const [confirmed, setConfirmed] = useState(false);
+    return <button onClick={() => setConfirmed(true)}>{confirmed ? 'Confirmed' : 'Confirm'}</button>;
+  }
+  render(<MemoryRouter><App authPage={<ConfirmationProbe />} /></MemoryRouter>);
+  fireEvent.click(screen.getByText('Confirm'));
+  act(() => activateAccount(user));
+  expect(screen.getByText('Confirmed')).toBeInTheDocument();
 });

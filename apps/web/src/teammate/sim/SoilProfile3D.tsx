@@ -13,6 +13,12 @@ import { RootSystem3D } from './RootSystem3D';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DRAINAGE_COLOR, IRRIGATION_COLOR, mulberry32, LED_COLORS, lerpHex, PROFILE_DEPTH_M, RAIN_COLOR, RUNOFF_COLOR, SOIL_BELOW, type ProfileLayers } from './profile-model';
+import { useMedia } from '../ui';
+import { brachiariaPlan } from './plants/grass';
+import { maizePlan } from './plants/maize';
+import { GeometryCache, meshPlan, plantMaterial } from './plants/mesh';
+import type { Detail } from './plants/plan';
+import { soyPlan } from './plants/soy';
 
 const BLOCK = { width: 4, depth: 2.5 } as const; const FRONT_Z = BLOCK.depth / 2;
 const ROWS = 5, PER_ROW = 28, ROW_SPACING = 0.5;
@@ -36,21 +42,32 @@ function Soil({ layers, cutaway }: { layers: ProfileLayers; cutaway: boolean }) 
   </group>;
 }
 
-function Plants({ layers }: { layers: ProfileLayers }) {
-  const leaves = useRef<THREE.InstancedMesh>(null); const { invalidate } = useThree();
-  const geom = useMemo(() => (layers.maize ? new THREE.ConeGeometry(1, 1, 5) : new THREE.IcosahedronGeometry(1, 0)), [layers.maize]);
-  useEffect(() => () => geom.dispose(), [geom]);
+/** Plants on top of the block: the same organ plans as the field view (true scale: the block is in metres).
+ *  The front row is drawn at the detail level, the rows behind it at the field level. Water stress is NOT painted on
+ *  the leaves (that would read as observed damage): it is the coloured band at the soil line, explained in the panel. */
+function Plants({ layers, far }: { layers: ProfileLayers; far: boolean }) {
+  const group = useRef<THREE.Group>(null); const { invalidate } = useThree();
+  const cache = useMemo(() => new GeometryCache(40), []); const material = useMemo(plantMaterial, []);
+  useEffect(() => () => { cache.dispose(); material.dispose(); }, [cache, material]);
+  const plant = layers.plant, cover = layers.cover; const plantKey = plant?.key ?? null, coverKey = cover?.key ?? null;
   useLayoutEffect(() => {
-    const m = leaves.current!; const h = layers.plantHeight;
-    slots.forEach((p, i) => {
-      const hh = h * p.s; const r = (layers.maize ? 0.12 : 0.22) * Math.sqrt(Math.max(0, h / (layers.maize ? 2.2 : 0.95))) * p.s;
-      tmp.rotation.set(0, p.rot, 0); tmp.position.set(p.x, hh * 0.55, p.z);
-      if (hh < 0.01) tmp.scale.set(0, 0, 0); else tmp.scale.set(r, layers.maize ? hh : Math.max(hh * 0.5, r * 0.5), r);
-      tmp.updateMatrix(); m.setMatrixAt(i, tmp.matrix);
-    });
-    m.instanceMatrix.needsUpdate = true; (m.material as THREE.MeshLambertMaterial).color.set(layers.leafColor); invalidate();
-  }, [layers.plantHeight, layers.maize, layers.leafColor, invalidate]);
-  return <instancedMesh ref={leaves} args={[geom, undefined, slots.length]} frustumCulled={false}><meshLambertMaterial flatShading /></instancedMesh>;
+    const g = group.current!; const made: THREE.InstancedMesh[] = []; const used = new Set<string>();
+    const batch = (key: string, build: () => THREE.BufferGeometry, at: { x: number; z: number; s: number; rot: number }[]) => {
+      if (!at.length) return; used.add(key); const mesh = new THREE.InstancedMesh(cache.get(key, build, used), material, at.length); mesh.frustumCulled = false;
+      at.forEach((p, i) => { tmp.position.set(p.x, 0, p.z); tmp.rotation.set(0, p.rot, 0); tmp.scale.setScalar(p.s); tmp.updateMatrix(); mesh.setMatrixAt(i, tmp.matrix); });
+      mesh.instanceMatrix.needsUpdate = true; g.add(mesh); made.push(mesh);
+    };
+    // The block packs 28 slots per row; one plant every few slots keeps the row readable (illustrative density).
+    const every = plant?.family === 'maize' ? 3 : 2;
+    for (const front of [true, false]) for (let v = 0; v < 3; v++) {
+      const detail: Detail = front ? (far ? 'field' : 'detail') : far ? 'far' : 'field';
+      if (plant) batch(`${plant.key}:${v}:${detail}`, () => meshPlan(plant.family === 'maize' ? maizePlan(plant.pose, v, detail) : soyPlan(plant.pose, v, detail), detail), slots.filter((p, i) => p.front === front && (i % PER_ROW) % every === 0 && ((i % PER_ROW) / every) % 3 === v));
+      if (cover) batch(`${cover.key}:${v}:${detail}`, () => meshPlan(brachiariaPlan(cover.pose, v, detail), detail), slots.filter((p, i) => p.front === front && (i % PER_ROW) % 2 === 1 && (((i % PER_ROW) - 1) / 2) % 3 === v).map((p) => ({ ...p, z: p.z - ROW_SPACING / 2 })));
+    }
+    invalidate();
+    return () => { made.forEach((m) => { g.remove(m); m.dispose(); }); };
+  }, [plantKey, coverKey, far, cache, material, invalidate]); // eslint-disable-line react-hooks/exhaustive-deps -- the pose keys identify the plants
+  return <group ref={group}>{(plant || cover) && <mesh position={[0, 0.008, FRONT_Z + 0.008]}><boxGeometry args={[BLOCK.width, 0.016, 0.016]} /><meshBasicMaterial color={layers.leafColor} /></mesh>}</group>;
 }
 
 
@@ -144,7 +161,7 @@ const ROOT_Z = (ROWS - 1) * ROW_SPACING / 2; // front plant row
 export default function SoilProfile3D({ layers, label, reducedMotion, deviceText, cutaway = true }: { layers: ProfileLayers; label: string; reducedMotion: boolean; deviceText: DeviceText; cutaway?: boolean }) {
   const zoneBottom = layers.roots ? layers.roots.depthM : PROFILE_DEPTH_M * 0.55;
   const refs = useRef(new Map<string, HTMLDivElement>()); const layer = useRef<HTMLDivElement | null>(null);
-  const { t } = useI18n(); const [stake, setStake] = useState<StakeStatus>('loading'); const [closeUp, setCloseUp] = useState(false);
+  const { t } = useI18n(); const [stake, setStake] = useState<StakeStatus>('loading'); const [closeUp, setCloseUp] = useState(false); const compact = useMedia('(max-width: 760px)');
   const onStake = useCallback((s: StakeStatus) => { setStake(s); (window as unknown as { __gaiapusStake?: StakeStatus }).__gaiapusStake = s; }, []);
   const hasDevice = !!layers.device; useEffect(() => { if (!hasDevice) setCloseUp(false); }, [hasDevice]);
   // Device labels only exist next to the drawn equipment: none while the model loads or if it failed.
@@ -168,7 +185,7 @@ export default function SoilProfile3D({ layers, label, reducedMotion, deviceText
       <hemisphereLight args={['#ffffff', '#806040', 1.1]} /><directionalLight position={[3, 5, 4]} intensity={1.4} />
       <Soil layers={layers} cutaway={cutaway} />
       {layers.rootSystem && <RootSystem3D layer={layers.rootSystem} z={ROOT_Z} />}
-      <Plants layers={layers} />
+      <Plants layers={layers} far={compact} />
       <Particles count={layers.rainCount} color={RAIN_COLOR} ymin={0.05} ymax={2.6} speed={3.2} still={reducedMotion} size={0.055} />
       <Particles count={layers.irrigationCount} color={IRRIGATION_COLOR} ymin={0} ymax={0.22} speed={0.35} still={reducedMotion} size={0.04} />
       {layers.drainage && <Arrow from={[-0.6, -zoneBottom + 0.1, FRONT_Z + 0.02]} dir={DOWN} length={layers.drainage.length} width={layers.drainage.width} color={DRAINAGE_COLOR} />}
@@ -179,7 +196,7 @@ export default function SoilProfile3D({ layers, label, reducedMotion, deviceText
       <Controls label={label} closeUp={closeUp && !!layers.device} />
     </Canvas>
     <div ref={layer} aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-      {labels.map((l) => <div key={l.id} ref={(el) => { if (el) refs.current.set(l.id, el); else refs.current.delete(l.id); }} style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', whiteSpace: 'nowrap', fontSize: 12, color: '#EAF2EB', background: 'rgba(8,16,12,.72)', padding: '1px 6px', borderRadius: 6 }}>{l.swatch && <span data-testid="led-swatch" style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: l.swatch, border: '1px solid #EAF2EB', marginRight: 5 }} />}{l.text}</div>)}
+      {labels.map((l) => <div key={l.id} ref={(el) => { if (el) refs.current.set(l.id, el); else refs.current.delete(l.id); }} style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--scene-label-text)', background: 'var(--scene-label-bg)', border: '1px solid var(--border)', padding: '1px 6px', borderRadius: 6 }}>{l.swatch && <span data-testid="led-swatch" style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: l.swatch, border: '1px solid var(--scene-label-text)', marginRight: 5 }} />}{l.text}</div>)}
     </div>
     {layers.device && <div className="sim__stake-tools" data-testid="stake-tools">
       {stake === 'failed' && <p role="status" data-testid="stake-failed">{t('sim.profile.stakeModelFailed')}</p>}

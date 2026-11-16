@@ -6,6 +6,8 @@ import { useEffect, useRef } from 'react';
 import maplibregl, { type GeoJSONSource, type Map as MlMap, type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { translate } from '../i18n';
+import { mapPalette, type MapPalette } from '../map/palette';
+import { getPrefs, usePrefs } from '../prefs';
 import { reducedMotion } from '../ui';
 import { boundsOf, centroid, closeRing, type PolygonGeometry, type Position } from './geometry';
 
@@ -25,8 +27,8 @@ export type AreaMapProps = {
   onUnavailable: (reason: string) => void;
 };
 
-const C = { ocean: '#0a1a21', land: '#1a2c24', landLine: '#3d5648', plot: '#87C98F', plotSel: '#EAF2EB', draft: '#F2C14E' };
-const style: StyleSpecification = {
+// Same palette object as the Explore map (map/palette.ts); a theme change repaints the layers in place.
+const baseStyle = (C: MapPalette): StyleSpecification => ({
   version: 8,
   sources: { world: { type: 'vector', url: 'https://demotiles.maplibre.org/tiles/tiles.json', attribution: 'Base: MapLibre demotiles (Natural Earth)' } },
   layers: [
@@ -34,7 +36,7 @@ const style: StyleSpecification = {
     { id: 'countries', type: 'fill', source: 'world', 'source-layer': 'countries', paint: { 'fill-color': C.land } },
     { id: 'countries-line', type: 'line', source: 'world', 'source-layer': 'countries', paint: { 'line-color': C.landLine, 'line-width': 0.7 } },
   ],
-};
+});
 type FC = { type: 'FeatureCollection'; features: { type: 'Feature'; properties: Record<string, string>; geometry: { type: string; coordinates: unknown } }[] };
 const fc = (features: FC['features'] = []): FC => ({ type: 'FeatureCollection', features });
 const round = (v: number) => Math.round(v * 1e7) / 1e7;
@@ -42,6 +44,13 @@ const round = (v: number) => Math.round(v * 1e7) / 1e7;
 export default function AreaMap(p: AreaMapProps) {
   const el = useRef<HTMLDivElement>(null); const mapRef = useRef<MlMap | null>(null); const ready = useRef(false); const latest = useRef(p); latest.current = p;
   const markers = useRef<maplibregl.Marker[]>([]); const handles = useRef<maplibregl.Marker[]>([]); const pin = useRef<maplibregl.Marker | null>(null);
+  const theme = usePrefs((s) => s.theme);
+  const repaint = () => {
+    const m = mapRef.current; if (!m || !ready.current) return; const C = mapPalette(getPrefs().theme); const set = (id: string, prop: string, value: string | number) => { if (m.getLayer(id)) m.setPaintProperty(id, prop, value); };
+    set('bg', 'background-color', C.ocean); set('countries', 'fill-color', C.land); set('countries-line', 'line-color', C.landLine);
+    set('plots-fill', 'fill-color', C.plot.color); set('plots-fill', 'fill-opacity', C.plot.opacity); set('plots-line', 'line-color', C.plotLine); set('plots-selected', 'line-color', C.plotSelected);
+    set('draft-fill', 'fill-color', C.draft); set('draft-line', 'line-color', C.draft);
+  };
 
   const drawData = () => {
     const m = mapRef.current; if (!m || !ready.current) return; const { plots, sensors, selected, draft, picked, mode } = latest.current;
@@ -95,17 +104,18 @@ export default function AreaMap(p: AreaMapProps) {
     if (!el.current) return; let m: MlMap;
     try {
       if (new URLSearchParams(location.hash.split('?')[1] ?? '').has('semwebgl')) throw new Error('WebGL disabled for testing');
-      m = new maplibregl.Map({ container: el.current, style, center: [-54, -14], zoom: 3, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, maxZoom: 19, minZoom: 1 });
+      m = new maplibregl.Map({ container: el.current, style: baseStyle(mapPalette(getPrefs().theme)), center: [-54, -14], zoom: 3, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, maxZoom: 19, minZoom: 1 });
     } catch (e) { latest.current.onUnavailable((e as Error).message); return; }
     mapRef.current = m; (window as unknown as { __gaiapusAreaMap?: MlMap }).__gaiapusAreaMap = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
     m.on('error', (e) => { if (/webgl/i.test(String(e.error?.message))) latest.current.onUnavailable(String(e.error?.message)); });
     m.on('load', () => {
+      const C = mapPalette(getPrefs().theme);
       m.addSource('plots', { type: 'geojson', data: fc() as never }); m.addSource('draft', { type: 'geojson', data: fc() as never });
-      m.addLayer({ id: 'plots-fill', type: 'fill', source: 'plots', paint: { 'fill-color': C.plot, 'fill-opacity': 0.22 } });
-      m.addLayer({ id: 'plots-line', type: 'line', source: 'plots', paint: { 'line-color': C.plot, 'line-width': 2 } });
-      m.addLayer({ id: 'plots-selected', type: 'line', source: 'plots', filter: ['==', ['get', 'id'], ''], paint: { 'line-color': C.plotSel, 'line-width': 4 } });
+      m.addLayer({ id: 'plots-fill', type: 'fill', source: 'plots', paint: { 'fill-color': C.plot.color, 'fill-opacity': C.plot.opacity } });
+      m.addLayer({ id: 'plots-line', type: 'line', source: 'plots', paint: { 'line-color': C.plotLine, 'line-width': 2 } });
+      m.addLayer({ id: 'plots-selected', type: 'line', source: 'plots', filter: ['==', ['get', 'id'], ''], paint: { 'line-color': C.plotSelected, 'line-width': 4 } });
       m.addLayer({ id: 'draft-fill', type: 'fill', source: 'draft', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': C.draft, 'fill-opacity': 0.2 } });
       m.addLayer({ id: 'draft-line', type: 'line', source: 'draft', paint: { 'line-color': C.draft, 'line-width': 2.5, 'line-dasharray': [2, 1.5] } });
       m.on('click', (e) => {
@@ -115,7 +125,7 @@ export default function AreaMap(p: AreaMapProps) {
         const hit = m.queryRenderedFeatures(e.point, { layers: ['plots-fill'] })[0];
         now.onSelect(hit?.properties?.id ? { kind: 'plot', id: String(hit.properties.id) } : null);
       });
-      ready.current = true; el.current?.setAttribute('data-ready', 'true'); drawData(); frame();
+      ready.current = true; el.current?.setAttribute('data-ready', 'true'); repaint(); drawData(); frame();
     });
     const ro = new ResizeObserver(() => m.resize()); ro.observe(el.current);
     return () => { ro.disconnect(); ready.current = false; markers.current = []; handles.current = []; m.remove(); mapRef.current = null; };
@@ -124,5 +134,7 @@ export default function AreaMap(p: AreaMapProps) {
   useEffect(drawData, [p.plots, p.sensors, p.selected, p.draft, p.picked, p.mode]);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- reframe only when the caller asks
   useEffect(frame, [p.frameKey]);
-  return <div ref={el} className="area-map" data-testid="area-map" role="application" aria-label={translate('area.map.label')} />;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- repaint only when the theme changes
+  useEffect(repaint, [theme]);
+  return <div ref={el} className="area-map" data-testid="area-map" data-map-theme={theme} role="application" aria-label={translate('area.map.label')} />;
 }

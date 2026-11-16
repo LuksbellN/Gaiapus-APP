@@ -14,20 +14,44 @@ Território, água e ciclo agrícola. A assinatura é a **linha do tempo de fase
 
 | Papel | Variável | Escuro | Claro |
 | --- | --- | --- | --- |
-| Fundo | `--bg` | #0B1411 | #F5F7F2 |
+| Fundo | `--bg` | #0B1411 | #F2F6F3 |
 | Superfície | `--surface` | #14231C | #FFFFFF |
-| Superfície 2 (cabeçalho de tabela, hover) | `--surface-2` | #1B2E25 | #EDF1E9 |
-| Texto principal | `--text` | #EAF2EB | #173326 |
-| Texto secundário | `--text-2` | #A7B8AE | #506358 |
-| Ação principal | `--action` / `--on-action` | #87C98F / #102218 | #21613F / #FFFFFF |
-| Água / precipitação | `--water` | #79BDD8 | #236A85 |
-| Atenção | `--warn` | #E6B85C | #865900 |
-| Risco | `--risk` | #F08C79 | #B13D2D |
-| Solo / cobertura seca | `--soil` | #B99975 | #795C3F |
-| Borda decorativa | `--border` | #2C4136 | #D5DDD3 |
-| Borda de controle e foco | `--border-strong` / `--focus` | #6F8A7B / #EAF2EB | #6B7F73 / #173326 |
+| Superfície 2 (cabeçalho de tabela, hover) | `--surface-2` | #1B2E25 | #E7EFE9 |
+| Texto principal | `--text` | #EAF2EB | #163C2D |
+| Texto secundário | `--text-2` | #A7B8AE | #465E52 |
+| Ação principal | `--action` / `--on-action` | #87C98F / #102218 | #176B4B / #FFFFFF |
+| Água / precipitação | `--water` | #79BDD8 | #146B8A |
+| Atenção | `--warn` | #E6B85C | #805700 |
+| Risco | `--risk` | #F08C79 | #AF352E |
+| Solo / cobertura seca | `--soil` | #B99975 | #765737 |
+| Borda decorativa | `--border` | #2C4136 | #C7D3C9 |
+| Borda de controle e foco | `--border-strong` / `--focus` | #6F8A7B / #EAF2EB | #71887B / #164B7A |
 
-`--surface-2`, `--border`, `--border-strong` e os `--tint-*` (fundos de selo a 10–18%) foram acrescentados aos nove papéis do briefing.
+`--surface-2`, `--border`, `--border-strong` e os `--tint-*` foram acrescentados aos nove papéis do briefing. No escuro os tints são translúcidos (14–18%); no claro são opacos (`#E3F2E9`, `#E4F1F7`, `#FFF1D1`, `#FCE9E6`, `#F0E9DF`), para não mudarem com a pilha de fundos.
+
+### Tema claro "Campo claro / verde mineral" e tokens de estado (renovação de 15/11/2026)
+
+O claro passou a ser fundo frio muito claro, painéis brancos, texto verde profundo, ação verde concentrada, azul mineral para água e ocre para atenção (pesquisa em `Docs/visual-refresh/README.md`). O escuro manteve a base. Os tokens abaixo existem **nos dois temas** (um teste garante que nenhum é herdado por acidente):
+
+| Papel | Variável | Escuro | Claro |
+| --- | --- | --- | --- |
+| Ação sob o ponteiro / pressionada | `--action-hover` / `--action-active` | #9FD6A4 / #A9DEAE | #11543A / #0C432E |
+| Seleção secundária (fundo / texto) | `--selected` / `--on-selected` | #294B37 / #EAF2EB | #CFE7D9 / #163C2D |
+| Seleção de texto | `--selection-bg` / `--selection-text` | #294B37 / #EAF2EB | #CFE7D9 / #163C2D |
+| Halo do foco sobre mídia | `--focus-halo` | #0B1411 | #FFFFFF |
+| Halo de séries e cursor nos gráficos | `--chart-halo` | #14231C | #FFFFFF |
+| Céu da cena (topo / horizonte) | `--scene-sky-top` / `--scene-sky-bottom` | #0D1A22 / #12241C | #DDEEF3 / #EFF3E8 |
+| Placa de texto sobre cena e mapa | `--scene-label-bg` / `--scene-label-text` | #14231C / #EAF2EB | #FFFFFF / #163C2D |
+| Entorno do mapa e marcadores | `--map-space`, `--map-ocean`, `--map-pin`, `--map-draft`, `--map-sensor`, `--map-marker-border`, `--map-marker-ring` | valores de `map/palette.ts` | idem |
+
+Regras de estado:
+
+- **Primário** (normal, hover, `:active`, `aria-pressed=true`) tem sempre preenchimento sólido e texto `--on-action`. A regra de seleção secundária (`.btn[aria-pressed='true']`, fundo `--selected`) nunca o alcança: era ela que deixava "Pausar" branco sobre quase branco (1,16:1 no claro, 1,36:1 no escuro).
+- **Seleção secundária** (botão, opção de `Seg`, item de lista, alternador de simulador) usa `--selected` + `--on-selected` e a borda `--action`.
+- **Foco** continua `outline` de 2px em `--focus`; sobre mapa e cena o anel é de duas cores (`--focus` entre duas faixas `--focus-halo`), porque os pixels atrás variam.
+- **Mapas**: as cores das camadas do MapLibre vêm de `map/palette.ts` (um objeto tipado por tema); trocar o tema repinta as camadas existentes, sem recriar o mapa. A legenda lê o mesmo objeto.
+- **Gráficos**: chuva opaca; séries e cursor passam sobre um halo `--chart-halo`; B tracejada, C pontilhada; o cursor tem alça.
+- **Cena**: céu por tokens, legenda e rótulos em placa opaca; nenhum texto direto sobre o solo (cuja cor acompanha a reserva de água do modelo).
 
 ### Contraste medido (WCAG 2.x)
 
@@ -47,20 +71,24 @@ Território, água e ciclo agrícola. A assinatura é a **linha do tempo de fase
 | Borda forte de controle / fundo (escuro) | #6F8A7B | #0B1411 | 4.99:1 |
 | Borda forte de controle / superfície (escuro) | #6F8A7B | #14231C | 4.35:1 |
 | Foco / fundo (escuro) | #EAF2EB | #0B1411 | 16.39:1 |
-| Texto principal / fundo (claro) | #173326 | #F5F7F2 | 12.66:1 |
-| Texto secundário / fundo (claro) | #506358 | #F5F7F2 | 5.96:1 |
-| Texto secundário / superfície (claro) | #506358 | #FFFFFF | 6.43:1 |
-| Texto secundário / superfície-2 (claro) | #506358 | #EDF1E9 | 5.62:1 |
-| Botão principal (claro) | #FFFFFF | #21613F | 7.38:1 |
-| Água / superfície (claro) | #236A85 | #FFFFFF | 6.05:1 |
-| Atenção / superfície (claro) | #865900 | #FFFFFF | 6.10:1 |
-| Risco / superfície (claro) | #B13D2D | #FFFFFF | 5.87:1 |
-| Solo / superfície (claro) | #795C3F | #FFFFFF | 6.15:1 |
-| Ação / fundo (claro) | #21613F | #F5F7F2 | 6.84:1 |
-| Borda forte de controle / fundo (claro) | #6B7F73 | #F5F7F2 | 3.97:1 |
-| Borda forte de controle / superfície (claro) | #6B7F73 | #FFFFFF | 4.28:1 |
+| Texto principal / fundo (claro) | #163C2D | #F2F6F3 | 11.20:1 |
+| Texto secundário / fundo (claro) | #465E52 | #F2F6F3 | 6.45:1 |
+| Texto secundário / superfície (claro) | #465E52 | #FFFFFF | 7.04:1 |
+| Texto secundário / superfície-2 (claro) | #465E52 | #E7EFE9 | 6.01:1 |
+| Botão principal (claro) | #FFFFFF | #176B4B | 6.48:1 |
+| Botão principal pressionado (claro) | #FFFFFF | #0C432E | 11.30:1 |
+| Botão principal pressionado (escuro) | #102218 | #A9DEAE | 10.88:1 |
+| Seleção secundária (claro) | #163C2D | #CFE7D9 | 9.36:1 |
+| Seleção secundária (escuro) | #EAF2EB | #294B37 | 8.53:1 |
+| Água / superfície (claro) | #146B8A | #FFFFFF | 6.00:1 |
+| Atenção / superfície (claro) | #805700 | #FFFFFF | 6.40:1 |
+| Risco / superfície (claro) | #AF352E | #FFFFFF | 6.23:1 |
+| Solo / superfície (claro) | #765737 | #FFFFFF | 6.59:1 |
+| Ação / fundo (claro) | #176B4B | #F2F6F3 | 5.94:1 |
+| Borda forte de controle / fundo (claro) | #71887B | #F2F6F3 | 3.49:1 |
+| Borda forte de controle / superfície (claro) | #71887B | #FFFFFF | 3.81:1 |
 
-Texto passa de 4,5:1 em todas as superfícies; bordas de controle e foco passam de 3:1. Sobre o mapa, todo texto fica em superfície sólida (painéis, legenda, marcadores). Cor nunca é o único sinal: selos trazem texto, fases trazem rótulo, déficit tem legenda.
+Os pares acima são medições de pares de cor, não uma certificação da interface. A lista completa (92 pares, incluindo estados, tints, foco, gráficos e mapa nos dois temas) é gerada dos tokens reais por `node scripts/contrast-report.mjs` e verificada em `src/teammate/theme-tokens.test.ts`; a página `/design-preview` calcula as razões ao vivo, a partir da folha de estilo em uso. Quatro pares de contorno do **mapa escuro** (costa, divisa estadual e limite municipal sobre os seus preenchimentos) ficam abaixo de 3:1 (1,83 a 2,98): são do mapa escuro original, que não foi redesenhado; seleção, rótulos e marcadores não dependem deles. Sobre mapa e cena, todo texto fica em superfície sólida (painéis, legenda, marcadores, placas). Cor nunca é o único sinal: selos trazem texto, fases trazem rótulo, déficit tem legenda, a série B é tracejada e o cursor tem alça.
 
 ## 3. Tipografia
 
@@ -92,7 +120,8 @@ Lucide, traço único: Globe, Sprout, CloudRain, CalendarDays, SlidersHorizontal
 | `Dialog` | confirmação destrutiva | `<dialog>` nativo: foco preso, Esc, retorno de foco |
 | `PhaseTimeline` | assinatura | somente leitura (`role=img`) ou cursor (`role=slider`, setas e PageUp/Down) |
 | `ExplorerMap` | globo MapLibre | seleção, cobertura, WebGL indisponível |
-| `Field3D` / `Field2D` | campo ilustrativo | WebGL ou alternativa 2D |
+| `Field3D` / `Field2D` | campo ilustrativo: plantas por órgãos (soja, milho, braquiária) no estágio real da linha da simulação | WebGL 2, vista de perto, alternativa 2D com os mesmos órgãos, cultura sem planta nesta cena |
+| `CropBoard` (`/design-preview`) | prancha demonstrativa dos arquétipos do catálogo, por fase | 3D (um renderer para todos os cartões) ou 2D; não habilita cultura nem série |
 
 ## 7. Adaptações do Taste (data-terminal) para agricultores
 
@@ -121,10 +150,18 @@ Alterado de propósito:
 
 `prefers-reduced-motion`: transições e animações caem para 1 ms e o mapa vai direto à posição final. O campo 3D renderiza sob demanda (sem laço contínuo), sem partículas nem brilho.
 
+### Plantas ilustrativas
+
+Uma planta é um plano de órgãos (`sim/plants/*.ts`, dados puros) que vira uma geometria com cor por vértice. A cena e a alternativa 2D leem o mesmo plano. O que é desenhado vem de `sim/visual-state.ts`: cultura e cobertura da `land_cover` real, fase real, e posição dentro da fase só quando a série original traz o início e o fim dessa fase; sem isso a planta fica em pose fixa (uma janela de previsão de seis dias não percorre uma fase). Estresse hídrico do modelo não muda a cor das folhas: no perfil ele é uma faixa na linha do solo, com legenda. Palhada só existe na prancha (a série não informa resíduo). Café é perene: idade e fase dos frutos são dimensões separadas e a estrutura adulta não reinicia. Tamanhos, datas e número de órgãos são escolhas de desenho, sem validação agronômica.
+
 ## 9. Não fazer
 
 - Texto direto sobre o mapa sem superfície.
 - Número de rendimento sem "município", ano e "retrospectivo".
 - Valor preenchido onde o dado falta: mostrar "—" ou "não fornecido" e dizer o que falta.
 - Trocar de tema ao navegar.
+- Aplicar a regra de seleção secundária ao botão principal, ou escrever hex novo em componente para contornar os tokens.
+- Texto direto sobre o solo ou o céu da cena.
+- Pintar estresse, doença ou morte na planta a partir da água do modelo; desenhar palhada sem sinal de resíduo; dar ciclo anual ao café.
+- Tratar um modelo na prancha como suporte: cultura sem série continua sem simulação.
 - Selo colorido sem texto.

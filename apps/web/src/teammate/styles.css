@@ -17,13 +17,26 @@
   --action: #87C98F; --on-action: #102218; --water: #79BDD8; --warn: #E6B85C; --risk: #F08C79; --soil: #B99975;
   --border: #2C4136; --border-strong: #6F8A7B; --focus: #EAF2EB; --overlay-shadow: 0 12px 32px rgba(0,0,0,.45);
   --tint-action: rgba(135,201,143,.14); --tint-water: rgba(121,189,216,.16); --tint-warn: rgba(230,184,92,.16); --tint-risk: rgba(240,140,121,.16); --tint-soil: rgba(185,153,117,.18);
+  /* States: a solid action keeps a solid fill when hovered or pressed; secondary selection has its own pair. */
+  --action-hover: #9FD6A4; --action-active: #A9DEAE; --selected: #294B37; --on-selected: #EAF2EB; --selection-bg: #294B37; --selection-text: #EAF2EB;
+  --focus-halo: #0B1411; --chart-halo: #14231C; --scrim: rgba(5,12,9,.6);
+  /* Illustrative scene and its text plates. */
+  --scene-sky-top: #0D1A22; --scene-sky-bottom: #12241C; --scene-label-bg: #14231C; --scene-label-text: #EAF2EB;
+  /* Map surroundings and DOM markers (the layer paints come from map/palette.ts, same values). */
+  --map-space: #060D0A; --map-ocean: #0A1A21; --map-marker-border: #EAF2EB; --map-marker-ring: #0B1411; --map-draft: #F2C14E; --map-sensor: #7D8A62; --map-pin: #79BDD8; --marker-shadow: 0 2px 8px rgba(0,0,0,.4);
 }
 [data-theme='light'] {
   color-scheme: light;
-  --bg: #F5F7F2; --surface: #FFFFFF; --surface-2: #EDF1E9; --text: #173326; --text-2: #506358;
-  --action: #21613F; --on-action: #FFFFFF; --water: #236A85; --warn: #865900; --risk: #B13D2D; --soil: #795C3F;
-  --border: #D5DDD3; --border-strong: #6B7F73; --focus: #173326; --overlay-shadow: 0 12px 32px rgba(23,51,38,.18);
-  --tint-action: rgba(33,97,63,.10); --tint-water: rgba(35,106,133,.10); --tint-warn: rgba(134,89,0,.10); --tint-risk: rgba(177,61,45,.10); --tint-soil: rgba(121,92,63,.12);
+  /* "Campo claro / verde mineral": cool very light canvas, white panels, deep green text, concentrated green action,
+     mineral blue for water and ochre for attention. Tints are opaque so they do not change with what is underneath. */
+  --bg: #F2F6F3; --surface: #FFFFFF; --surface-2: #E7EFE9; --text: #163C2D; --text-2: #465E52;
+  --action: #176B4B; --on-action: #FFFFFF; --water: #146B8A; --warn: #805700; --risk: #AF352E; --soil: #765737;
+  --border: #C7D3C9; --border-strong: #71887B; --focus: #164B7A; --overlay-shadow: 0 12px 32px rgba(22,60,45,.16);
+  --tint-action: #E3F2E9; --tint-water: #E4F1F7; --tint-warn: #FFF1D1; --tint-risk: #FCE9E6; --tint-soil: #F0E9DF;
+  --action-hover: #11543A; --action-active: #0C432E; --selected: #CFE7D9; --on-selected: #163C2D; --selection-bg: #CFE7D9; --selection-text: #163C2D;
+  --focus-halo: #FFFFFF; --chart-halo: #FFFFFF; --scrim: rgba(22,60,45,.42);
+  --scene-sky-top: #DDEEF3; --scene-sky-bottom: #EFF3E8; --scene-label-bg: #FFFFFF; --scene-label-text: #163C2D;
+  --map-space: #F2F6F3; --map-ocean: #DCEBF0; --map-marker-border: #FFFFFF; --map-marker-ring: #163C2D; --map-draft: #805700; --map-sensor: #5A6A3C; --map-pin: #146B8A; --marker-shadow: 0 2px 8px rgba(22,60,45,.28);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #root { height: 100%; }
@@ -36,7 +49,7 @@ small, .meta { font-size: 14px; color: var(--text-2); } .meta-13 { font-size: 13
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* Superfícies do navegador, a partir da paleta */
 html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; scrollbar-color: var(--border-strong) transparent; accent-color: var(--action); caret-color: var(--action); }
-::selection { background: color-mix(in srgb, var(--action) 38%, transparent); color: var(--text); }
+::selection { background: var(--selection-bg); color: var(--selection-text); }
 h1, h2 { text-wrap: balance; }
 .input:hover { border-color: var(--text-2); } .input:focus-visible { outline-offset: 1px; }
 .main:focus { outline: none; } .main h1:focus-visible { outline: none; } /* the page title receives focus on navigation for screen readers; it is not a control and needs no ring */
@@ -88,6 +101,12 @@ h1, h2 { text-wrap: balance; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); align-content: start; min-width: 0; overflow-wrap: anywhere; } /* long source strings (variable lists, ids) wrap instead of widening the page */
 .card table, .card .seg, .card .btn, .card .pill { overflow-wrap: normal; } /* tables keep whole words and scroll inside their wrapper */
 .card--flat { background: transparent; }
+.account-auth__form { gap: 20px; padding: clamp(20px, 4vw, 28px); }
+.account-auth .account-auth__submit { width: 100%; min-height: 54px; font-size: 17px; margin-top: 4px; }
+.account-auth__footer { display: grid; justify-items: center; gap: 14px; text-align: center; color: var(--text-2); }
+.account-auth__footer p { margin: 0; }
+.account-auth__footer a { display: inline-block; padding-block: 5px; }
+.account-auth__explore { margin-top: 4px; font-size: 14px; }
 .card h2, .card h3 { display: flex; align-items: center; gap: 8px; } .card h2 > svg, .card h3 > svg { flex: none; }
 .divider { border: 0; border-top: 1px solid var(--border); margin: 0; }
 
@@ -95,17 +114,19 @@ h1, h2 { text-wrap: balance; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--touch); padding: 8px 16px; border-radius: var(--r-control); border: 1px solid var(--border-strong); background: transparent; color: var(--text); font: 600 16px var(--font-body); cursor: pointer; text-decoration: none; transition: background var(--t-hover), border-color var(--t-hover), transform var(--t-hover); }
 .btn:hover { background: var(--surface-2); } .btn:active { transform: translateY(1px); }
 .btn--primary { background: var(--action); color: var(--on-action); border-color: var(--action); }
-.btn--primary:hover { background: color-mix(in srgb, var(--action) 88%, var(--text)); }
+.btn--primary:hover { background: var(--action-hover); border-color: var(--action-hover); }
 .btn--ghost { border-color: transparent; } .btn--danger { color: var(--risk); border-color: var(--risk); }
 .btn--sm { min-height: 36px; padding: 4px 12px; font-size: 14px; }
 .btn[disabled], .btn[aria-disabled='true'] { opacity: .55; cursor: not-allowed; }
-.btn[aria-pressed='true'] { background: var(--tint-action); border-color: var(--action); }
+.btn[aria-pressed='true'] { background: var(--selected); border-color: var(--action); color: var(--on-selected); }
+/* Primary stays solid in every state; the secondary selection rule above must never reach it. */
+.btn.btn--primary:active, .btn.btn--primary[aria-pressed='true'] { background: var(--action-active); border-color: var(--action-active); color: var(--on-action); }
 .icon-btn { display: inline-grid; place-items: center; width: var(--touch); height: var(--touch); border-radius: var(--r-control); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer; transition: background var(--t-hover); flex: none; }
-.icon-btn:hover { background: var(--surface-2); } .icon-btn[aria-pressed='true'] { background: var(--tint-action); border-color: var(--action); }
+.icon-btn:hover { background: var(--surface-2); } .icon-btn[aria-pressed='true'] { background: var(--selected); border-color: var(--action); color: var(--on-selected); }
 .field { display: grid; gap: 6px; min-width: 0; } .field > label, .field > .label, legend { font-weight: 600; font-size: 15px; padding: 0; }
 .field .hint { font-size: 14px; color: var(--text-2); } .field .err { font-size: 14px; color: var(--risk); font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .input, select.input, textarea.input { width: 100%; min-height: var(--touch); padding: 8px 12px; border-radius: var(--r-control); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font: 400 16px var(--font-body); }
-[data-theme='light'] .input { background-color: #fff; }
+[data-theme='light'] .input { background-color: var(--surface); }
 select.input, [data-theme='light'] select.input { appearance: none; padding-right: 36px; background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%); background-position: calc(100% - 19px) 50%, calc(100% - 13px) 50%; background-size: 6px 6px; background-repeat: no-repeat; }
 select.input--sm { width: auto; min-height: 36px; padding: 2px 32px 2px 10px; }
 .input[aria-invalid='true'] { border-color: var(--risk); border-width: 2px; }
@@ -113,7 +134,7 @@ select.input--sm { width: auto; min-height: 36px; padding: 2px 32px 2px 10px; }
 fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s2); min-width: 0; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg label { display: inline-flex; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: var(--r-control); cursor: pointer; font-weight: 500; }
-.seg label:has(input:checked) { background: var(--tint-action); border-color: var(--action); border-width: 2px; padding: 5px 11px; font-weight: 600; }
+.seg label:has(input:checked) { background: var(--selected); color: var(--on-selected); border-color: var(--action); border-width: 2px; padding: 5px 11px; font-weight: 600; }
 .seg label:has(input:disabled) { opacity: .6; cursor: not-allowed; border-style: dashed; }
 .seg label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
 .seg input { accent-color: var(--action); width: 18px; height: 18px; margin: 0; }
@@ -162,11 +183,11 @@ tr[data-highlight='true'] td { background: var(--tint-action); }
 /* Dialog */
 dialog { border: 1px solid var(--border-strong); border-radius: var(--r-dialog); background: var(--surface); color: var(--text); padding: var(--s6); width: min(560px, calc(100vw - 32px)); box-shadow: var(--overlay-shadow); }
 dialog { overscroll-behavior: contain; }
-dialog::backdrop { background: rgba(5, 12, 9, .6); }
+dialog::backdrop { background: var(--scrim); }
 dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop { from { opacity: 0; transform: translateY(12px); } }
 
 /* Explorador */
-.explore { position: absolute; inset: 0; overflow: hidden; background: #060d0a; }
+.explore { position: absolute; inset: 0; overflow: hidden; background: var(--map-space); }
 /* Especificidade maior que .maplibregl-map (position: relative), cujo CSS agora chega depois, junto com o mapa. */
 .explore > .explore__map { position: absolute; inset: 0; }
 .explore__loading { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-2); font-size: 15px; pointer-events: none; }
@@ -190,7 +211,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .search__list li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; min-height: 40px; align-items: center; } .search__list li[aria-selected='true'], .search__list li:hover { background: var(--surface-2); }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .list button, .list > li > a { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: var(--touch); padding: 6px 10px; background: none; border: 1px solid transparent; border-radius: var(--r-control); color: var(--text); font: inherit; cursor: pointer; text-align: left; text-decoration: none; }
-.list button:hover, .list > li > a:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--tint-action); font-weight: 600; }
+.list button:hover, .list > li > a:hover { background: var(--surface-2); } .list button[aria-current='true'] { border-color: var(--action); background: var(--selected); color: var(--on-selected); font-weight: 600; }
 .list button > span:not(.pill), .list > li > a > span:not(.pill) { min-width: 0; overflow-wrap: anywhere; }
 .list button > :is(svg, .pill), .list > li > a > :is(svg, .pill) { flex-shrink: 0; }
 /* Lista longa (países): só desenha os itens perto da área visível */
@@ -199,7 +220,12 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .maplibregl-ctrl-attrib { font-size: 11px; }
 /* Text links that stand alone in lists or short meta lines keep a 24px target (WCAG 2.5.8). */
 .plain li > a, p.meta > a { display: inline-block; min-height: 24px; line-height: 24px; }
-.map-marker { background: var(--surface); color: var(--text); border: 2px solid var(--action); border-radius: 999px; padding: 4px 10px 4px 6px; font: 600 13px var(--font-body); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.4); min-height: 32px; }
+.map-marker { background: var(--surface); color: var(--text); border: 2px solid var(--action); border-radius: 999px; padding: 4px 10px 4px 6px; font: 600 13px var(--font-body); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; box-shadow: var(--marker-shadow); min-height: 32px; }
+/* Focus over a map or a scene: the ring carries its own light/dark separation, because the pixels behind it vary. */
+.map-marker:focus-visible, .area-map__sensor:focus-visible, .area-map__vertex:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 6px var(--focus-halo); }
+.map-here { width: 16px; height: 16px; border-radius: 50%; background: var(--map-pin); border: 3px solid var(--map-marker-border); box-shadow: 0 0 0 1px var(--map-marker-ring); }
+.maplibregl-canvas:focus-visible { outline: 3px solid var(--focus); outline-offset: -5px; }
+.explore:has(.maplibregl-canvas:focus-visible)::after, .area__map:has(.maplibregl-canvas:focus-visible)::after, .sim__stage:has(canvas:focus-visible)::after, .crop-board__stage:has(canvas:focus-visible)::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border: 2px solid var(--focus-halo); box-shadow: inset 0 0 0 3px var(--focus), inset 0 0 0 5px var(--focus-halo); }
 .map-marker[data-kind='none'] { border-color: var(--border-strong); }
 
 /* Timeline e simulador */
@@ -210,12 +236,15 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .sim__config[data-collapsed='true'] { width: 60px; padding: var(--s2); }
 .sim__config .seg { display: grid; } .sim__config .seg label { width: 100%; }
 .sim__retry { position: absolute; left: var(--s4); right: var(--s4); top: 56px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: fit-content; max-width: calc(100% - 32px); background: var(--surface); border: 1px solid var(--warn); border-radius: var(--r-control); padding: 6px 10px; font-size: 14px; }
-.sim__loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: #cfe0d6; font-size: 15px; }
-.sim__stage { position: relative; min-height: 0; min-width: 0; background: linear-gradient(#0d1a22, #12241c 70%); }
-.sim__stage canvas { outline: none; } .sim__stage canvas:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+.sim__loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--scene-label-text); font-size: 15px; }
+.sim__loading > span:last-child { background: var(--scene-label-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+.sim__stage { position: relative; min-height: 0; min-width: 0; background: linear-gradient(var(--scene-sky-top), var(--scene-sky-bottom) 70%); }
+.sim__stage canvas { outline: none; } .sim__stage canvas:focus-visible { outline: 3px solid var(--focus); outline-offset: -5px; }
 .sim__overlay { position: absolute; left: var(--s4); top: var(--s4); right: var(--s4); display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; } .sim__overlay > * { pointer-events: auto; background: var(--surface); }
 .sim__views fieldset { border: 0; margin: 0; padding: 0; } .sim__views legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .sim__views .seg { background: var(--surface); } .sim__views { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; } .sim__stake { background: var(--surface); border-radius: var(--r-control); padding: 4px 10px; } .sim__overlay { align-items: flex-start; }
-.sim__caption { position: absolute; left: var(--s4); bottom: var(--s3); right: var(--s4); font-size: 13px; color: #cfe0d6; background: rgba(8,16,12,.78); padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: calc(100% - 32px); }
+.sim__caption { position: absolute; left: var(--s4); bottom: var(--s3); right: calc(var(--s4) + 52px); font-size: 13px; color: var(--scene-label-text); background: var(--scene-label-bg); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; width: fit-content; max-width: calc(100% - 32px - 52px); }
+/* The caption leaves a column on the right for the scene tools (close-up button), so neither covers the other. */
+.sim__field-tools { position: absolute; right: var(--s4); bottom: var(--s3); display: grid; gap: 6px; justify-items: end; }
 .sim__results { grid-row: 1 / 3; grid-column: 3; border-left: 1px solid var(--border); overflow-y: auto; overscroll-behavior: contain; padding: var(--s4); display: grid; gap: var(--s4); align-content: start; background: var(--bg); }
 .sim__timeline { grid-column: 2; border-top: 1px solid var(--border); padding: var(--s3) var(--s4); display: grid; gap: var(--s2); background: var(--surface); min-width: 0; }
 .sim__tabs { display: none; }
@@ -223,7 +252,7 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .sim-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--bg); }
 .sim-switch a { display: grid; place-items: center; min-height: var(--touch); padding: 6px 10px; border-radius: calc(var(--r-control) - 2px); color: var(--text-2); text-decoration: none; font-weight: 500; text-align: center; }
 .sim-switch a:hover { color: var(--text); background: var(--surface); }
-.sim-switch a[aria-current='page'] { background: var(--tint-action); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 2px var(--action); }
+.sim-switch a[aria-current='page'] { background: var(--selected); color: var(--on-selected); font-weight: 600; box-shadow: inset 0 0 0 2px var(--action); }
 .sim-switch a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .sim__title { font-size: 20px; text-wrap: balance; }
 .sim .h3, .page .h3 { font-size: 17px; font-family: var(--font-body); letter-spacing: 0; } .sim .h4 { font-size: 15px; font-family: var(--font-body); letter-spacing: 0; }
@@ -308,27 +337,27 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 /* Stake model tools inside the soil-profile scene: close-up preset and the load-failure note. */
 .sim__stake-tools { position: absolute; right: var(--s4); bottom: 52px; display: grid; gap: 6px; justify-items: end; max-width: min(320px, calc(100% - 2 * var(--s4))); pointer-events: none; }
 .sim__stake-tools > * { pointer-events: auto; margin: 0; }
-.sim__stake-tools p { background: rgba(8, 16, 12, .82); color: #EAF2EB; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--warn); }
+.sim__stake-tools p { background: var(--scene-label-bg); color: var(--scene-label-text); font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--warn); }
 /* "Minha área": list, map and contextual panel. Olive (the colour of the stake's case) marks the equipment. */
-.area { --olive: #7d8a62; max-width: 1480px; }
+.area { --olive: var(--map-sensor); max-width: 1480px; }
 .area__bar { align-items: flex-end; } .area__bar .field { min-width: min(280px, 100%); }
 .area__h { font-size: 15px; font-weight: 600; color: var(--text-2); }
 .area__grid { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr) minmax(0, 380px); gap: var(--s4); align-items: start; }
 .area__list, .area__detail { min-width: 0; }
-.area__map { position: relative; min-width: 0; height: min(68vh, 640px); min-height: 360px; border: 1px solid var(--border); border-radius: var(--r-panel); overflow: hidden; background: #0a1a21; }
+.area__map { position: relative; min-width: 0; height: min(68vh, 640px); min-height: 360px; border: 1px solid var(--border); border-radius: var(--r-panel); overflow: hidden; background: var(--map-ocean); }
 /* MapLibre sets position: relative on its container; this selector outranks it. */
 .area__map .area-map { position: absolute; inset: 0; width: 100%; height: 100%; }
 .area__map-tools { position: absolute; left: var(--s3); top: var(--s3); right: 56px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none; }
 .area__map-tools > * { pointer-events: auto; } .area__map-tools .btn { background: var(--surface); min-height: var(--touch); }
-.area__map-note { background: rgba(8, 16, 12, .82); color: #EAF2EB; font-size: 13px; padding: 4px 8px; border-radius: 6px; }
-.area-map__plot { font: 600 12px var(--font-body); color: #EAF2EB; background: rgba(8, 16, 12, .72); padding: 1px 6px; border-radius: 6px; pointer-events: none; white-space: nowrap; }
+.area__map-note { background: var(--scene-label-bg); color: var(--scene-label-text); border: 1px solid var(--border); font-size: 13px; padding: 4px 8px; border-radius: 6px; }
+.area-map__plot { font: 600 12px var(--font-body); color: var(--scene-label-text); background: var(--scene-label-bg); border: 1px solid var(--border); padding: 1px 6px; border-radius: 6px; pointer-events: none; white-space: nowrap; }
 .area-map__sensor { width: var(--touch); height: var(--touch); border: 0; background: none; cursor: pointer; display: grid; place-items: center; padding: 0; }
-.area-map__sensor::before { content: ''; width: 18px; height: 18px; border-radius: 4px; background: var(--olive, #7d8a62); border: 3px solid #EAF2EB; box-shadow: 0 0 0 1px #0b1411; }
-.area-map__sensor[aria-pressed='true']::before { outline: 3px solid #F2C14E; outline-offset: 2px; }
+.area-map__sensor::before { content: ''; width: 18px; height: 18px; border-radius: 4px; background: var(--map-sensor); border: 3px solid var(--map-marker-border); box-shadow: 0 0 0 1px var(--map-marker-ring); }
+.area-map__sensor[aria-pressed='true']::before { outline: 3px solid var(--map-draft); outline-offset: 2px; }
 .area-map__vertex { width: var(--touch); height: var(--touch); border: 0; background: none; cursor: grab; display: grid; place-items: center; padding: 0; }
-.area-map__vertex::before { content: ''; width: 16px; height: 16px; border-radius: 50%; background: #F2C14E; border: 2px solid #0b1411; }
+.area-map__vertex::before { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--map-draft); border: 2px solid var(--map-marker-ring); box-shadow: 0 0 0 2px var(--map-marker-border); }
 .area-map__sensor:focus-visible, .area-map__vertex:focus-visible { outline: 2px solid var(--focus); outline-offset: -6px; }
-.area-map__pin { width: 18px; height: 18px; border-radius: 50%; background: #79BDD8; border: 3px solid #EAF2EB; }
+.area-map__pin { width: 18px; height: 18px; border-radius: 50%; background: var(--map-pin); border: 3px solid var(--map-marker-border); box-shadow: 0 0 0 1px var(--map-marker-ring); }
 .area-detail h3 { font-size: 16px; margin-top: var(--s2); }
 .area-fieldset { border: 1px solid var(--border); border-radius: var(--r-control); padding: var(--s3); margin: 0; display: grid; gap: var(--s3); min-width: 0; }
 .area-fieldset legend { font-weight: 600; padding: 0 6px; }
@@ -352,3 +381,23 @@ dialog[open] { animation: pop var(--t-panel) var(--ease-out); } @keyframes pop {
 .area .btn--sm { min-height: var(--touch); }
 .area__map .maplibregl-ctrl-group button { width: var(--touch); height: var(--touch); }
 .area-table { table-layout: fixed; } .area-table th:first-child { width: 24%; } .area-table th:last-child { width: 31%; } .area-table th, .area-table td { overflow-wrap: anywhere; }
+/* Design preview: one self-contained sample per theme and the crop demonstration board */
+.theme-sample { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); align-content: start; min-width: 0; }
+.theme-sample__swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 12px; font-size: 14px; }
+.crop-board__row { display: grid; gap: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--border); min-width: 0; }
+.crop-board__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(170px, 45%), 1fr)); gap: var(--s3); }
+.crop-card { margin: 0; display: grid; gap: 6px; min-width: 0; align-content: start; }
+.crop-card__stage { aspect-ratio: 4 / 5; border-radius: var(--r-control); border: 1px solid var(--border); background: linear-gradient(var(--scene-sky-top), var(--scene-sky-bottom) 75%); overflow: hidden; }
+.crop-card__stage canvas, .crop-card__stage svg { display: block; width: 100%; height: 100%; }
+.crop-card figcaption { font-size: 14px; font-weight: 600; }
+
+/* Stake guide in "Adicionar sensor": a small rotatable model with the QR label marked. Colours come from the theme tokens. */
+.stake-guide { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s2); padding: var(--s3); border: 1px solid var(--border); border-radius: var(--r-panel); background: var(--surface-2); }
+.stake-guide__title { font-weight: 600; color: var(--text); }
+.stake-guide__stage { position: relative; height: 240px; border-radius: var(--r-control); background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+.stake-guide__canvas, .stake-guide__canvas > div { width: 100%; height: 100%; }
+.stake-guide__canvas canvas { outline: none; cursor: grab; } .stake-guide__canvas canvas:active { cursor: grabbing; }
+.stake-guide__canvas canvas:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
+.stake-guide__status { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; text-align: center; }
+.stake-guide__views { gap: var(--s2); }
+@media (max-width: 760px) { .stake-guide__stage { height: 210px; } }

@@ -16,5 +16,7 @@ describe('authentication URLs', () => {
     expect(callbackProblem(new URL('http://localhost/auth/callback#error=access_denied&error_description=secret'))).toMatch(/expirou/);
     expect(callbackProblem(new URL('http://localhost/auth/callback'))).toMatch(/incompleto/);
     expect(callbackProblem(new URL('http://localhost/auth/callback?code=abc'))).toBeNull();
+    expect(callbackProblem(new URL('http://localhost/auth/callback?token_hash=abc&type=email'))).toBeNull();
+    expect(callbackProblem(new URL('http://localhost/auth/callback#access_token=a&refresh_token=b&type=signup'))).toBeNull();
   });
 });

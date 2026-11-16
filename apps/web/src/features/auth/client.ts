@@ -17,13 +17,35 @@ export async function initializeAuth() {
 }
 
 // Share a single exchange across React StrictMode remounts: PKCE codes are one-use.
-let exchange: Promise<Session> | undefined;
+const exchanges = new Map<string, Promise<Session>>();
 export function exchangeEmailCode(code: string) {
-  return exchange ??= (async () => {
+  return completeEmailLink(new URL(`/auth/callback?code=${encodeURIComponent(code)}`, location.origin));
+}
+
+export function completeEmailLink(url: URL, recovery = false) {
+  const key = `${recovery}:${url.search}:${url.hash}`;
+  const existing = exchanges.get(key);
+  if (existing) return existing;
+  const pending = (async () => {
     if (!supabase) throw new Error('not_configured');
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const code = url.searchParams.get('code');
+    const tokenHash = url.searchParams.get('token_hash');
+    const type = url.searchParams.get('type');
+    const hash = new URLSearchParams(url.hash.slice(1).replace(/^\//, ''));
+    let result;
+    if (code) result = await supabase.auth.exchangeCodeForSession(code);
+    else if (tokenHash && (recovery ? type === 'recovery' : type === 'email' || type === 'signup')) {
+      result = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as 'email' | 'signup' | 'recovery' });
+    } else if (hash.get('access_token') && hash.get('refresh_token') && (recovery ? hash.get('type') === 'recovery' : hash.get('type') !== 'recovery')) {
+      result = await supabase.auth.setSession({ access_token: hash.get('access_token')!, refresh_token: hash.get('refresh_token')! });
+    } else throw new Error('invalid_email_link');
+    const { data, error } = result;
     if (error || !data.session) throw error ?? new Error('missing_session');
     session = data.session;
     return data.session;
   })();
+  exchanges.set(key, pending);
+  // Keep one-use exchanges only briefly, including across StrictMode remounts.
+  void pending.finally(() => setTimeout(() => exchanges.delete(key), 60_000)).catch(() => {});
+  return pending;
 }

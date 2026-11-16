@@ -10,9 +10,9 @@ export function safeReturnPath(path: string | null) {
 
 /** Problem with an e-mail link as a message key, so the page can show it in the current language. */
 export function callbackProblemKey(url: URL): 'auth.expired' | 'auth.incomplete' | null {
-  const hash = new URLSearchParams(url.hash.slice(1));
+  const hash = new URLSearchParams(url.hash.slice(1).replace(/^\//, ''));
   if (url.searchParams.has('error') || hash.has('error')) return 'auth.expired';
-  if (!url.searchParams.get('code')) return 'auth.incomplete';
+  if (!url.searchParams.get('code') && !url.searchParams.get('token_hash') && !(hash.get('access_token') && hash.get('refresh_token'))) return 'auth.incomplete';
   return null;
 }
 

@@ -6,6 +6,8 @@ import { isLocale, type Locale } from './i18n/locale';
 
 export const PREFS_KEY = 'gaiapus.prefs';
 export type Theme = 'dark' | 'light';
+/** Browser chrome colour per theme: the `--bg` token of styles.css (also set before React in index.html). */
+export const THEME_COLOR: Record<Theme, string> = { dark: '#0B1411', light: '#F2F6F3' };
 export type Prefs = { v: 1; theme: Theme; locale: Locale | null; lastExplore: string | null };
 const DEFAULTS: Prefs = { v: 1, theme: 'dark', locale: null, lastExplore: null };
 
