@@ -1,7 +1,7 @@
 // Season planning (future harvest years): calculated, published runs from the API /v1/simulations.
 // The person chooses place, crop, harvest year and climate trajectory on the screen; nothing depends on editing the address.
 // One identity per displayed day: run_id + climate member + date drive the timeline, the panel and the scenes.
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Pause, Play, StepBack, StepForward } from 'lucide-react';
 import type { SimulationCapability, SimulationPlaceCapabilities, SimulationYield } from '@gaiapus/contracts';
@@ -174,8 +174,14 @@ function PlanningView({ run, series, crop, year, title, placeLabel, cropLabel, p
   const lands = useMemo(() => rows.map((r) => r.land_cover), [rows]); const stages = useMemo(() => rows.map((r) => r.phase_code), [rows]);
   const c = Math.min(Math.max(cursor, from), to);
   useEffect(() => { if (!playing) return; const id = setInterval(() => setCursor((v) => { if (v >= to) { setPlaying(false); return v; } return v + 1; }), 1000 / 14); return () => clearInterval(id); }, [playing, to]);
-  // The selected day goes into the link, replacing history instead of stacking one entry per step.
-  useEffect(() => { if (playing) return; const want = String(c + 1); if (params.get('dia') !== want) put({ dia: want }, true); }, [c, playing]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The selected day goes into the link, replacing history instead of stacking one entry per step — but only once the
+  // user (or the playback) has moved it. Opening a run never rewrites the address: that write would use the
+  // parameters of this render and, landing after a navigation made meanwhile, would bring the previous place back.
+  const dayMoved = useRef(false);
+  useEffect(() => {
+    if (!dayMoved.current) { dayMoved.current = true; return; }
+    if (playing) return; const want = String(c + 1); if (params.get('dia') !== want) put({ dia: want }, true);
+  }, [c, playing]); // eslint-disable-line react-hooks/exhaustive-deps
   const setPeriod = (v: 'safra' | 'tudo') => { setPlaying(false); setWhole(v === 'tudo'); if (v === 'safra') setCursor((x) => (x < span.from || x > span.to ? window?.start ?? span.from : x)); put({ periodo: v === 'tudo' ? 'tudo' : null }, true); };
 
   const row = rows[c]; const info = dayInfo(series, c);
